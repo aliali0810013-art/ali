@@ -391,6 +391,7 @@ class _MobileBrandHeader extends StatelessWidget {
             ),
           ),
           _ReferenceHeaderAction(
+            key: const Key('dashboard-profile-action'),
             tooltip: '$displayName • الحساب',
             icon: Icons.person_outline_rounded,
             onTap: onOpenProfile,
@@ -400,6 +401,7 @@ class _MobileBrandHeader extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               _ReferenceHeaderAction(
+                key: const Key('dashboard-notifications-action'),
                 tooltip: 'التنبيهات',
                 icon: Icons.notifications_none_rounded,
                 onTap: onOpenNotifications,
@@ -425,6 +427,7 @@ class _MobileBrandHeader extends StatelessWidget {
 
 class _ReferenceHeaderAction extends StatelessWidget {
   const _ReferenceHeaderAction({
+    super.key,
     required this.tooltip,
     required this.icon,
     this.onTap,
