@@ -521,41 +521,75 @@ class _MoneyRow extends StatelessWidget {
         (emphasized
             ? SalesInvoiceReferenceView.navy
             : const Color(0xFF17233D));
-    return Container(
-      margin: const EdgeInsets.only(bottom: 7),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-      decoration: BoxDecoration(
-        color: emphasized
-            ? const Color(0xFFE9F3FF)
-            : muted
-                ? const Color(0xFFF7F8FA)
-                : Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: muted ? Colors.blueGrey : color),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(
-                color: muted ? Colors.blueGrey : const Color(0xFF17233D),
-                fontWeight: emphasized ? FontWeight.w900 : FontWeight.w700,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 170;
+        final title = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: compact ? 16 : 20, color: muted ? Colors.blueGrey : color),
+            SizedBox(width: compact ? 4 : 8),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: compact ? 2 : 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: compact ? 10.5 : 13,
+                  color: muted ? Colors.blueGrey : const Color(0xFF17233D),
+                  fontWeight: emphasized ? FontWeight.w900 : FontWeight.w700,
+                ),
               ),
             ),
+          ],
+        );
+        final amount = Text(
+          '${value.toStringAsFixed(2)} ${currency == 'YER' ? 'ر.ي' : currency}',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textDirection: TextDirection.ltr,
+          style: TextStyle(
+            color: muted ? Colors.blueGrey : color,
+            fontFamily: 'ArialMTBlack',
+            fontWeight: FontWeight.w900,
+            fontSize: compact ? (emphasized ? 13 : 11.5) : (emphasized ? 18 : 15),
           ),
-          Text(
-            '${value.toStringAsFixed(2)} ${currency == 'YER' ? 'ر.ي' : currency}',
-            textDirection: TextDirection.ltr,
-            style: TextStyle(
-              color: muted ? Colors.blueGrey : color,
-              fontWeight: FontWeight.w900,
-              fontSize: emphasized ? 18 : 15,
-            ),
+        );
+        return Container(
+          margin: const EdgeInsets.only(bottom: 5),
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 7 : 10,
+            vertical: compact ? 6 : 9,
           ),
-        ],
-      ),
+          decoration: BoxDecoration(
+            color: emphasized
+                ? const Color(0xFFE9F3FF)
+                : muted
+                    ? const Color(0xFFF7F8FA)
+                    : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: compact
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    title,
+                    const SizedBox(height: 3),
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: amount,
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(child: title),
+                    const SizedBox(width: 6),
+                    Flexible(child: amount),
+                  ],
+                ),
+        );
+      },
     );
   }
 }
@@ -602,11 +636,15 @@ class _MiniHeading extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
         children: [
-          Icon(icon, color: SalesInvoiceReferenceView.navy, size: 20),
-          const SizedBox(width: 7),
-          Text(
-            label,
-            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
+          Icon(icon, color: SalesInvoiceReferenceView.navy, size: 18),
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
+            ),
           ),
         ],
       );
