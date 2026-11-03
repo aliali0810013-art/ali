@@ -1204,6 +1204,7 @@ class NineSoftEntryLineCells {
     required this.quantity,
     required this.price,
     required this.total,
+    this.discount,
     this.onDelete,
     this.semanticsLabel,
   });
@@ -1213,6 +1214,7 @@ class NineSoftEntryLineCells {
   final Widget quantity;
   final Widget price;
   final Widget total;
+  final Widget? discount;
   final VoidCallback? onDelete;
   final String? semanticsLabel;
 }
@@ -1223,11 +1225,15 @@ class NineSoftEntryLineTable extends StatelessWidget {
     required this.lines,
     this.priceLabel = 'السعر',
     this.forceTableOnMobile = false,
+    this.showDiscount = false,
+    this.denseReference = false,
   });
 
   final List<NineSoftEntryLineCells> lines;
   final String priceLabel;
   final bool forceTableOnMobile;
+  final bool showDiscount;
+  final bool denseReference;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -1256,7 +1262,10 @@ class NineSoftEntryLineTable extends StatelessWidget {
           children: [
             Container(
               key: const Key('ninesoft-entry-line-header'),
-              padding: const EdgeInsets.only(top: 9, bottom: 6),
+              padding: EdgeInsets.only(
+                top: denseReference ? 6 : 9,
+                bottom: denseReference ? 5 : 6,
+              ),
               decoration: const BoxDecoration(
                 color: Color(0xFFEAF2FF),
                 border: Border(bottom: BorderSide(color: Color(0xFFE6F0F6))),
@@ -1268,23 +1277,33 @@ class NineSoftEntryLineTable extends StatelessWidget {
                 unit: const Text('الوحدة'),
                 quantity: const Text('الكمية'),
                 price: Text(priceLabel),
+                discount: showDiscount ? const Text('الخصم') : null,
                 total: const Text('الإجمالي'),
                 delete: const SizedBox.shrink(),
+                showDiscount: showDiscount,
               ),
             ),
             const SizedBox(height: 9),
             for (var index = 0; index < lines.length; index++)
               Padding(
                 padding: EdgeInsets.only(
-                  bottom: index == lines.length - 1 ? 0 : 9,
+                  bottom: index == lines.length - 1
+                      ? 0
+                      : (denseReference ? 0 : 9),
                 ),
                 child: Container(
                   key: Key('ninesoft-entry-line-row-$index'),
-                  padding: const EdgeInsets.symmetric(vertical: 7),
+                  padding: EdgeInsets.symmetric(
+                    vertical: denseReference ? 4 : 7,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(11),
-                    border: Border.all(color: NizamiColors.border),
+                    borderRadius: BorderRadius.circular(denseReference ? 0 : 11),
+                    border: denseReference
+                        ? const Border(
+                            bottom: BorderSide(color: Color(0xFFE5EBF3)),
+                          )
+                        : Border.all(color: NizamiColors.border),
                   ),
                   child: _EntryTableRow(
                     number: _LineNumber(index: index, mobile: false),
@@ -1296,6 +1315,11 @@ class NineSoftEntryLineTable extends StatelessWidget {
                       child: lines[index].quantity,
                     ),
                     price: _NineSoftCompactEntryCell(child: lines[index].price),
+                    discount: showDiscount
+                        ? _NineSoftCompactEntryCell(
+                            child: lines[index].discount ?? const Text('0%'),
+                          )
+                        : null,
                     total: DefaultTextStyle.merge(
                       style: const TextStyle(
                         color: NizamiColors.navy,
@@ -1309,6 +1333,7 @@ class NineSoftEntryLineTable extends StatelessWidget {
                       onDelete: lines[index].onDelete,
                       semanticsLabel: lines[index].semanticsLabel,
                     ),
+                    showDiscount: showDiscount,
                   ),
                 ),
               ),
@@ -1326,8 +1351,10 @@ class _EntryTableRow extends StatelessWidget {
     required this.unit,
     required this.quantity,
     required this.price,
+    this.discount,
     required this.total,
     required this.delete,
+    this.showDiscount = false,
     this.header = false,
   });
 
@@ -1336,8 +1363,10 @@ class _EntryTableRow extends StatelessWidget {
   final Widget unit;
   final Widget quantity;
   final Widget price;
+  final Widget? discount;
   final Widget total;
   final Widget delete;
+  final bool showDiscount;
   final bool header;
 
   @override
@@ -1354,12 +1383,13 @@ class _EntryTableRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(width: 28, child: Center(child: number)),
-        cell(product, 35),
-        cell(unit, 13),
-        cell(quantity, 11),
-        cell(price, 16),
-        cell(total, 16),
-        SizedBox(width: 35, child: Center(child: delete)),
+        cell(product, showDiscount ? 30 : 35),
+        cell(unit, showDiscount ? 11 : 13),
+        cell(quantity, showDiscount ? 12 : 11),
+        cell(price, showDiscount ? 13 : 16),
+        if (showDiscount) cell(discount ?? const SizedBox.shrink(), 10),
+        cell(total, showDiscount ? 15 : 16),
+        SizedBox(width: showDiscount ? 30 : 35, child: Center(child: delete)),
       ],
     );
     if (!header) return row;
