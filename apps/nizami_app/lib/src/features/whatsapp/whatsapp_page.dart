@@ -138,7 +138,7 @@ class _WhatsappPageState extends State<WhatsappPage> {
     final qr = _qrBytes();
     final connected = _status?.connected ?? false;
     return Scaffold(
-      appBar: AppBar(title: const Text('ربط واتساب بالفروع')),
+      appBar: AppBar(toolbarHeight: 0),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
