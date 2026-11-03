@@ -319,7 +319,7 @@ class _SimpleJournalPageState extends State<SimpleJournalPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('القيود اليومية'),
-        toolbarHeight: desktop ? 0 : null,
+        toolbarHeight: 0,
         actions: [
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh_rounded)),
         ],
