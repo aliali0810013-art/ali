@@ -1553,8 +1553,6 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       context: context,
       builder: (dialogContext) => Dialog.fullscreen(
         child: Scaffold(
-          backgroundColor:
-              mobileReference ? NizamiColors.navy : null,
           appBar: AppBar(
             title: Text(
               'فاتورة مبسطة ${compactDocumentNumber(invoice.displayNumber)}',
@@ -1819,6 +1817,8 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       child: Focus(
         autofocus: true,
         child: Scaffold(
+          backgroundColor:
+              mobileReference ? NizamiColors.navy : null,
           appBar: AppBar(
             title: const Text('المبيعات'),
             toolbarHeight: 0,
