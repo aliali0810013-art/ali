@@ -29,13 +29,13 @@ void main() {
   }
 
   test('reference palette exposes exact cascade-resolved colors', () {
-    expect(NizamiColors.navy, const Color(0xFF092B50));
-    expect(NizamiColors.navyDark, const Color(0xFF061D39));
-    expect(NizamiColors.teal, const Color(0xFF00AF95));
-    expect(NizamiColors.tealDark, const Color(0xFF009B83));
-    expect(NizamiColors.ink, const Color(0xFF09254B));
-    expect(NizamiColors.canvas, const Color(0xFFF3FAFF));
-    expect(NizamiColors.border, const Color(0xFFE2EDF5));
+    expect(NizamiColors.navy, const Color(0xFF0B356F));
+    expect(NizamiColors.navyDark, const Color(0xFF072A59));
+    expect(NizamiColors.teal, const Color(0xFF14A966));
+    expect(NizamiColors.tealDark, const Color(0xFF078B50));
+    expect(NizamiColors.ink, const Color(0xFF10213F));
+    expect(NizamiColors.canvas, const Color(0xFFF4F7FB));
+    expect(NizamiColors.border, const Color(0xFFDCE4EF));
   });
 
   testWidgets('input theme and responsive field heights match reference', (
@@ -45,9 +45,9 @@ void main() {
     final enabled = theme.enabledBorder! as OutlineInputBorder;
     final focused = theme.focusedBorder! as OutlineInputBorder;
     expect(enabled.borderRadius.topLeft.x, 12);
-    expect(enabled.borderSide.color, const Color(0xFFDCE9F1));
+    expect(enabled.borderSide.color, const Color(0xFFDCE4EF));
     expect(focused.borderRadius.topLeft.x, 12);
-    expect(focused.borderSide.color, const Color(0xFF06A98F));
+    expect(focused.borderSide.color, const Color(0xFF1769E8));
 
     Future<void> expectHeight(double width, double expected) async {
       setViewport(tester, width, 400);
@@ -76,7 +76,7 @@ void main() {
       );
       expect(
         inputDecorator.decoration.contentPadding,
-        EdgeInsets.symmetric(horizontal: width <= 700 ? 9 : 12, vertical: 10),
+        const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
       );
       expect(tester.takeException(), isNull);
     }
@@ -140,15 +140,15 @@ void main() {
     final summary = decorationOf(tester, 'ninesoft-entry-summary');
 
     expect(heading.borderRadius, BorderRadius.circular(22));
-    expect(section.borderRadius, BorderRadius.circular(20));
-    expect((section.border! as Border).top.color, const Color(0xFFE0EDF6));
+    expect(section.borderRadius, BorderRadius.circular(17));
+    expect((section.border! as Border).top.color, const Color(0xFFDCE4EF));
     expect(step.borderRadius, BorderRadius.circular(15));
-    expect((step.border! as Border).top.color, const Color(0xFFA4E8D6));
+    expect((step.border! as Border).top.color, const Color(0xFFBBD5FA));
     expect(scanner.borderRadius, BorderRadius.circular(15));
-    expect(scanner.color, const Color(0xFFEEFBF7));
-    expect((scanner.border! as Border).top.color, const Color(0xFFB8E8DC));
-    expect(summary.borderRadius, BorderRadius.circular(19));
-    expect((summary.border! as Border).top.color, const Color(0xFFB9E4DF));
+    expect(scanner.color, const Color(0xFFF4F8FF));
+    expect((scanner.border! as Border).top.color, const Color(0xFFCFE0F7));
+    expect(summary.borderRadius, BorderRadius.circular(17));
+    expect((summary.border! as Border).top.color, const Color(0xFFDCE4EF));
     expect(tester.takeException(), isNull);
   });
 
@@ -186,7 +186,7 @@ void main() {
       (decorationOf(tester, 'ninesoft-entry-step-1').gradient!
               as LinearGradient)
           .colors,
-      const [Color(0xFFEDFFFA), Color(0xFFFFFFFF)],
+      const [Color(0xFFEAF3FF), Color(0xFFFFFFFF)],
     );
     expect(
       decorationOf(tester, 'ninesoft-entry-step-number-0').color,
@@ -194,7 +194,7 @@ void main() {
     );
     expect(
       decorationOf(tester, 'ninesoft-entry-step-number-1').color,
-      const Color(0xFF04A98F),
+      const Color(0xFF1769E8),
     );
     expect(tester.takeException(), isNull);
 
