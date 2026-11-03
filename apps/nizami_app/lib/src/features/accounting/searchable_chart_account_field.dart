@@ -210,30 +210,33 @@ class _SearchableChartAccountFieldState
                                   final account = accounts[index];
                                   final active =
                                       account.code == widget.value;
-                                  return ListTile(
-                                    dense: true,
-                                    selected: active,
-                                    leading: Icon(
-                                      active
-                                          ? Icons.check_circle_rounded
-                                          : Icons
-                                                .account_balance_wallet_outlined,
-                                    ),
-                                    title: Text(
-                                      account.nameAr,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w700,
+                                  return Material(
+                                    color: Colors.transparent,
+                                    type: MaterialType.transparency,
+                                    child: ListTile(
+                                      dense: true,
+                                      selected: active,
+                                      leading: Icon(
+                                        active
+                                            ? Icons.check_circle_rounded
+                                            : Icons.account_balance_wallet_outlined,
                                       ),
+                                      title: Text(
+                                        account.nameAr,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        account.code,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textDirection: TextDirection.ltr,
+                                      ),
+                                      onTap: () => _select(account),
                                     ),
-                                    subtitle: Text(
-                                      account.code,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      textDirection: TextDirection.ltr,
-                                    ),
-                                    onTap: () => _select(account),
                                   );
                                 },
                               ),
