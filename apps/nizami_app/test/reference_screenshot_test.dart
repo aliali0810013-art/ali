@@ -123,6 +123,7 @@ void main() {
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = devicePixelRatio;
+    final logicalWidth = size.width / devicePixelRatio;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
@@ -144,7 +145,7 @@ void main() {
         child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: NizamiTheme.light,
-        home: size.width < 700
+        home: logicalWidth < 700
             ? Directionality(
                 textDirection: TextDirection.rtl,
                 child: Scaffold(
