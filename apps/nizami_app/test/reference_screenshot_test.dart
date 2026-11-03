@@ -230,28 +230,157 @@ void main() {
         home: logicalWidth < 700
             ? Directionality(
                 textDirection: TextDirection.rtl,
-                child: Scaffold(
-                  body: Column(
-                    children: [
-                      MediaQuery(
-                        data: const MediaQueryData(
-                          padding: EdgeInsets.only(top: 34),
-                        ),
-                        child: NineSoftReferenceMobileHeader(
-                          title: 'المبيعات',
-                          onMenu: () {},
-                          onProfile: () {},
+                child: ColoredBox(
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 3.5,
+                      vertical: 2,
+                    ),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFC5C7CB),
+                        borderRadius: BorderRadius.circular(64),
+                        border: Border.all(
+                          color: const Color(0xFF6C7076),
+                          width: 1.5,
                         ),
                       ),
-                      Expanded(child: invoice),
-                    ],
-                  ),
-                  bottomNavigationBar: NineSoftMobileDock(
-                    currentIndex: 0,
-                    contextLabel: 'العمليات',
-                    contextIcon: Icons.layers_outlined,
-                    centerAction: () {},
-                    onSelected: (_) {},
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.5),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(56),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 15,
+                              vertical: 8,
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(48),
+                              child: Scaffold(
+                                body: Column(
+                                  children: [
+                                    Stack(
+                                      children: [
+                                        MediaQuery(
+                                          data: const MediaQueryData(
+                                            padding: EdgeInsets.only(top: 34),
+                                          ),
+                                          child: NineSoftReferenceMobileHeader(
+                                            title: 'المبيعات',
+                                            onMenu: () {},
+                                            onProfile: () {},
+                                          ),
+                                        ),
+                                        const PositionedDirectional(
+                                          top: 9,
+                                          start: 18,
+                                          end: 18,
+                                          child: Directionality(
+                                            textDirection: TextDirection.ltr,
+                                            child: Row(
+                                              children: [
+                                                Text(
+                                                  '10:24',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontFamily: 'ArialMTBlack',
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w800,
+                                                  ),
+                                                ),
+                                                Spacer(),
+                                                Icon(
+                                                  Icons.signal_cellular_alt_rounded,
+                                                  color: Colors.white,
+                                                  size: 15,
+                                                ),
+                                                SizedBox(width: 5),
+                                                Icon(
+                                                  Icons.wifi_rounded,
+                                                  color: Colors.white,
+                                                  size: 16,
+                                                ),
+                                                SizedBox(width: 5),
+                                                DecoratedBox(
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                        BorderRadius.all(
+                                                      Radius.circular(5),
+                                                    ),
+                                                  ),
+                                                  child: Padding(
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                      horizontal: 4,
+                                                      vertical: 1,
+                                                    ),
+                                                    child: Text(
+                                                      '100',
+                                                      style: TextStyle(
+                                                        color:
+                                                            Color(0xFF0B356F),
+                                                        fontFamily:
+                                                            'ArialMTBlack',
+                                                        fontSize: 9,
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Expanded(child: invoice),
+                                  ],
+                                ),
+                                bottomNavigationBar: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    NineSoftMobileDock(
+                                      currentIndex: 0,
+                                      contextLabel: 'العمليات',
+                                      contextIcon: Icons.layers_outlined,
+                                      centerAction: () {},
+                                      onSelected: (_) {},
+                                    ),
+                                    ColoredBox(
+                                      color: Colors.white,
+                                      child: SizedBox(
+                                        height: 18,
+                                        child: Center(
+                                          child: DecoratedBox(
+                                            decoration: BoxDecoration(
+                                              color: Colors.black,
+                                              borderRadius:
+                                                  BorderRadius.all(
+                                                Radius.circular(12),
+                                              ),
+                                            ),
+                                            child: SizedBox(
+                                              width: 190,
+                                              height: 4,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               )
