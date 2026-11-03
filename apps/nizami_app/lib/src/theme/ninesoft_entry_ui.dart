@@ -1290,7 +1290,7 @@ class NineSoftEntryLineTable extends StatelessWidget {
                 hideNumber: denseReference,
               ),
             ),
-            const SizedBox(height: 9),
+            SizedBox(height: denseReference ? 0 : 9),
             for (var index = 0; index < lines.length; index++)
               Padding(
                 padding: EdgeInsets.only(
@@ -1300,6 +1300,7 @@ class NineSoftEntryLineTable extends StatelessWidget {
                 ),
                 child: Container(
                   key: Key('ninesoft-entry-line-row-$index'),
+                  height: denseReference ? 44 : null,
                   padding: EdgeInsets.symmetric(
                     vertical: denseReference ? 4 : 7,
                   ),
