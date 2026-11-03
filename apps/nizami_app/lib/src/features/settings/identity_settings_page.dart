@@ -181,8 +181,12 @@ class _IdentitySettingsPageState extends State<IdentitySettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final phone = MediaQuery.sizeOf(context).width < 700;
     return Scaffold(
-      appBar: AppBar(title: const Text('هوية النشاط والفواتير')),
+      appBar: AppBar(
+        toolbarHeight: phone ? 0 : null,
+        title: const Text('الإعدادات والتحكم'),
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -194,11 +198,13 @@ class _IdentitySettingsPageState extends State<IdentitySettingsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const NineSoftEntryHeading(
-                      title: 'هوية النشاط والفواتير',
-                      subtitle: 'الشعار وبيانات التواصل الظاهرة في المستندات',
-                      status: 'إعدادات الفرع',
-                      icon: Icons.storefront_outlined,
+                    NineSoftEntryHeading(
+                      title: 'الإعدادات والتحكم',
+                      subtitle: phone
+                          ? 'هوية الفرع والطباعة وبيانات التواصل'
+                          : 'الشعار وبيانات التواصل الظاهرة في المستندات',
+                      status: 'هوية النشاط والفواتير',
+                      icon: Icons.settings_rounded,
                     ),
                     const SizedBox(height: 14),
                     NineSoftEntrySection(
