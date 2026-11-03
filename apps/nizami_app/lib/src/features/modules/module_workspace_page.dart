@@ -3559,7 +3559,9 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
   @override
   Widget build(BuildContext context) {
     final records = _visibleRecords;
-    final desktop = MediaQuery.sizeOf(context).width >= 900;
+    final viewportWidth = MediaQuery.sizeOf(context).width;
+    final desktop = viewportWidth >= 900;
+    final phone = viewportWidth < 700;
     final categoryPairs = _records
         .map((record) => record.details.split(' • '))
         .where((parts) => parts.isNotEmpty && parts.first.isNotEmpty)
@@ -3637,7 +3639,11 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final horizontalPadding = constraints.maxWidth >= 900 ? 32.0 : 16.0;
+            final horizontalPadding = constraints.maxWidth >= 900
+                ? 32.0
+                : constraints.maxWidth < 700
+                ? 8.0
+                : 16.0;
             return RefreshIndicator(
               onRefresh: _loadRecords,
               child: CustomScrollView(
@@ -3663,8 +3669,14 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
                         children: [
                           NineSoftPageHeader(
                             title: widget.module.title,
-                            subtitle:
-                                'إدارة ${widget.module.entityLabel} والبحث والتصفية من شاشة واحدة',
+                            subtitle: phone
+                                ? switch (widget.module.key) {
+                                    'customers' => 'إضافة وتعديل العملاء وكشف الحساب',
+                                    'suppliers' => 'إضافة وتعديل الموردين وكشف الحساب',
+                                    'products' => 'إضافة وتعديل الأصناف والمخزون',
+                                    _ => 'إدارة ${widget.module.entityLabel}',
+                                  }
+                                : 'إدارة ${widget.module.entityLabel} والبحث والتصفية من شاشة واحدة',
                             icon: widget.module.icon,
                             color: widget.module.color,
                             actions: [
@@ -3677,7 +3689,8 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
                                   icon: const Icon(Icons.add_rounded),
                                   label: Text(widget.module.actionLabel),
                                 ),
-                              PopupMenuButton<String>(
+                              if (!phone)
+                                PopupMenuButton<String>(
                                 tooltip: 'تصدير وطباعة',
                                 onSelected: _exportList,
                                 itemBuilder: (_) => const [
@@ -3747,6 +3760,7 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
                       child: _SummaryPanel(
                         module: widget.module,
                         records: _records,
+                        compact: phone,
                       ),
                     ),
                   ),
@@ -4195,10 +4209,15 @@ class _AnalysisMetric extends StatelessWidget {
 }
 
 class _SummaryPanel extends StatelessWidget {
-  const _SummaryPanel({required this.module, required this.records});
+  const _SummaryPanel({
+    required this.module,
+    required this.records,
+    required this.compact,
+  });
 
   final ModuleDefinition module;
   final List<_ModuleRecord> records;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -4207,44 +4226,148 @@ class _SummaryPanel extends StatelessWidget {
         .where((record) => !record.settled)
         .fold<double>(0, (sum, record) => sum + record.amount);
     final overdue = records.where((record) => record.isOverdue).length;
+
+    final items = <Widget>[];
+    if (module.key == 'products') {
+      final totalStock = records.fold<double>(
+        0,
+        (sum, record) => sum + record.stockQuantity,
+      );
+      final low = records
+          .where((record) => record.stockQuantity > 0 && record.stockQuantity <= 5)
+          .length;
+      final out = records.where((record) => record.stockQuantity <= 0).length;
+      items.addAll([
+        _SummaryItem(
+          icon: Icons.inventory_2_outlined,
+          color: module.color,
+          label: 'عدد الأصناف',
+          value: '${records.length}',
+        ),
+        _SummaryItem(
+          icon: Icons.warehouse_outlined,
+          color: NizamiColors.blue,
+          label: 'إجمالي الرصيد',
+          value: totalStock.toStringAsFixed(2),
+        ),
+        _SummaryItem(
+          icon: Icons.warning_amber_rounded,
+          color: NizamiColors.amber,
+          label: 'مخزون منخفض',
+          value: '$low',
+        ),
+        _SummaryItem(
+          icon: Icons.remove_shopping_cart_outlined,
+          color: NizamiColors.red,
+          label: 'نافد',
+          value: '$out',
+        ),
+      ]);
+    } else if (module.key == 'customers') {
+      final receivable = records.fold<double>(
+        0,
+        (sum, record) => sum + record.amount,
+      );
+      final indebted = records.where((record) => record.amount > 0).length;
+      items.addAll([
+        _SummaryItem(
+          icon: Icons.people_alt_outlined,
+          color: module.color,
+          label: 'عدد العملاء',
+          value: '${records.length}',
+        ),
+        _SummaryItem(
+          icon: Icons.account_balance_wallet_outlined,
+          color: NizamiColors.blue,
+          label: 'إجمالي المستحق',
+          value: '${receivable.toStringAsFixed(2)} YER',
+        ),
+        _SummaryItem(
+          icon: Icons.schedule_rounded,
+          color: NizamiColors.amber,
+          label: 'عملاء عليهم رصيد',
+          value: '$indebted',
+        ),
+        _SummaryItem(
+          icon: Icons.verified_rounded,
+          color: NizamiColors.green,
+          label: 'بدون رصيد مستحق',
+          value: '${records.length - indebted}',
+        ),
+      ]);
+    } else if (module.key == 'suppliers') {
+      final phones = records.where((record) => record.details.trim().isNotEmpty).length;
+      final synced = records
+          .where((record) => record.serverId.isNotEmpty && !record.serverId.startsWith('local:'))
+          .length;
+      items.addAll([
+        _SummaryItem(
+          icon: Icons.local_shipping_outlined,
+          color: module.color,
+          label: 'عدد الموردين',
+          value: '${records.length}',
+        ),
+        _SummaryItem(
+          icon: Icons.phone_outlined,
+          color: NizamiColors.blue,
+          label: 'بأرقام هاتف',
+          value: '$phones',
+        ),
+        _SummaryItem(
+          icon: Icons.cloud_done_rounded,
+          color: NizamiColors.green,
+          label: 'متزامنة',
+          value: '$synced',
+        ),
+        _SummaryItem(
+          icon: Icons.sync_problem_outlined,
+          color: NizamiColors.amber,
+          label: 'محلية / بانتظار المزامنة',
+          value: '${records.length - synced}',
+        ),
+      ]);
+    } else {
+      items.addAll([
+        _SummaryItem(
+          icon: module.icon,
+          color: module.color,
+          label: 'إجمالي السجلات',
+          value: '${records.length}',
+        ),
+        if (isDebt)
+          _SummaryItem(
+            icon: Icons.account_balance_wallet_outlined,
+            color: const Color(0xFFE28B21),
+            label: 'الرصيد غير المسدد',
+            value: '${outstanding.toStringAsFixed(2)} YER',
+          )
+        else
+          const _SummaryItem(
+            icon: Icons.verified_rounded,
+            color: Color(0xFF22B968),
+            label: 'حالة القسم',
+            value: 'سجلات محفوظة',
+          ),
+        _SummaryItem(
+          icon: isDebt
+              ? Icons.notification_important_outlined
+              : Icons.cloud_done_rounded,
+          color: isDebt && overdue > 0
+              ? Theme.of(context).colorScheme.error
+              : Theme.of(context).colorScheme.primary,
+          label: isDebt ? 'متأخر بعد 48 ساعة' : 'وضع التشغيل',
+          value: isDebt ? '$overdue' : 'حفظ ومزامنة',
+        ),
+      ]);
+    }
+
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: EdgeInsets.all(compact ? 10 : 18),
         child: Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            _SummaryItem(
-              icon: module.icon,
-              color: module.color,
-              label: 'إجمالي السجلات',
-              value: '${records.length}',
-            ),
-            if (isDebt)
-              _SummaryItem(
-                icon: Icons.account_balance_wallet_outlined,
-                color: const Color(0xFFE28B21),
-                label: 'الرصيد غير المسدد',
-                value: '${outstanding.toStringAsFixed(2)} YER',
-              )
-            else
-              const _SummaryItem(
-                icon: Icons.verified_rounded,
-                color: Color(0xFF22B968),
-                label: 'حالة القسم',
-                value: 'سجلات محفوظة',
-              ),
-            _SummaryItem(
-              icon: isDebt
-                  ? Icons.notification_important_outlined
-                  : Icons.cloud_done_rounded,
-              color: isDebt && overdue > 0
-                  ? Theme.of(context).colorScheme.error
-                  : Theme.of(context).colorScheme.primary,
-              label: isDebt ? 'متأخر بعد 48 ساعة' : 'وضع التشغيل',
-              value: isDebt ? '$overdue' : 'حفظ ومزامنة',
-            ),
-          ],
+          spacing: compact ? 8 : 12,
+          runSpacing: compact ? 8 : 12,
+          children: items,
         ),
       ),
     );
@@ -4943,7 +5066,9 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final desktop = MediaQuery.sizeOf(context).width >= 900;
+    final viewportWidth = MediaQuery.sizeOf(context).width;
+    final desktop = viewportWidth >= 900;
+    final phone = viewportWidth < 700;
     return Scaffold(
       key: const ValueKey('module-record-document-editor'),
       appBar: AppBar(toolbarHeight: 0),
@@ -4966,8 +5091,8 @@ NineSoftEntryHeading(
                   status: 'إدخال جديد',
                   accent: widget.module.color,
                 ),
-                const SizedBox(height: 15),
-                if (_isBusinessDocument) ...[
+                SizedBox(height: phone ? 8 : 15),
+                if (_isBusinessDocument && !phone) ...[
                   Card(
                     color: widget.module.color.withValues(alpha: .08),
                     child: ListTile(
@@ -4981,17 +5106,19 @@ NineSoftEntryHeading(
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: phone ? 8 : 12),
                 ],
                 NineSoftEntrySection(
-                  title: _isContact ? 'بيانات التواصل' : 'المعلومات الرئيسية',
+                  title: _isContact
+                      ? (widget.initial == null ? 'إضافة / تعديل البيانات' : 'بيانات التواصل')
+                      : (_isProduct && phone ? 'إضافة / تعديل صنف' : 'المعلومات الرئيسية'),
                   subtitle: _isContact
-                      ? 'اسم الطرف ورقم هاتفه'
-                      : 'الاسم والبيان أو الوصف',
+                      ? (phone ? 'الاسم ورقم الهاتف' : 'اسم الطرف ورقم هاتفه')
+                      : (phone ? 'بيانات الصنف الأساسية' : 'الاسم والبيان أو الوصف'),
                   icon: _isContact
                       ? Icons.people_outline_rounded
                       : widget.module.icon,
-                  step: '01',
+                  step: phone ? null : '01',
                   accent: widget.module.color,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -5065,11 +5192,12 @@ NineSoftEntryHeading(
                 const SizedBox(height: 12),
                 if (_isProduct) ...[
                   NineSoftEntrySection(
-                    title: 'التسعير والباركود والمخزون',
-                    subtitle:
-                        'أسعار الصنف ووحدته ورصيده مع إمكانية مسح الباركود',
+                    title: phone ? 'التسعير والمخزون' : 'التسعير والباركود والمخزون',
+                    subtitle: phone
+                        ? 'الأسعار والباركود والوحدة والرصيد'
+                        : 'أسعار الصنف ووحدته ورصيده مع إمكانية مسح الباركود',
                     icon: Icons.inventory_2_outlined,
-                    step: '02',
+                    step: phone ? null : '02',
                     accent: NizamiColors.amber,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
