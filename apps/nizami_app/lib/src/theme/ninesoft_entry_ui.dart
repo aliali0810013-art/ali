@@ -1335,6 +1335,7 @@ class NineSoftEntryLineTable extends StatelessWidget {
                       index: index,
                       onDelete: lines[index].onDelete,
                       semanticsLabel: lines[index].semanticsLabel,
+                      referenceStyle: denseReference,
                     ),
                     showDiscount: showDiscount,
                     compact: compactTable,
@@ -1574,11 +1575,13 @@ class _DeleteLineButton extends StatelessWidget {
     required this.index,
     required this.onDelete,
     required this.semanticsLabel,
+    this.referenceStyle = false,
   });
 
   final int index;
   final VoidCallback? onDelete;
   final String? semanticsLabel;
+  final bool referenceStyle;
 
   @override
   Widget build(BuildContext context) => IconButton(
@@ -1588,6 +1591,10 @@ class _DeleteLineButton extends StatelessWidget {
     padding: EdgeInsets.zero,
     constraints: const BoxConstraints.tightFor(width: 32, height: 32),
     style: IconButton.styleFrom(
+      backgroundColor:
+          referenceStyle ? const Color(0xFFFFE8EC) : Colors.transparent,
+      foregroundColor:
+          referenceStyle ? const Color(0xFFE33B4D) : null,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     ),
     icon: const Icon(Icons.delete_outline_rounded, size: 19),
