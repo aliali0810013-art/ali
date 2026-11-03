@@ -30,3 +30,25 @@ jobs:
         run: flutter test
       - name: Build web
         run: flutter build web --release --dart-define=NINESOFT_API_BASE_URL=https://ninesoft.qodynex.tech/api/v1
+      - name: Capture reference screenshots
+        run: flutter test test/reference_screenshot_test.dart --dart-define=NINESOFT_CAPTURE_SCREENSHOTS=true --update-goldens
+      - name: Archive current source
+        shell: bash
+        run: |
+          cd ../..
+          git archive --format=zip -o /tmp/NineSoft-ui-redesign-source.zip HEAD
+      - name: Upload source package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ninesoft-ui-redesign-source
+          path: /tmp/NineSoft-ui-redesign-source.zip
+      - name: Upload web preview build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ninesoft-ui-redesign-web
+          path: apps/nizami_app/build/web
+      - name: Upload reference screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: ninesoft-reference-screenshots
+          path: apps/nizami_app/test/goldens/*.png
