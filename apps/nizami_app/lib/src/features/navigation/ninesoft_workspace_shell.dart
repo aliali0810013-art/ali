@@ -488,6 +488,7 @@ class _NineSoftWorkspaceShellState extends State<NineSoftWorkspaceShell> {
 
 class NineSoftReferenceMobileHeader extends StatelessWidget {
   const NineSoftReferenceMobileHeader({
+    super.key,
     required this.title,
     required this.onMenu,
     required this.onProfile,
