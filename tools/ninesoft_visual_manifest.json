@@ -1,0 +1,84 @@
+{
+  "screens": [
+    {
+      "id": "01-sales",
+      "title": "المبيعات"
+    },
+    {
+      "id": "02-purchases",
+      "title": "المشتريات"
+    },
+    {
+      "id": "03-sales-return",
+      "title": "مرتجع المبيعات"
+    },
+    {
+      "id": "04-vouchers",
+      "title": "سندات القبض والصرف"
+    },
+    {
+      "id": "05-journal",
+      "title": "القيود اليومية"
+    },
+    {
+      "id": "06-customers",
+      "title": "العملاء"
+    },
+    {
+      "id": "07-suppliers",
+      "title": "الموردون"
+    },
+    {
+      "id": "08-products",
+      "title": "المخزون والأصناف"
+    },
+    {
+      "id": "09-chart-accounts",
+      "title": "شجرة الحسابات"
+    },
+    {
+      "id": "10-cash-banks",
+      "title": "الصندوق والبنوك"
+    },
+    {
+      "id": "11-reports",
+      "title": "التقارير"
+    },
+    {
+      "id": "12-profit-loss",
+      "title": "الأرباح والخسائر"
+    },
+    {
+      "id": "13-trial-balance",
+      "title": "ميزان المراجعة"
+    },
+    {
+      "id": "14-general-ledger",
+      "title": "دفتر الأستاذ"
+    },
+    {
+      "id": "15-stock-count",
+      "title": "الجرد والتسوية"
+    },
+    {
+      "id": "16-wasl",
+      "title": "تحويلات WASL"
+    },
+    {
+      "id": "17-whatsapp",
+      "title": "واتساب"
+    },
+    {
+      "id": "18-sync-backup",
+      "title": "المزامنة والنسخ الاحتياطي"
+    },
+    {
+      "id": "19-settings",
+      "title": "الإعدادات"
+    },
+    {
+      "id": "20-users",
+      "title": "المستخدمون والصلاحيات"
+    }
+  ]
+}
