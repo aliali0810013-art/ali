@@ -224,7 +224,7 @@ class _IdentitySettingsPageState extends State<IdentitySettingsPage> {
                         child: Column(
                           children: [
                             CircleAvatar(
-                              radius: 52,
+                              radius: phone ? 38 : 52,
                               backgroundColor: Color(
                                 _color,
                               ).withValues(alpha: .10),
