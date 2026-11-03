@@ -18,6 +18,9 @@ const _captureScreenshots = bool.fromEnvironment(
   'NINESOFT_CAPTURE_SCREENSHOTS',
 );
 
+DateTime _referenceNow() => DateTime(2025, 1, 30, 10, 24);
+String _referenceInvoiceNumber(DateTime _) => 'INV-01542';
+
 Future<void> _loadReferenceFonts() async {
   final loaders = [
     FontLoader('NizamiArabic')
@@ -145,10 +148,12 @@ void main() {
       child: InvoiceWorkspacePage(
         branchIds: ['branch-preview'],
         tenantName: 'NineSoft',
-        employeeName: 'المستخدم',
+        employeeName: 'أحمد سالم',
         token: '',
         roleCode: 'owner',
         permissions: [],
+        nowProvider: _referenceNow,
+        invoiceNumberFactory: _referenceInvoiceNumber,
       ),
     );
     const captureKey = Key('visual-capture-root');
