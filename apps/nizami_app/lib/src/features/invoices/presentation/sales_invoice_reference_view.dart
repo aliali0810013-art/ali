@@ -25,6 +25,8 @@ class SalesInvoiceReferenceView extends StatelessWidget {
     required this.onPrint,
     required this.onPdf,
     required this.onWhatsapp,
+    this.onEditDiscount,
+    this.onEditPaid,
     required this.onNewInvoice,
     required this.onHistory,
     required this.busy,
@@ -53,6 +55,8 @@ class SalesInvoiceReferenceView extends StatelessWidget {
   final VoidCallback? onPrint;
   final VoidCallback? onPdf;
   final VoidCallback? onWhatsapp;
+  final VoidCallback? onEditDiscount;
+  final VoidCallback? onEditPaid;
   final VoidCallback? onNewInvoice;
   final VoidCallback? onHistory;
   final bool busy;
@@ -153,7 +157,13 @@ class SalesInvoiceReferenceView extends StatelessWidget {
               textDirection: TextDirection.ltr,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: _SummaryCard(document: document)),
+                Expanded(
+                  child: _SummaryCard(
+                    document: document,
+                    onEditDiscount: onEditDiscount,
+                    onEditPaid: onEditPaid,
+                  ),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: KeyedSubtree(
@@ -458,8 +468,15 @@ class _SearchStrip extends StatelessWidget {
 }
 
 class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({required this.document});
+  const _SummaryCard({
+    required this.document,
+    this.onEditDiscount,
+    this.onEditPaid,
+  });
+
   final SalesInvoiceViewModel document;
+  final VoidCallback? onEditDiscount;
+  final VoidCallback? onEditPaid;
 
   @override
   Widget build(BuildContext context) {
@@ -482,6 +499,7 @@ class _SummaryCard extends StatelessWidget {
             currency: document.currency,
             icon: Icons.local_offer_outlined,
             valueColor: const Color(0xFFD92E3D),
+            onTap: onEditDiscount,
           ),
           _MoneyRow(
             label: 'الضريبة',
@@ -506,6 +524,7 @@ class _SummaryCard extends StatelessWidget {
             currency: document.currency,
             icon: Icons.account_balance_wallet_outlined,
             valueColor: const Color(0xFF138A2E),
+            onTap: onEditPaid,
           ),
           _MoneyRow(
             label: 'المبلغ المتبقي',
@@ -529,6 +548,7 @@ class _MoneyRow extends StatelessWidget {
     this.valueColor,
     this.emphasized = false,
     this.muted = false,
+    this.onTap,
   });
 
   final String label;
@@ -538,6 +558,7 @@ class _MoneyRow extends StatelessWidget {
   final Color? valueColor;
   final bool emphasized;
   final bool muted;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -579,26 +600,33 @@ class _MoneyRow extends StatelessWidget {
             fontSize: compact ? (emphasized ? 11.5 : 10) : (emphasized ? 18 : 15),
           ),
         );
-        return Container(
-          margin: EdgeInsets.only(bottom: compact ? 2 : 5),
-          padding: EdgeInsets.symmetric(
-            horizontal: compact ? 5 : 10,
-            vertical: compact ? 3 : 9,
-          ),
-          decoration: BoxDecoration(
-            color: emphasized
-                ? const Color(0xFFE9F3FF)
-                : muted
-                    ? const Color(0xFFF7F8FA)
-                    : Colors.transparent,
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
             borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            children: [
-              Expanded(child: title),
-              SizedBox(width: compact ? 3 : 6),
-              Flexible(child: amount),
-            ],
+            child: Container(
+              margin: EdgeInsets.only(bottom: compact ? 2 : 5),
+              padding: EdgeInsets.symmetric(
+                horizontal: compact ? 5 : 10,
+                vertical: compact ? 3 : 9,
+              ),
+              decoration: BoxDecoration(
+                color: emphasized
+                    ? const Color(0xFFE9F3FF)
+                    : muted
+                        ? const Color(0xFFF7F8FA)
+                        : Colors.transparent,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Expanded(child: title),
+                  SizedBox(width: compact ? 3 : 6),
+                  Flexible(child: amount),
+                ],
+              ),
+            ),
           ),
         );
       },
