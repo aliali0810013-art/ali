@@ -103,7 +103,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.tap(find.byKey(const Key('chart-account-add-action')));
     await tester.pumpAndSettle();
 
     expect(find.byType(AlertDialog), findsNothing);
