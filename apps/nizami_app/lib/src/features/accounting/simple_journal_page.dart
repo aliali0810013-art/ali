@@ -665,20 +665,7 @@ class _JournalDraftEditorState extends State<_JournalDraftEditor> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('قيد يومية جديد'),
-      leading: IconButton(
-        onPressed: widget.onCancel,
-        icon: const Icon(Icons.arrow_back_rounded),
-      ),
-      actions: [
-        TextButton.icon(
-          onPressed: _submit,
-          icon: const Icon(Icons.save_outlined),
-          label: const Text('حفظ وترحيل'),
-        ),
-      ],
-    ),
+    appBar: AppBar(toolbarHeight: 0),
     body: SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(16),
