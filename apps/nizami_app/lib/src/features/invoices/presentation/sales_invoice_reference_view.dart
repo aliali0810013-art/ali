@@ -104,6 +104,7 @@ class SalesInvoiceReferenceView extends StatelessWidget {
           children: [
             Expanded(
               child: _SoftAction(
+                buttonKey: const Key('invoice-reference-add-line'),
                 label: 'إضافة صنف',
                 icon: Icons.add_circle_rounded,
                 color: const Color(0xFF11A83B),
@@ -113,6 +114,7 @@ class SalesInvoiceReferenceView extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: _SoftAction(
+                buttonKey: const Key('invoice-reference-scan'),
                 label: 'مسح باركود',
                 icon: Icons.qr_code_scanner_rounded,
                 color: const Color(0xFF5C35C8),
@@ -616,6 +618,7 @@ class _FooterButton extends StatelessWidget {
     required this.onPressed,
   });
 
+  final Key? buttonKey;
   final String label;
   final IconData icon;
   final Color color;
@@ -648,6 +651,7 @@ class _FooterButton extends StatelessWidget {
 
 class _SoftAction extends StatelessWidget {
   const _SoftAction({
+    this.buttonKey,
     required this.label,
     required this.icon,
     required this.color,
@@ -663,6 +667,7 @@ class _SoftAction extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
         height: 52,
         child: FilledButton.icon(
+          key: buttonKey,
           onPressed: onPressed,
           style: FilledButton.styleFrom(
             backgroundColor: color.withValues(alpha: .10),
