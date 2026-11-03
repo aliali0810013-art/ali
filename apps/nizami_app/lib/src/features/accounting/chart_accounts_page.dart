@@ -16,16 +16,19 @@ class ChartAccountsPage extends StatefulWidget {
     required this.token,
     required this.branchIds,
     required this.roleCode,
+    this.chartAccountsApi,
   });
   final String token;
   final List<String> branchIds;
   final String roleCode;
+  final ChartAccountsApi? chartAccountsApi;
   @override
   State<ChartAccountsPage> createState() => _ChartAccountsPageState();
 }
 
 class _ChartAccountsPageState extends State<ChartAccountsPage> {
-  late final ChartAccountsApi _api = ChartAccountsApi(widget.token);
+  late final ChartAccountsApi _api =
+      widget.chartAccountsApi ?? ChartAccountsApi(widget.token);
   List<ChartAccount> _items = [];
   String? _branchId;
   bool _loading = true;
