@@ -56,7 +56,11 @@ void main() {
     final field = find.byType(SearchableChartAccountField);
     expect(field, findsOneWidget);
     await tester.ensureVisible(field);
-    await tester.tap(field);
+    final accountToggle = find.descendant(
+      of: field,
+      matching: find.byType(InkWell),
+    ).first;
+    await tester.tap(accountToggle);
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('inline-account-search')), findsOneWidget);
