@@ -34,7 +34,7 @@ jobs:
       - name: Build web
         run: flutter build web --release --dart-define=NINESOFT_API_BASE_URL=https://ninesoft.qodynex.tech/api/v1
       - name: Capture reference screenshots
-        run: flutter test --update-goldens test/reference_screenshot_test.dart
+        run: flutter test --dart-define=NINESOFT_CAPTURE_SCREENSHOTS=true --update-goldens test/reference_screenshot_test.dart
       - name: Upload reference screenshots
         uses: actions/upload-artifact@v4
         with:
