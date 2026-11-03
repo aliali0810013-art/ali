@@ -233,10 +233,15 @@ void main() {
                 child: Scaffold(
                   body: Column(
                     children: [
-                      NineSoftReferenceMobileHeader(
-                        title: 'المبيعات',
-                        onMenu: () {},
-                        onProfile: () {},
+                      MediaQuery(
+                        data: MediaQuery.of(context).copyWith(
+                          padding: const EdgeInsets.only(top: 34),
+                        ),
+                        child: NineSoftReferenceMobileHeader(
+                          title: 'المبيعات',
+                          onMenu: () {},
+                          onProfile: () {},
+                        ),
                       ),
                       Expanded(child: invoice),
                     ],
