@@ -47,6 +47,15 @@ jobs:
         run: flutter build web --release --dart-define=NINESOFT_API_BASE_URL=https://ninesoft.qodynex.tech/api/v1
       - name: Verify fixed reference screenshots
         run: flutter test test/reference_screenshot_test.dart --dart-define=NINESOFT_CAPTURE_SCREENSHOTS=true
+      - name: Upload visual comparison evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ninesoft-visual-comparison-evidence
+          if-no-files-found: warn
+          path: |
+            apps/nizami_app/test/goldens/*.png
+            apps/nizami_app/test/failures/**
       - name: Build local preview package
         shell: bash
         run: |
