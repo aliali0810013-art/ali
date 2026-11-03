@@ -1,13 +1,6 @@
 name: NineSoft UI Redesign CI
 
 on:
-  push:
-    branches: [ui-redesign]
-  pull_request:
-    branches: [main]
-    paths:
-      - "apps/nizami_app/**"
-      - ".github/workflows/ninesoft-ui-redesign-ci.yml"
   workflow_dispatch:
 
 permissions:
