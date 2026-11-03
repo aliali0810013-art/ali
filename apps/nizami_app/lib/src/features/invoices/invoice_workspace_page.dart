@@ -2744,6 +2744,45 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
     );
     final document = SalesInvoicePresentationAdapter.fromDomain(preview);
 
+    Future<void> editReferenceMoney({
+      required String title,
+      required TextEditingController target,
+    }) async {
+      final editor = TextEditingController(text: target.text);
+      final result = await showDialog<String>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(title),
+          content: TextField(
+            controller: editor,
+            autofocus: true,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: const [latinDigitFormatter],
+            textDirection: TextDirection.ltr,
+            decoration: const InputDecoration(hintText: '0.00'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('إلغاء'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, editor.text.trim()),
+              child: const Text('تطبيق'),
+            ),
+          ],
+        ),
+      );
+      editor.dispose();
+      if (result == null) return;
+      final value = double.tryParse(result);
+      if (value == null || !value.isFinite || value < 0) {
+        _message('أدخل قيمة مالية صحيحة.');
+        return;
+      }
+      setState(() => target.text = value.toStringAsFixed(2));
+    }
+
     Widget referenceFieldIcon(
       IconData icon, {
       required Color foreground,
@@ -2801,6 +2840,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
           onSubmitted: (_) => submit(),
           decoration: InputDecoration(
             labelText: 'العميل *',
+            suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded),
             prefixIcon: referenceFieldIcon(
               Icons.people_alt_outlined,
               foreground: const Color(0xFF147BE0),
@@ -2825,11 +2865,37 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
           textDirection: direction,
           decoration: InputDecoration(
             labelText: label,
+            suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded),
             prefixIcon: referenceFieldIcon(
               icon,
               foreground: iconColor,
               background: iconBackground,
             ),
+          ),
+        );
+
+    Widget referenceChoiceField({
+      required String label,
+      required String value,
+      required IconData icon,
+      required Color iconColor,
+      required Color iconBackground,
+    }) =>
+        InputDecorator(
+          decoration: InputDecoration(
+            labelText: label,
+            suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded),
+            prefixIcon: referenceFieldIcon(
+              icon,
+              foreground: iconColor,
+              background: iconBackground,
+            ),
+          ),
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
         );
 
@@ -3060,38 +3126,49 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
     final settlementField = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          child: Row(
+            children: [
+              referenceFieldIcon(
+                Icons.percent_rounded,
+                foreground: const Color(0xFF7B3FE4),
+                background: const Color(0xFFF1E8FF),
+              ),
+              const SizedBox(width: 5),
+              const Expanded(
+                child: Text(
+                  'شامل الضريبة',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11),
+                ),
+              ),
+              const Switch(
+                value: false,
+                onChanged: null,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 5),
         Row(
           children: [
             Expanded(
-              child: TextField(
-                controller: _discount,
-                enabled: !_documentLocked,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: const [latinDigitFormatter],
-                textDirection: TextDirection.ltr,
-                decoration: const InputDecoration(
-                  labelText: 'الخصم',
-                  prefixIcon: Icon(Icons.local_offer_outlined),
-                ),
-                onChanged: (_) => setState(() {}),
+              child: referenceChoiceField(
+                label: 'نوع السعر',
+                value: 'سعر البيع',
+                icon: Icons.sell_outlined,
+                iconColor: const Color(0xFFE9770A),
+                iconBackground: const Color(0xFFFFF0DD),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             Expanded(
-              child: TextField(
-                controller: _amountTendered,
-                enabled: !_documentLocked,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: const [latinDigitFormatter],
-                textDirection: TextDirection.ltr,
-                decoration: InputDecoration(
-                  labelText:
-                      _paymentMode == 'cash' ? 'المبلغ المستلم' : 'المدفوع',
-                  prefixIcon: const Icon(Icons.payments_outlined),
-                ),
-                onChanged: (_) => setState(() {}),
+              child: referenceChoiceField(
+                label: 'العملة',
+                value: 'ر.ي (الريال اليمني)',
+                icon: Icons.monetization_on_outlined,
+                iconColor: const Color(0xFFE9770A),
+                iconBackground: const Color(0xFFFFF0DD),
               ),
             ),
           ],
@@ -3256,6 +3333,24 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       onPdf: preview.lines.isEmpty ? null : () => unawaited(_share()),
       onWhatsapp:
           preview.lines.isEmpty ? null : () => unawaited(whatsappCurrent()),
+      onEditDiscount: _documentLocked
+          ? null
+          : () => unawaited(
+                editReferenceMoney(
+                  title: 'تعديل خصم الفاتورة',
+                  target: _discount,
+                ),
+              ),
+      onEditPaid: _documentLocked
+          ? null
+          : () => unawaited(
+                editReferenceMoney(
+                  title: _paymentMode == 'cash'
+                      ? 'تعديل المبلغ المستلم'
+                      : 'تعديل المبلغ المدفوع',
+                  target: _amountTendered,
+                ),
+              ),
       onNewInvoice: _finalizing ? null : _startNewInvoice,
       onHistory: _showHistory,
       busy: _saving || _finalizing,
