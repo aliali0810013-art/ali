@@ -190,62 +190,6 @@ class _SimpleJournalPageState extends State<SimpleJournalPage> {
     result.complete(draft);
   }
 
-  List<DropdownMenuItem<String>> _accountItems() => _accounts
-      .map(
-        (account) => DropdownMenuItem(
-          value: account.code,
-          child: Text('${account.code} • ${account.nameAr}'),
-        ),
-      )
-      .toList(growable: false);
-
-  String? _partyType(String accountCode) => switch (accountCode) {
-    '1200-AR' => 'customer',
-    '2100-AP' => 'supplier',
-    _ => null,
-  };
-
-  Widget _partyPicker({
-    required String accountCode,
-    required String? value,
-    required ValueChanged<String?> onChanged,
-  }) {
-    final customer = _partyType(accountCode) == 'customer';
-    final source = customer ? _customers : _suppliers;
-    String label(Map<String, dynamic> item) => [
-      item['name']?.toString() ?? '',
-      item['account_number']?.toString() ?? '',
-      item['phone']?.toString() ?? '',
-    ].where((part) => part.isNotEmpty).join(' • ');
-    final selected = source.where((item) => item['id']?.toString() == value);
-    return Autocomplete<Map<String, dynamic>>(
-      initialValue: TextEditingValue(
-        text: selected.isEmpty ? '' : label(selected.first),
-      ),
-      displayStringForOption: label,
-      optionsBuilder: (editing) {
-        final query = editing.text.trim().toLowerCase();
-        if (query.isEmpty) return source;
-        return source.where(
-          (item) => label(item).toLowerCase().contains(query),
-        );
-      },
-      onSelected: (item) => onChanged(item['id']?.toString()),
-      fieldViewBuilder: (_, controller, focusNode, submit) => TextField(
-        controller: controller,
-        focusNode: focusNode,
-        onChanged: (_) => onChanged(null),
-        onSubmitted: (_) => submit(),
-        decoration: InputDecoration(
-          labelText: customer ? 'ابحث واختر العميل' : 'ابحث واختر المورد',
-          prefixIcon: Icon(
-            customer ? Icons.person_outline : Icons.local_shipping_outlined,
-          ),
-        ),
-      ),
-    );
-  }
-
   Future<void> _delete(Map<String, dynamic> entry) async {
     final id = entry['id']?.toString();
     if (id == null || id.isEmpty) return;
