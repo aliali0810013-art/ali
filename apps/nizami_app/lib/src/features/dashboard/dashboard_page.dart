@@ -343,64 +343,110 @@ class _MobileBrandHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < 520;
     return Container(
-      padding: const EdgeInsetsDirectional.fromSTEB(12, 9, 12, 9),
+      padding: const EdgeInsetsDirectional.fromSTEB(14, 10, 14, 14),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: AlignmentDirectional.topStart,
           end: AlignmentDirectional.bottomEnd,
-          colors: [Color(0xFF061C3D), Color(0xFF0A417D), Color(0xFF08617A)],
+          colors: [Color(0xFF0B356F), Color(0xFF072A59)],
         ),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          IconButton(
+            key: const Key('dashboard-menu-action'),
+            tooltip: 'القائمة',
+            onPressed: onOpenSearch,
+            icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 31),
+          ),
           Expanded(
-            child: Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: NineSoftBrandLogo(
-                width: narrow ? 104 : 165,
-                height: 48,
-                padding: const EdgeInsets.all(2),
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'NineSoft',
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'ArialMTBlack',
+                    fontWeight: FontWeight.w800,
+                    fontSize: 24,
+                    letterSpacing: .2,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  tenantName.trim().isEmpty ? 'نظام محاسبي متكامل' : tenantName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFFD7E5F8),
+                    fontFamily: 'GESS',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
-          _TopAction(
-            icon: Icons.search_rounded,
-            label: 'بحث',
-            onTap: onOpenSearch,
-          ),
-          const SizedBox(width: 3),
-          _TopAction(
-            icon: Icons.notifications_none_rounded,
-            label: 'مراجعة التنبيهات',
-            onTap: onOpenNotifications,
-          ),
-          const SizedBox(width: 3),
-          _TopAction(
-            key: const Key('dashboard-theme-action'),
-            icon: dark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-            label: dark ? 'الوضع النهاري' : 'الوضع الليلي',
-            onTap: onToggleTheme,
-          ),
-          const SizedBox(width: 3),
-          _TopAction(
-            key: const Key('dashboard-logout-action'),
-            icon: Icons.logout_rounded,
-            label: 'تسجيل الخروج',
-            onTap: onLogout,
-          ),
-          const SizedBox(width: 3),
-          _TopAction(
-            key: const Key('dashboard-profile-action'),
-            icon: Icons.person_rounded,
-            label: '$displayName • $tenantName',
+          _ReferenceHeaderAction(
+            tooltip: '$displayName • الحساب',
+            icon: Icons.person_outline_rounded,
             onTap: onOpenProfile,
+          ),
+          const SizedBox(width: 5),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              _ReferenceHeaderAction(
+                tooltip: 'التنبيهات',
+                icon: Icons.notifications_none_rounded,
+                onTap: onOpenNotifications,
+              ),
+              const PositionedDirectional(
+                end: 4,
+                top: 4,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Color(0xFFFF5252),
+                    shape: BoxShape.circle,
+                  ),
+                  child: SizedBox(width: 8, height: 8),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
+}
+
+class _ReferenceHeaderAction extends StatelessWidget {
+  const _ReferenceHeaderAction({
+    required this.tooltip,
+    required this.icon,
+    this.onTap,
+  });
+
+  final String tooltip;
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: Colors.white.withValues(alpha: .10),
+    shape: const CircleBorder(),
+    child: IconButton(
+      tooltip: tooltip,
+      onPressed: onTap,
+      constraints: const BoxConstraints.tightFor(width: 42, height: 42),
+      padding: EdgeInsets.zero,
+      icon: Icon(icon, color: Colors.white, size: 26),
+    ),
+  );
 }
 
 class _TopAction extends StatelessWidget {
