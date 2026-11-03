@@ -614,6 +614,14 @@ class _JournalDraftEditorState extends State<_JournalDraftEditor> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const NineSoftEntryHeading(
+            title: 'إنشاء قيد يومية',
+            subtitle: 'مدين = عليه • دائن = له — مع الحفاظ على المصطلحات المحاسبية الصحيحة',
+            status: 'قيد جديد',
+            icon: Icons.menu_book_rounded,
+            accent: NizamiColors.blue,
+          ),
+          const SizedBox(height: 12),
           NineSoftDocumentCommandBar(
             title: 'إجراءات القيد',
             actions: [
