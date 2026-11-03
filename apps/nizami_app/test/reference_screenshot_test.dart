@@ -122,7 +122,7 @@ void main() {
                         onMenu: () {},
                         onProfile: () {},
                       ),
-                      const Expanded(child: invoice),
+                      Expanded(child: invoice),
                     ],
                   ),
                   bottomNavigationBar: NineSoftMobileDock(
