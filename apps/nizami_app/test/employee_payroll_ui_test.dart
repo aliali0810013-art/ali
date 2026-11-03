@@ -164,7 +164,7 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 300));
       if (width < 900) {
-        await tester.tap(find.text('ابدأ'));
+        await tester.tap(find.text('العمليات'));
         await tester.pumpAndSettle();
       }
       final tile = find.text('الموظفون والرواتب').first;
