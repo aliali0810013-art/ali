@@ -410,16 +410,7 @@ class _WaslPageState extends State<WaslPage> {
         .where((r) => _filter == 'all' || r.state == _filter)
         .toList();
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('التحويلات البنكية'),
-        actions: [
-          IconButton(
-            onPressed: _active ? _refresh : null,
-            tooltip: 'تحديث',
-            icon: const Icon(Icons.refresh_rounded),
-          ),
-        ],
-      ),
+      appBar: AppBar(toolbarHeight: 0),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(18),
