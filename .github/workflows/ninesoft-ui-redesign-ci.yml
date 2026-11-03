@@ -1,6 +1,8 @@
 name: NineSoft UI Redesign CI
 
 on:
+  push:
+    branches: [ui-redesign]
   workflow_dispatch:
 
 permissions:
