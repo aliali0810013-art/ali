@@ -501,15 +501,13 @@ class _NineSoftReferenceMobileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.paddingOf(context).top;
     return Container(
+      constraints: const BoxConstraints(minHeight: 104),
       padding: EdgeInsetsDirectional.fromSTEB(14, topPadding + 8, 14, 14),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: AlignmentDirectional.topStart,
-          end: AlignmentDirectional.bottomEnd,
-          colors: [
-            Color(0xFF0B356F),
-            Color(0xFF072D62),
-          ],
+          begin: AlignmentDirectional.centerStart,
+          end: AlignmentDirectional.centerEnd,
+          colors: [Color(0xFF0B356F), Color(0xFF082B5D)],
         ),
       ),
       child: Row(
@@ -517,46 +515,72 @@ class _NineSoftReferenceMobileHeader extends StatelessWidget {
           IconButton(
             tooltip: 'القائمة',
             onPressed: onMenu,
-            icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 30),
+            icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 31),
           ),
           const SizedBox(width: 6),
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
+              children: const [
+                Text(
                   'NineSoft',
                   maxLines: 1,
                   style: TextStyle(
                     color: Colors.white,
                     fontFamily: 'ArialMTBlack',
                     fontWeight: FontWeight.w800,
-                    fontSize: 22,
+                    fontSize: 24,
+                    height: 1.05,
                   ),
                 ),
+                SizedBox(height: 3),
                 Text(
-                  title,
+                  'نظام محاسبي متكامل',
                   maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Color(0xFFD7E5F8),
                     fontFamily: 'GESS',
-                    fontSize: 11,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 4),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                tooltip: 'التنبيهات',
+                onPressed: onMenu,
+                icon: const Icon(
+                  Icons.notifications_none_rounded,
+                  color: Colors.white,
+                  size: 29,
+                ),
+              ),
+              const PositionedDirectional(
+                top: 6,
+                end: 5,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Color(0xFFFF4C55),
+                    shape: BoxShape.circle,
+                  ),
+                  child: SizedBox(width: 8, height: 8),
+                ),
+              ),
+            ],
+          ),
           IconButton(
             tooltip: 'الحساب',
             onPressed: onProfile,
-            icon: const Icon(
-              Icons.account_circle_outlined,
-              color: Colors.white,
-              size: 29,
+            style: IconButton.styleFrom(
+              backgroundColor: const Color(0xFF214B82),
+              foregroundColor: Colors.white,
             ),
+            icon: const Icon(Icons.person_outline_rounded, size: 27),
           ),
         ],
       ),
