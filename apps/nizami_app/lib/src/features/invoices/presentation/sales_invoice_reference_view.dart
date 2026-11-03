@@ -67,6 +67,7 @@ class SalesInvoiceReferenceView extends StatelessWidget {
     final phone = width < 700;
 
     return Column(
+      key: const Key('ninesoft-document-editor'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _Header(
@@ -81,40 +82,52 @@ class SalesInvoiceReferenceView extends StatelessWidget {
           icon: Icons.receipt_long_rounded,
         ),
         const SizedBox(height: 10),
-        _DocumentGrid(
+        KeyedSubtree(
+          key: const Key('invoice-section-document'),
+          child: _DocumentGrid(
           customerField: customerField,
           invoiceNumberField: invoiceNumberField,
           branchField: branchField,
           dateField: dateField,
           employeeField: employeeField,
           paymentModeField: paymentModeField,
+          ),
         ),
         const SizedBox(height: 12),
         _SearchStrip(
-          productSearchField: productSearchField,
+          productSearchField: KeyedSubtree(
+            key: const Key('invoice-shortcut-f3'),
+            child: productSearchField,
+          ),
           barcodeField: barcodeField,
           onScanBarcode: locked ? null : onScanBarcode,
         ),
         const SizedBox(height: 10),
-        _Panel(child: lineEntryControls),
+        KeyedSubtree(
+          key: const Key('invoice-section-lines'),
+          child: _Panel(child: lineEntryControls),
+        ),
         const SizedBox(height: 10),
         _Panel(padding: EdgeInsets.zero, child: linesTable),
         const SizedBox(height: 10),
         Row(
           children: [
             Expanded(
-              child: _SoftAction(
-                buttonKey: const Key('invoice-reference-add-line'),
+              child: KeyedSubtree(
+                key: const Key('invoice-shortcut-f2'),
+                child: _SoftAction(
+                buttonKey: const Key('invoice-add-line'),
                 label: 'إضافة صنف',
                 icon: Icons.add_circle_rounded,
                 color: const Color(0xFF11A83B),
                 onPressed: locked ? null : onAddLine,
+                ),
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: _SoftAction(
-                buttonKey: const Key('invoice-reference-scan'),
+                buttonKey: const Key('invoice-shortcut-f4'),
                 label: 'مسح باركود',
                 icon: Icons.qr_code_scanner_rounded,
                 color: const Color(0xFF5C35C8),
@@ -131,9 +144,12 @@ class SalesInvoiceReferenceView extends StatelessWidget {
                 children: [
                   _SummaryCard(document: document),
                   const SizedBox(height: 10),
-                  _DetailsCard(
+                  KeyedSubtree(
+                    key: const Key('invoice-section-notes'),
+                    child: _DetailsCard(
                     notesField: notesField,
                     settlementField: settlementField,
+                    ),
                   ),
                 ],
               );
@@ -144,9 +160,12 @@ class SalesInvoiceReferenceView extends StatelessWidget {
                 Expanded(child: _SummaryCard(document: document)),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _DetailsCard(
+                  child: KeyedSubtree(
+                    key: const Key('invoice-section-notes'),
+                    child: _DetailsCard(
                     notesField: notesField,
                     settlementField: settlementField,
+                    ),
                   ),
                 ),
               ],
@@ -221,7 +240,14 @@ class _Header extends StatelessWidget {
                     ),
               ),
             ),
+            IconButton(
+              key: const Key('invoice-history-open-primary'),
+              tooltip: 'الفواتير السابقة',
+              onPressed: onHistory,
+              icon: const Icon(Icons.history_rounded),
+            ),
             PopupMenuButton<String>(
+              key: const Key('invoice-shortcut-new'),
               tooltip: 'إجراءات الفاتورة',
               onSelected: (value) {
                 if (value == 'new') onNewInvoice?.call();
@@ -407,12 +433,15 @@ class _SummaryCard extends StatelessWidget {
             icon: Icons.percent_rounded,
             muted: true,
           ),
-          _MoneyRow(
+          KeyedSubtree(
+            key: const Key('ninesoft-summary-total'),
+            child: _MoneyRow(
             label: 'الإجمالي النهائي',
             value: document.total,
             currency: document.currency,
             icon: Icons.calculate_outlined,
             emphasized: true,
+            ),
           ),
           _MoneyRow(
             label: 'المبلغ المدفوع',
@@ -573,6 +602,7 @@ class _FooterActions extends StatelessWidget {
           Expanded(
             flex: 3,
             child: _FooterButton(
+              buttonKey: const Key('ninesoft-summary-primary'),
               label: busy ? 'جارٍ الحفظ...' : 'حفظ',
               icon: Icons.save_outlined,
               color: SalesInvoiceReferenceView.navy,
@@ -619,6 +649,7 @@ class _FooterActions extends StatelessWidget {
 
 class _FooterButton extends StatelessWidget {
   const _FooterButton({
+    this.buttonKey,
     required this.label,
     required this.icon,
     required this.color,
@@ -626,6 +657,7 @@ class _FooterButton extends StatelessWidget {
     required this.onPressed,
   });
 
+  final Key? buttonKey;
   final String label;
   final IconData icon;
   final Color color;
@@ -636,6 +668,7 @@ class _FooterButton extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
         height: 54,
         child: FilledButton.icon(
+          key: buttonKey,
           onPressed: onPressed,
           style: FilledButton.styleFrom(
             backgroundColor: color,
