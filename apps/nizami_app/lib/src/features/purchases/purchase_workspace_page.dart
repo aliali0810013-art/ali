@@ -1205,7 +1205,6 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
   String _contactId = '';
   String _selectedSupplierName = '';
   String _paymentAccountCode = '';
-  int _activeLineIndex = 0;
 
   @override
   void initState() {
@@ -1240,24 +1239,6 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
   }
 
   void _save() {
-    // The collapsed editor rows must also pass validation before posting.
-    for (var index = 0; index < _lines.length; index++) {
-      final line = _lines[index];
-      final quantity = double.tryParse(line.quantity.text.trim());
-      final purchase = double.tryParse(line.purchase.text.trim());
-      final perPackage = double.tryParse(line.unitsPerPackage.text.trim());
-      if (line.name.text.trim().isEmpty ||
-          line.purchaseUnit.text.trim().isEmpty ||
-          quantity == null || quantity <= 0 ||
-          purchase == null || purchase <= 0 ||
-          perPackage == null || perPackage <= 0) {
-        setState(() => _activeLineIndex = index);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('راجع بيانات الصنف رقم ${index + 1} قبل الحفظ')),
-        );
-        return;
-      }
-    }
     if (!_formKey.currentState!.validate()) return;
     final lines = _lines.map((line) => line.value).toList();
     widget.onSaved(
@@ -1277,10 +1258,7 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
   void _appendLine() {
     if (_lines.length >= 200) return;
     final line = _LineControllers();
-    setState(() {
-      _lines.add(line);
-      _activeLineIndex = _lines.length - 1;
-    });
+    setState(() => _lines.add(line));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) line.nameFocus?.requestFocus();
     });
@@ -1503,36 +1481,24 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                   if (mobile)
-                     _PurchaseReferenceLinesTable(
-                       key: const ValueKey('purchase-reference-lines-table'),
-                       lines: _lines,
-                       activeIndex: _activeLineIndex,
-                       onEdit: (index) => setState(() => _activeLineIndex = index),
-                     ),
-                   for (var index = 0; index < _lines.length; index++)
-                     if (!mobile || index == _activeLineIndex)
-                       _PurchaseLineCard(
-                         key: ObjectKey(_lines[index]),
-                         index: index,
-                         controllers: _lines[index],
-                         products: widget.products,
-                         onComplete: index == _lines.length - 1
-                             ? _appendLine
-                             : null,
-                         onRemove: _lines.length == 1
-                             ? null
-                             : () {
-                                 final removed = _lines.removeAt(index);
-                                 removed.dispose();
-                                 setState(() {
-                                   if (_activeLineIndex >= _lines.length) {
-                                     _activeLineIndex = _lines.length - 1;
-                                   }
-                                 });
-                               },
-                       ),
-                   const SizedBox(height: 12),
+                  for (var index = 0; index < _lines.length; index++)
+                    _PurchaseLineCard(
+                      key: ObjectKey(_lines[index]),
+                      index: index,
+                      controllers: _lines[index],
+                      products: widget.products,
+                      onComplete: index == _lines.length - 1
+                          ? _appendLine
+                          : null,
+                      onRemove: _lines.length == 1
+                          ? null
+                          : () {
+                              final removed = _lines.removeAt(index);
+                              removed.dispose();
+                              setState(() {});
+                            },
+                    ),
+                  const SizedBox(height: 12),
                   AnimatedBuilder(
                     animation: Listenable.merge([
                       for (final line in _lines) line.quantity,
@@ -1591,98 +1557,6 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
     if (upper.contains('WALLET')) return 'wallet';
     if (upper.contains('BANK')) return 'bank';
     return 'cash';
-  }
-}
-
-/// A compact overview of the real purchase draft; edit uses the original
-/// complete unit and accounting fields without changing their persistence.
-class _PurchaseReferenceLinesTable extends StatelessWidget {
-  const _PurchaseReferenceLinesTable({
-    super.key,
-    required this.lines,
-    required this.activeIndex,
-    required this.onEdit,
-  });
-
-  final List<_LineControllers> lines;
-  final int activeIndex;
-  final ValueChanged<int> onEdit;
-
-  @override
-  Widget build(BuildContext context) {
-    final observed = <Listenable>[
-      for (final line in lines) ...[line.name, line.quantity, line.purchase],
-    ];
-    return AnimatedBuilder(
-      animation: Listenable.merge(observed),
-      builder: (context, _) => Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: const Color(0xFFDCE5F4)),
-        ),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            headingRowColor: WidgetStateProperty.all(const Color(0xFFE8F0FF)),
-            headingRowHeight: 38,
-            dataRowMinHeight: 48,
-            dataRowMaxHeight: 54,
-            columnSpacing: 13,
-            horizontalMargin: 10,
-            showCheckboxColumn: false,
-            columns: const [
-              DataColumn(label: Text('الصنف')),
-              DataColumn(label: Text('الوحدة')),
-              DataColumn(numeric: true, label: Text('الكمية')),
-              DataColumn(numeric: true, label: Text('سعر الشراء')),
-              DataColumn(numeric: true, label: Text('الإجمالي')),
-              DataColumn(label: Text('تحرير')),
-            ],
-            rows: [
-              for (var index = 0; index < lines.length; index++)
-                DataRow(
-                  selected: index == activeIndex,
-                  cells: [
-                    DataCell(SizedBox(
-                      width: 128,
-                      child: Text(
-                        lines[index].name.text.trim().isEmpty
-                            ? 'صنف جديد'
-                            : lines[index].name.text,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    )),
-                    DataCell(Text(lines[index].unitName)),
-                    DataCell(Text(lines[index].quantity.text)),
-                    DataCell(Text(lines[index].purchase.text)),
-                    DataCell(Text(
-                      ((double.tryParse(lines[index].quantity.text) ?? 0) *
-                              (double.tryParse(lines[index].purchase.text) ?? 0))
-                          .toStringAsFixed(2),
-                    )),
-                    DataCell(IconButton(
-                      key: ValueKey('purchase-edit-line-$index'),
-                      tooltip: 'تعديل الصنف رقم ${index + 1}',
-                      onPressed: () => onEdit(index),
-                      icon: Icon(
-                        index == activeIndex
-                            ? Icons.edit_rounded
-                            : Icons.edit_outlined,
-                        size: 19,
-                        color: const Color(0xFF0D4EAD),
-                      ),
-                    )),
-                  ],
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
 
@@ -1748,10 +1622,7 @@ class _PurchaseLineCard extends StatelessWidget {
             },
             fieldViewBuilder: (context, controller, focus, submit) {
               controllers.nameFocus = focus;
-               if (controller.text.isEmpty && controllers.name.text.isNotEmpty) {
-                 controller.text = controllers.name.text;
-               }
-               return TextFormField(
+              return TextFormField(
                 controller: controller,
                 focusNode: focus,
                 onChanged: (value) => controllers.name.text = value,
