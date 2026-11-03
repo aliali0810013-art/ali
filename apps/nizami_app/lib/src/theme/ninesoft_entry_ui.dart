@@ -1222,15 +1222,17 @@ class NineSoftEntryLineTable extends StatelessWidget {
     super.key,
     required this.lines,
     this.priceLabel = 'السعر',
+    this.forceTableOnMobile = false,
   });
 
   final List<NineSoftEntryLineCells> lines;
   final String priceLabel;
+  final bool forceTableOnMobile;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      if (_isEntryMobile(context)) {
+      if (_isEntryMobile(context) && !forceTableOnMobile) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
