@@ -382,49 +382,37 @@ class _FinancialReportsPageState extends State<FinancialReportsPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      foregroundColor: Colors.white,
-      title: Text(
-        _reports[_report]!,
-        style: const TextStyle(fontWeight: FontWeight.w800),
-      ),
-      flexibleSpace: const DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: AlignmentDirectional.topStart,
-            end: AlignmentDirectional.bottomEnd,
-            colors: [Color(0xFF061C3D), Color(0xFF0A417D), Color(0xFF087D83)],
-          ),
-        ),
-      ),
-      actions: [
-        IconButton(
-          onPressed: _rows.isEmpty ? null : _exportCsv,
-          color: Colors.white,
-          disabledColor: Colors.white38,
-          tooltip: 'Excel / CSV',
-          icon: const Icon(Icons.table_view_rounded),
-        ),
-        IconButton(
-          onPressed: _rows.isEmpty ? null : () => _exportPdf(print: true),
-          color: Colors.white,
-          disabledColor: Colors.white38,
-          tooltip: 'طباعة',
-          icon: const Icon(Icons.print_rounded),
-        ),
-        IconButton(
-          onPressed: _rows.isEmpty ? null : _exportPdf,
-          color: Colors.white,
-          disabledColor: Colors.white38,
-          tooltip: 'PDF',
-          icon: const Icon(Icons.picture_as_pdf_rounded),
-        ),
-      ],
-    ),
+    appBar: AppBar(toolbarHeight: 0),
     body: SafeArea(
       child: NineSoftResponsiveBody(
         child: ListView(
           children: [
+            NineSoftPageHeader(
+              title: _reports[_report]!,
+              subtitle: 'التقارير المالية والتحليلات من بيانات NineSoft الفعلية',
+              icon: Icons.bar_chart_rounded,
+              color: NizamiColors.blue,
+              actions: [
+                OutlinedButton.icon(
+                  onPressed: _rows.isEmpty ? null : _exportCsv,
+                  icon: const Icon(Icons.table_view_rounded),
+                  label: const Text('Excel'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: _rows.isEmpty
+                      ? null
+                      : () => _exportPdf(print: true),
+                  icon: const Icon(Icons.print_rounded),
+                  label: const Text('طباعة'),
+                ),
+                FilledButton.icon(
+                  onPressed: _rows.isEmpty ? null : _exportPdf,
+                  icon: const Icon(Icons.picture_as_pdf_rounded),
+                  label: const Text('PDF'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             _ReportSelector(
               current: _report,
               reports: _reports,
@@ -492,10 +480,16 @@ class _FinancialReportsPageState extends State<FinancialReportsPage> {
               ),
             ),
             const SizedBox(height: 10),
-            _ReportKpiGrid(
-              items: _summary,
-              iconFor: _summaryIcon,
-              colorFor: _summaryColor,
+            NineSoftFinancialSummaryStrip(
+              items: [
+                for (var index = 0; index < _summary.length; index++)
+                  NineSoftFinancialSummaryItem(
+                    label: _summary[index].$1,
+                    value: _summary[index].$2,
+                    icon: _summaryIcon(index),
+                    color: _summaryColor(index),
+                  ),
+              ],
             ),
             const SizedBox(height: 10),
             Container(
@@ -684,111 +678,6 @@ class _ReportSelector extends StatelessWidget {
               ),
             ),
           ),
-      ],
-    ),
-  );
-}
-
-class _ReportKpiGrid extends StatelessWidget {
-  const _ReportKpiGrid({
-    required this.items,
-    required this.iconFor,
-    required this.colorFor,
-  });
-
-  final List<(String, String)> items;
-  final IconData Function(int index) iconFor;
-  final Color Function(int index) colorFor;
-
-  @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      final columns = constraints.maxWidth >= 800 ? 4 : 2;
-      return GridView.count(
-        key: const Key('financial-report-kpi-grid'),
-        crossAxisCount: columns,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: constraints.maxWidth >= 800 ? 2.6 : 2.05,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        children: [
-          for (var index = 0; index < items.length; index++)
-            _ReportKpiCard(
-              label: items[index].$1,
-              value: items[index].$2,
-              icon: iconFor(index),
-              color: colorFor(index),
-            ),
-        ],
-      );
-    },
-  );
-}
-
-class _ReportKpiCard extends StatelessWidget {
-  const _ReportKpiCard({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsetsDirectional.fromSTEB(10, 9, 10, 9),
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surface,
-      borderRadius: BorderRadius.circular(15),
-      border: Border.all(color: NizamiColors.border),
-    ),
-    child: Row(
-      children: [
-        Container(
-          width: 34,
-          height: 34,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: .12),
-            borderRadius: BorderRadius.circular(11),
-          ),
-          child: Icon(icon, color: color, size: 20),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelSmall,
-              ),
-              const SizedBox(height: 2),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: AlignmentDirectional.centerStart,
-                child: Text(
-                  value,
-                  maxLines: 1,
-                  textDirection: TextDirection.ltr,
-                  style: TextStyle(
-                    color: color,
-                    fontFamily: 'ArialMTBlack',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ],
     ),
   );
