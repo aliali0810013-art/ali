@@ -2742,6 +2742,25 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
     );
     final document = SalesInvoicePresentationAdapter.fromDomain(preview);
 
+    Widget referenceFieldIcon(
+      IconData icon, {
+      required Color foreground,
+      required Color background,
+    }) =>
+        Padding(
+          padding: const EdgeInsets.all(5),
+          child: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: background,
+              borderRadius: BorderRadius.circular(9),
+            ),
+            alignment: Alignment.center,
+            child: Icon(icon, size: 19, color: foreground),
+          ),
+        );
+
     Widget customerField() => Autocomplete<SavedCustomer>(
       initialValue: TextEditingValue(text: _customer.text),
       displayStringForOption: (customer) => customer.name,
@@ -2778,9 +2797,13 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
             setState(() {});
           },
           onSubmitted: (_) => submit(),
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'العميل *',
-            prefixIcon: Icon(Icons.people_alt_outlined),
+            prefixIcon: referenceFieldIcon(
+              Icons.people_alt_outlined,
+              foreground: const Color(0xFF147BE0),
+              background: const Color(0xFFE8F1FF),
+            ),
           ),
         );
       },
@@ -2790,6 +2813,8 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       required String label,
       required String value,
       required IconData icon,
+      required Color iconColor,
+      required Color iconBackground,
       TextDirection? direction,
     }) =>
         TextFormField(
@@ -2798,7 +2823,11 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
           textDirection: direction,
           decoration: InputDecoration(
             labelText: label,
-            prefixIcon: Icon(icon),
+            prefixIcon: referenceFieldIcon(
+              icon,
+              foreground: iconColor,
+              background: iconBackground,
+            ),
           ),
         );
 
@@ -2858,9 +2887,13 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
     final paymentModeField = DropdownButtonFormField<String>(
       key: ValueKey('reference-payment-$_paymentMode'),
       initialValue: _paymentMode,
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         labelText: 'طريقة الدفع',
-        prefixIcon: Icon(Icons.account_balance_wallet_outlined),
+        prefixIcon: referenceFieldIcon(
+          Icons.account_balance_wallet_outlined,
+          foreground: const Color(0xFFE9770A),
+          background: const Color(0xFFFFF0DD),
+        ),
       ),
       items: const [
         DropdownMenuItem(value: 'cash', child: Text('نقدي')),
@@ -3161,24 +3194,32 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
         label: 'رقم الفاتورة *',
         value: preview.displayNumber,
         icon: Icons.description_outlined,
+        iconColor: const Color(0xFF147BE0),
+        iconBackground: const Color(0xFFE8F1FF),
         direction: TextDirection.ltr,
       ),
       branchField: readOnlyField(
         label: 'المخزن / الفرع *',
         value: preview.branchLabel,
         icon: Icons.warehouse_outlined,
+        iconColor: const Color(0xFF169B44),
+        iconBackground: const Color(0xFFE9F8EE),
       ),
       dateField: readOnlyField(
         label: 'التاريخ *',
         value:
             '${preview.createdAt.year.toString().padLeft(4, '0')}/${preview.createdAt.month.toString().padLeft(2, '0')}/${preview.createdAt.day.toString().padLeft(2, '0')}',
         icon: Icons.calendar_month_outlined,
+        iconColor: const Color(0xFF7B3FE4),
+        iconBackground: const Color(0xFFF1E8FF),
         direction: TextDirection.ltr,
       ),
       employeeField: readOnlyField(
         label: 'مندوب المبيعات',
         value: preview.employeeName,
         icon: Icons.person_outline_rounded,
+        iconColor: const Color(0xFF147BE0),
+        iconBackground: const Color(0xFFE8F1FF),
       ),
       paymentModeField: paymentModeField,
       productSearchField: productSearchField,
