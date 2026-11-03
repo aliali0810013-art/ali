@@ -43,8 +43,25 @@ void main() {
     );
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const ValueKey('save-record')));
-    await tester.tap(find.byKey(const ValueKey('save-record')));
+    for (
+      var index = 0;
+      index < 12 &&
+          find.byKey(const ValueKey('save-record')).evaluate().isEmpty;
+      index++
+    ) {
+      await tester.drag(
+        find.descendant(
+          of: find.byKey(const ValueKey('module-record-document-editor')),
+          matching: find.byType(Scrollable),
+        ).first,
+        const Offset(0, -360),
+      );
+      await tester.pumpAndSettle();
+    }
+    final save = find.byKey(const ValueKey('save-record'));
+    expect(save, findsOneWidget);
+    await tester.ensureVisible(save);
+    await tester.tap(save);
     await tester.pumpAndSettle();
 
     expect(find.text('طابعة حرارية'), findsOneWidget);
