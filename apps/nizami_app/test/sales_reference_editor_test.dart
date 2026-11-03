@@ -665,7 +665,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.descendant(of: row, matching: find.text('1.25 YER')),
+      find.descendant(of: row, matching: find.text('1.25')),
       findsOneWidget,
     );
   });
@@ -754,7 +754,7 @@ void main() {
 
     final row = find.byKey(const Key('ninesoft-entry-line-row-0'));
     expect(find.descendant(of: row, matching: find.text('0.02')), findsOne);
-    expect(find.descendant(of: row, matching: find.text('5.00 YER')), findsOne);
+    expect(find.descendant(of: row, matching: find.text('5.00')), findsOne);
 
     await tester.ensureVisible(
       find.byKey(const Key('ninesoft-summary-primary')),
@@ -806,7 +806,7 @@ void main() {
       await tester.tap(addLine);
       await tester.pumpAndSettle();
 
-      expect(find.text('10000.08 YER'), findsWidgets);
+      expect(find.text('10000.08'), findsWidgets);
       await tester.ensureVisible(
         find.byKey(const Key('ninesoft-summary-primary')),
       );
