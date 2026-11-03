@@ -608,21 +608,25 @@ class _JournalDraftEditorState extends State<_JournalDraftEditor> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) {
+    final phone = MediaQuery.sizeOf(context).width < 700;
+    return Scaffold(
     appBar: AppBar(toolbarHeight: 0),
     body: SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const NineSoftEntryHeading(
-            title: 'إنشاء قيد يومية',
-            subtitle: 'مدين = عليه • دائن = له — مع الحفاظ على المصطلحات المحاسبية الصحيحة',
-            status: 'قيد جديد',
+          NineSoftEntryHeading(
+            title: 'القيود اليومية',
+            subtitle: phone
+                ? 'إنشاء قيد يومي'
+                : 'مدين = عليه • دائن = له — مع الحفاظ على المصطلحات المحاسبية الصحيحة',
+            status: phone ? 'قيد يومي جديد' : 'قيد جديد',
             icon: Icons.menu_book_rounded,
             accent: NizamiColors.blue,
           ),
-          const SizedBox(height: 12),
-          NineSoftDocumentCommandBar(
+          SizedBox(height: phone ? 8 : 12),
+          if (!phone) NineSoftDocumentCommandBar(
             title: 'إجراءات القيد',
             actions: [
               NineSoftDocumentCommandAction(
@@ -643,7 +647,7 @@ class _JournalDraftEditorState extends State<_JournalDraftEditor> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: phone ? 6 : 10),
           if (widget.accounts.length < 2) ...[
             const NineSoftEntryHint(
               text:
@@ -655,13 +659,13 @@ class _JournalDraftEditorState extends State<_JournalDraftEditor> {
           NineSoftEntrySection(
             title: 'بيان القيد',
             icon: Icons.edit_note_outlined,
-            step: '01',
+            step: phone ? null : '01',
             accent: NizamiColors.blue,
             child: TextField(
               key: const ValueKey('journal-description'),
               controller: _description,
               maxLength: 500,
-              maxLines: 2,
+              maxLines: phone ? 1 : 2,
               decoration: const InputDecoration(
                 labelText: 'البيان / الوصف المحاسبي',
                 prefixIcon: Icon(Icons.notes_rounded),
@@ -674,9 +678,9 @@ class _JournalDraftEditorState extends State<_JournalDraftEditor> {
             maxColumns: 2,
             children: [
               NineSoftEntrySection(
-                title: 'الطرف المدين',
+                title: phone ? 'الحساب المدين' : 'الطرف المدين',
                 icon: Icons.south_west_rounded,
-                step: '02',
+                step: phone ? null : '02',
                 accent: NizamiColors.blue,
                 child: Column(
                   children: [
@@ -706,9 +710,9 @@ class _JournalDraftEditorState extends State<_JournalDraftEditor> {
                 ),
               ),
               NineSoftEntrySection(
-                title: 'الطرف الدائن',
+                title: phone ? 'الحساب الدائن' : 'الطرف الدائن',
                 icon: Icons.north_east_rounded,
-                step: '03',
+                step: phone ? null : '03',
                 accent: NizamiColors.purple,
                 child: Column(
                   children: [
@@ -741,9 +745,9 @@ class _JournalDraftEditorState extends State<_JournalDraftEditor> {
           ),
           const SizedBox(height: 10),
           NineSoftEntrySection(
-            title: 'المبلغ والتوازن',
+            title: phone ? 'المبلغ' : 'المبلغ والتوازن',
             icon: Icons.balance_rounded,
-            step: '04',
+            step: phone ? null : '04',
             accent: NizamiColors.green,
             child: TextField(
               key: const ValueKey('journal-amount'),
@@ -763,15 +767,16 @@ class _JournalDraftEditorState extends State<_JournalDraftEditor> {
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: phone ? 8 : 10),
           NineSoftEntryFooter(
             onSave: _submit,
             label: 'حفظ وترحيل القيد',
             icon: Icons.save_outlined,
-            note: 'يجب أن يتساوى الطرف المدين والدائن قبل الترحيل.',
+            note: phone ? 'يجب أن يكون القيد متوازنًا.' : 'يجب أن يتساوى الطرف المدين والدائن قبل الترحيل.',
           ),
         ],
       ),
     ),
   );
+  }
 }
