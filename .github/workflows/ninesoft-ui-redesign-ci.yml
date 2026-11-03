@@ -22,8 +22,12 @@ jobs:
           cache: true
       - name: Flutter version
         run: flutter --version
+      - name: Clean
+        run: flutter clean
       - name: Resolve dependencies
         run: flutter pub get
+      - name: Format verification
+        run: dart format --set-exit-if-changed .
       - name: Analyze
         run: flutter analyze
       - name: Test
@@ -32,11 +36,39 @@ jobs:
         run: flutter build web --release --dart-define=NINESOFT_API_BASE_URL=https://ninesoft.qodynex.tech/api/v1
       - name: Capture reference screenshots
         run: flutter test test/reference_screenshot_test.dart --dart-define=NINESOFT_CAPTURE_SCREENSHOTS=true --update-goldens
+      - name: Build local preview package
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd ../..
+          rm -rf /tmp/NineSoft-UI-Local-Preview
+          mkdir -p /tmp/NineSoft-UI-Local-Preview/build
+          mkdir -p /tmp/NineSoft-UI-Local-Preview/screenshots
+          cp -a apps/nizami_app/build/web /tmp/NineSoft-UI-Local-Preview/build/web
+          cp START_PREVIEW.ps1 /tmp/NineSoft-UI-Local-Preview/
+          cp PRODUCTION_BASELINE_AR.md /tmp/NineSoft-UI-Local-Preview/
+          cp PROTECTED_FILES_REPORT_AR.md /tmp/NineSoft-UI-Local-Preview/
+          cp KNOWN_ISSUES_AR.md /tmp/NineSoft-UI-Local-Preview/
+          cp DELIVERY_INFO.txt /tmp/NineSoft-UI-Local-Preview/
+          cp CHANGES_AR.md /tmp/NineSoft-UI-Local-Preview/
+          cp TEST_RESULTS_AR.md /tmp/NineSoft-UI-Local-Preview/
+          cp apps/nizami_app/test/goldens/*.png /tmp/NineSoft-UI-Local-Preview/screenshots/
+          test -f /tmp/NineSoft-UI-Local-Preview/build/web/index.html
+          cd /tmp
+          zip -qr NineSoft-UI-Local-Preview.zip NineSoft-UI-Local-Preview
+          sha256sum NineSoft-UI-Local-Preview.zip > NineSoft-UI-Local-Preview.sha256
       - name: Archive current source
         shell: bash
         run: |
           cd ../..
           git archive --format=zip -o /tmp/NineSoft-ui-redesign-source.zip HEAD
+      - name: Upload local preview package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ninesoft-ui-local-preview
+          path: |
+            /tmp/NineSoft-UI-Local-Preview.zip
+            /tmp/NineSoft-UI-Local-Preview.sha256
       - name: Upload source package
         uses: actions/upload-artifact@v4
         with:
