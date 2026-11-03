@@ -512,7 +512,7 @@ class _FinancialReportsPageState extends State<FinancialReportsPage> {
                     children: [
                       const Icon(
                         Icons.table_chart_outlined,
-                        color: NizamiColors.tealDark,
+                        color: NizamiColors.blue,
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -640,7 +640,7 @@ class _ReportSelector extends StatelessWidget {
           Material(
             key: Key('financial-report-type-${entry.key}'),
             color: entry.key == current
-                ? const Color(0xFF087D83)
+                ? NizamiColors.navy
                 : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(15),
             clipBehavior: Clip.antiAlias,
@@ -652,7 +652,7 @@ class _ReportSelector extends StatelessWidget {
                   borderRadius: BorderRadius.circular(15),
                   border: Border.all(
                     color: entry.key == current
-                        ? const Color(0xFF087D83)
+                        ? NizamiColors.navy
                         : NizamiColors.border,
                   ),
                 ),
@@ -664,7 +664,7 @@ class _ReportSelector extends StatelessWidget {
                       size: 22,
                       color: entry.key == current
                           ? Colors.white
-                          : NizamiColors.tealDark,
+                          : NizamiColors.blue,
                     ),
                     const SizedBox(height: 4),
                     Text(
