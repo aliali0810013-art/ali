@@ -46,7 +46,7 @@ jobs:
       - name: Build web
         run: flutter build web --release --dart-define=NINESOFT_API_BASE_URL=https://ninesoft.qodynex.tech/api/v1
       - name: Capture deterministic sales actual
-        run: flutter test test/reference_screenshot_test.dart --dart-define=NINESOFT_CAPTURE_SCREENSHOTS=true
+        run: timeout 120s flutter test test/reference_screenshot_test.dart --dart-define=NINESOFT_CAPTURE_SCREENSHOTS=true
       - name: Upload visual comparison evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
