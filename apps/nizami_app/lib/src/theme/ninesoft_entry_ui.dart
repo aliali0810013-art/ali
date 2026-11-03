@@ -511,7 +511,11 @@ class NineSoftEntrySection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            child,
+            Material(
+              color: Colors.transparent,
+              type: MaterialType.transparency,
+              child: child,
+            ),
           ],
         ),
       );
