@@ -32,6 +32,8 @@ import '../sync/sales_invoice_outbox.dart';
 import '../modules/catalog_sync_api.dart';
 import '../whatsapp/whatsapp_api.dart';
 import 'invoice_history_store.dart';
+import 'presentation/sales_invoice_adapter.dart';
+import 'presentation/sales_invoice_view_model.dart';
 import 'invoice_pdf_service.dart';
 import 'weighted_sale_math.dart';
 
@@ -503,24 +505,26 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
     final effectiveTendered = _paymentMode == 'cash' && enteredTendered == 0
         ? net
         : enteredTendered;
-    return InvoiceDocument(
+    final viewModel = SalesInvoiceViewModel(
       number: number ?? 'INV-${DateTime.now().microsecondsSinceEpoch}',
       customerName: _customer.text.trim().isEmpty
           ? 'عميل نقدي'
           : _customer.text.trim(),
       customerPhone: _phone.text.trim(),
       customerId: _selectedCustomerId,
-      lines: List.unmodifiable(_lines),
+      lines: _lines
+          .map(SalesInvoicePresentationAdapter.fromDomainLine)
+          .toList(growable: false),
       currency: 'YER',
       employeeName: widget.employeeName,
       branchLabel: 'الفرع ${_branches.indexOf(_branchId) + 1}',
       createdAt: createdAt ?? DateTime.now(),
       paymentMode: _paymentMode,
-      discountAmount: discount,
-      amountTendered: effectiveTendered,
       paidAmount: _paymentMode == 'credit'
           ? enteredTendered.clamp(0, net).toDouble()
           : net,
+      discountAmount: discount,
+      amountTendered: effectiveTendered,
       paymentChannel: _paymentChannel ?? '',
       paymentAccountCode: _paymentAccountCode,
       notes: _notes.text.trim(),
@@ -529,8 +533,14 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       serverNumber: _remoteNumber,
       replacementInvoiceId: _replacementInvoiceId,
       restoreGenerationAtCreation: _operationRestoreGeneration,
+      serverTotalMinor: null,
+      currentPaidMinor: null,
+      currentDueMinor: null,
+      returnedMinor: 0,
       isDraft: isDraft ?? _explicitDraft,
+      quarantineReason: '',
     );
+    return SalesInvoicePresentationAdapter.toDomain(viewModel);
   }
 
   void _pickProduct(CatalogProduct product) {
