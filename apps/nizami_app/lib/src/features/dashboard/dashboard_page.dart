@@ -17,7 +17,6 @@ import '../navigation/ninesoft_module_access_policy.dart';
 import '../navigation/ninesoft_global_shortcuts.dart';
 import '../navigation/ninesoft_module_taxonomy.dart';
 import '../../theme/ninesoft_ui.dart';
-import '../../widgets/ninesoft_brand_logo.dart';
 import 'server_status_api.dart';
 import 'section_hub_page.dart';
 import 'ninesoft_reference_dashboard.dart';
@@ -445,30 +444,6 @@ class _ReferenceHeaderAction extends StatelessWidget {
       constraints: const BoxConstraints.tightFor(width: 42, height: 42),
       padding: EdgeInsets.zero,
       icon: Icon(icon, color: Colors.white, size: 26),
-    ),
-  );
-}
-
-class _TopAction extends StatelessWidget {
-  const _TopAction({
-    super.key,
-    required this.icon,
-    required this.label,
-    this.onTap,
-  });
-  final IconData icon;
-  final String label;
-  final VoidCallback? onTap;
-  @override
-  Widget build(BuildContext context) => Material(
-    color: Colors.white.withValues(alpha: .10),
-    borderRadius: BorderRadius.circular(15),
-    child: IconButton(
-      tooltip: label,
-      onPressed: onTap,
-      constraints: const BoxConstraints.tightFor(width: 36, height: 36),
-      padding: EdgeInsets.zero,
-      icon: Icon(icon, size: 23, color: Colors.white),
     ),
   );
 }
