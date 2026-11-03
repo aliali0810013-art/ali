@@ -33,3 +33,11 @@ jobs:
         run: flutter test
       - name: Build web
         run: flutter build web --release --dart-define=NINESOFT_API_BASE_URL=https://ninesoft.qodynex.tech/api/v1
+      - name: Capture reference screenshots
+        run: flutter test --update-goldens test/reference_screenshot_test.dart
+      - name: Upload reference screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: ninesoft-reference-screenshots
+          path: apps/nizami_app/test/goldens/*.png
+          if-no-files-found: error
