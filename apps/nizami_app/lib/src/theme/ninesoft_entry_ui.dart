@@ -1238,6 +1238,7 @@ class NineSoftEntryLineTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
+      final compactTable = forceTableOnMobile && _isEntryMobile(context);
       if (_isEntryMobile(context) && !forceTableOnMobile) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1368,13 +1369,14 @@ class _EntryTableRow extends StatelessWidget {
   final Widget delete;
   final bool showDiscount;
   final bool header;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     Widget cell(Widget child, int flex) => Expanded(
       flex: flex,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 5),
+        padding: EdgeInsets.symmetric(horizontal: compact ? 3 : 5),
         child: child,
       ),
     );
@@ -1382,7 +1384,7 @@ class _EntryTableRow extends StatelessWidget {
     final row = Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        SizedBox(width: 28, child: Center(child: number)),
+        SizedBox(width: compact ? 24 : 28, child: Center(child: number)),
         cell(product, showDiscount ? 30 : 35),
         cell(unit, showDiscount ? 11 : 13),
         cell(quantity, showDiscount ? 12 : 11),
@@ -1398,7 +1400,7 @@ class _EntryTableRow extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         color: Color(0xFF4C7893),
-        fontSize: 10.5,
+        fontSize: compact ? 9.5 : 10.5,
         fontWeight: FontWeight.w900,
       ),
       child: row,
