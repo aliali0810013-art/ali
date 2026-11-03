@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 part 'fast_gallery.dart';
+part 'fast_gallery_reports.dart';
 
 class FastPreviewSpec {
   const FastPreviewSpec(this.title, this.icon);
