@@ -1676,6 +1676,7 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
             builder: (context, update) {
               final availableContacts = candidates();
               return Scaffold(
+                key: const ValueKey('voucher-document-shell'),
                 appBar: AppBar(toolbarHeight: 0),
                 body: SafeArea(
                   child: NineSoftResponsiveBody(
