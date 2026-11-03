@@ -234,8 +234,8 @@ void main() {
                   body: Column(
                     children: [
                       MediaQuery(
-                        data: MediaQuery.of(context).copyWith(
-                          padding: const EdgeInsets.only(top: 34),
+                        data: const MediaQueryData(
+                          padding: EdgeInsets.only(top: 34),
                         ),
                         child: NineSoftReferenceMobileHeader(
                           title: 'المبيعات',
