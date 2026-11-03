@@ -133,7 +133,10 @@ void main() {
         quantity,
       );
       await tester.pump();
-      await tester.tap(find.byKey(const Key('invoice-reference-add-line')));
+      final addLine = find.byKey(const Key('invoice-add-line'));
+      await tester.ensureVisible(addLine);
+      await tester.pump();
+      await tester.tap(addLine);
       await tester.pumpAndSettle();
     }
 
