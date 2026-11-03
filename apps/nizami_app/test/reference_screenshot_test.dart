@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,6 +25,19 @@ Future<void> _loadReferenceFonts() async {
     FontLoader('ArialMTBlack')
       ..addFont(rootBundle.load('assets/fonts/Arial_MT_Black.ttf')),
   ];
+  final flutterRoot = Platform.environment['FLUTTER_ROOT'];
+  if (flutterRoot != null && flutterRoot.isNotEmpty) {
+    final materialIcons = File(
+      '$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
+    );
+    if (materialIcons.existsSync()) {
+      final bytes = materialIcons.readAsBytesSync();
+      loaders.add(
+        FontLoader('MaterialIcons')
+          ..addFont(Future<ByteData>.value(ByteData.sublistView(bytes))),
+      );
+    }
+  }
   await Future.wait(loaders.map((loader) => loader.load()));
 }
 
@@ -73,6 +88,19 @@ void main() {
           'hasSalePrice': true,
           'version': 1,
         },
+        {
+          'id': 'prd-3001',
+          'sku': 'IT-3001',
+          'name': 'شاشة 24 بوصة',
+          'purchasePrice': 610.0,
+          'salePrice': 760.0,
+          'barcode': '6221000003001',
+          'unitName': 'piece',
+          'stockQuantity': 24.0,
+          'hasPurchasePrice': true,
+          'hasSalePrice': true,
+          'version': 1,
+        },
       ]),
       'ninesoft.customers.v2.NineSoft': jsonEncode([
         {
@@ -90,9 +118,10 @@ void main() {
     WidgetTester tester, {
     required Size size,
     required String name,
+    double devicePixelRatio = 1,
   }) async {
     tester.view.physicalSize = size;
-    tester.view.devicePixelRatio = 1;
+    tester.view.devicePixelRatio = devicePixelRatio;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
@@ -166,9 +195,10 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    await addProduct('لابتوب 15 بوصة', '2');
-    await addProduct('ماوس لاسلكي', '3');
-    await addProduct('لوحة مفاتيح', '1');
+    await addProduct('لابتوب 15 بوصة', '30');
+    await addProduct('ماوس لاسلكي', '30');
+    await addProduct('لوحة مفاتيح', '5');
+    await addProduct('شاشة 24 بوصة', '6');
 
     final editorScroll = find.byKey(const ValueKey('invoice-document-editor'));
     if (editorScroll.evaluate().isNotEmpty) {
@@ -189,8 +219,9 @@ void main() {
     (tester) async {
       await capture(
         tester,
-        size: const Size(430, 932),
+        size: const Size(941, 1672),
         name: 'ninesoft-phone-sales',
+        devicePixelRatio: 1.5,
       );
     },
     skip: !_captureScreenshots,
