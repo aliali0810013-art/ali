@@ -171,11 +171,16 @@ void main() {
       if (width < 900) {
         await tester.tap(find.text('العمليات'));
         await tester.pumpAndSettle();
+        final payrollApp = find.byKey(const Key('launcher-app-payroll'));
+        expect(payrollApp, findsOneWidget);
+        await tester.tap(payrollApp);
+        await tester.pumpAndSettle();
+      } else {
+        final tile = find.text('الموظفون والرواتب').first;
+        await tester.ensureVisible(tile);
+        await tester.pumpAndSettle();
+        await tester.tap(tile);
       }
-      final tile = find.text('الموظفون والرواتب').first;
-      await tester.ensureVisible(tile);
-      await tester.pump();
-      await tester.tap(tile);
       for (
         var index = 0;
         index < 20 &&
