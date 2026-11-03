@@ -18,6 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.47.9'
           channel: stable
           cache: true
       - name: Flutter version
@@ -87,7 +88,8 @@ jobs:
           - flutter analyze: PASS
           - flutter test: PASS
           - flutter build web --release: PASS
-          - fixed reference screenshot comparison: PASS
+          - deterministic sales screenshot capture: PASS
+          - original-reference pixel comparison: NOT YET CLAIMED
           - Hostinger deployment: NOT PERFORMED
           - main merge: NOT PERFORMED
           - Production accounting parity: NOT CLAIMED
