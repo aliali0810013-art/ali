@@ -77,9 +77,11 @@ class SalesInvoiceReferenceView extends StatelessWidget {
           onNewInvoice: onNewInvoice,
           onHistory: onHistory,
         ),
-        const SizedBox(height: 8),
-        deliveryBanner,
-        const SizedBox(height: 6),
+        if (locked) ...[
+          const SizedBox(height: 6),
+          deliveryBanner,
+        ],
+        const SizedBox(height: 5),
         const _SectionTitle(
           title: 'تحرير فاتورة مبيعات',
           icon: Icons.receipt_long_rounded,
@@ -108,16 +110,16 @@ class SalesInvoiceReferenceView extends StatelessWidget {
           ),
           onScanBarcode: locked ? null : onScanBarcode,
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 7),
         if (lineEntryControls != null) ...[
           _Panel(child: lineEntryControls!),
-          const SizedBox(height: 10),
+          const SizedBox(height: 7),
         ],
         KeyedSubtree(
           key: const Key('invoice-section-lines'),
           child: _Panel(padding: EdgeInsets.zero, child: linesTable),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 7),
         Row(
           children: [
             Expanded(
@@ -144,7 +146,7 @@ class SalesInvoiceReferenceView extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         LayoutBuilder(
           builder: (context, constraints) {
             return Row(
@@ -166,10 +168,10 @@ class SalesInvoiceReferenceView extends StatelessWidget {
           },
         ),
         if (lockedControls != null) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           lockedControls!,
         ],
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         _FooterActions(
           busy: busy,
           locked: locked,
@@ -632,9 +634,9 @@ class _DetailsCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             notesField,
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             const Divider(height: 1),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             const _MiniHeading(
               icon: Icons.payments_outlined,
               label: 'التسوية والدفع',
