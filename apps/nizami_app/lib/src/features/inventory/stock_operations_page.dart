@@ -238,6 +238,7 @@ class _StockOperationsPageState extends State<StockOperationsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final phone = MediaQuery.sizeOf(context).width < 700;
     final selected = _selected;
     final current = (selected?['stock_quantity_milli'] as num?)?.toInt();
     final caption = widget.isTransfer
@@ -248,7 +249,7 @@ class _StockOperationsPageState extends State<StockOperationsPage> {
         title: Text(
           widget.isTransfer
               ? 'تحويل المخزون بين الفروع'
-              : 'الجرد والتسويات المحاسبية',
+              : 'الجرد وتسوية المخزون',
         ),
       ),
       body: SafeArea(
@@ -258,17 +259,21 @@ class _StockOperationsPageState extends State<StockOperationsPage> {
               NineSoftEntryHeading(
                 title: widget.isTransfer
                     ? 'تحويل المخزون بين الفروع'
-                    : 'الجرد والتسويات المحاسبية',
-                subtitle: caption,
+                    : 'الجرد وتسوية المخزون',
+                subtitle: phone
+                    ? (widget.isTransfer ? 'تحويل رصيد بين الفروع' : 'مطابقة الرصيد الفعلي وترحيل الفرق')
+                    : caption,
                 icon: widget.isTransfer
                     ? Icons.swap_horiz_rounded
                     : Icons.inventory_outlined,
                 status: 'حركة مخزون',
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: phone ? 8 : 12),
               NineSoftEntrySection(
-                title: 'بيانات الحركة',
-                subtitle: 'حدد المصدر والصنف والكمية ثم راجع سبب الحركة',
+                title: phone ? 'بيانات الجرد' : 'بيانات الحركة',
+                subtitle: phone
+                    ? 'الصنف والرصيد الفعلي والسبب'
+                    : 'حدد المصدر والصنف والكمية ثم راجع سبب الحركة',
                 icon: Icons.edit_note_outlined,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -426,7 +431,7 @@ class _StockOperationsPageState extends State<StockOperationsPage> {
                         labelText: 'سبب الحركة (لأثر المراجعة)',
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: phone ? 10 : 20),
                     NineSoftEntryFooter(
                       label: _saving ? 'جار الترحيل' : 'اعتماد وترحيل الحركة',
                       enabled:

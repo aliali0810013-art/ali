@@ -109,7 +109,12 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 300));
     final tile = find.text('الموظفون والرواتب').first;
-    await tester.ensureVisible(tile);
+    await tester.dragUntilVisible(
+      tile,
+      find.byType(Scrollable).first,
+      const Offset(0, -260),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(tile);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('payroll-open-run')));
@@ -164,13 +169,18 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 300));
       if (width < 900) {
-        await tester.tap(find.text('ابدأ'));
+        await tester.tap(find.text('العمليات'));
         await tester.pumpAndSettle();
+        final payrollApp = find.byKey(const Key('launcher-app-payroll'));
+        expect(payrollApp, findsOneWidget);
+        await tester.tap(payrollApp);
+        await tester.pumpAndSettle();
+      } else {
+        final tile = find.text('الموظفون والرواتب').first;
+        await tester.ensureVisible(tile);
+        await tester.pumpAndSettle();
+        await tester.tap(tile);
       }
-      final tile = find.text('الموظفون والرواتب').first;
-      await tester.ensureVisible(tile);
-      await tester.pump();
-      await tester.tap(tile);
       for (
         var index = 0;
         index < 20 &&

@@ -139,8 +139,17 @@ void main() {
     await tester.tap(action);
     await tester.pumpAndSettle();
 
-    expect(find.byType(AlertDialog), findsOneWidget);
-    await tester.tap(find.text('إلغاء').last);
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('إضافة مستخدم'), findsOneWidget);
+    expect(find.byType(NineSoftEntryHeading), findsOneWidget);
+    final cancel = find.byKey(const Key('administration-user-cancel'));
+    await tester.dragUntilVisible(
+      cancel,
+      find.byType(Scrollable).last,
+      const Offset(0, -320),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(cancel);
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
@@ -206,7 +215,7 @@ void main() {
     );
     await tester.enterText(find.widgetWithText(TextField, 'كلمة المرور'), '1');
 
-    await tester.tap(find.text('إنشاء'));
+    await tester.tap(find.text('إنشاء المستخدم'));
     await tester.pumpAndSettle();
 
     expect(transport.lastUserRequest?['password'], '1');

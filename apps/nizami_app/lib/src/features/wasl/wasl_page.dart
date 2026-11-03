@@ -406,26 +406,18 @@ class _WaslPageState extends State<WaslPage> {
   Widget build(BuildContext context) {
     final surface = Theme.of(context).colorScheme.surface;
     final color = const Color(0xFF4B45CA);
+    final phone = MediaQuery.sizeOf(context).width < 700;
     final entries = _records
         .where((r) => _filter == 'all' || r.state == _filter)
         .toList();
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('التحويلات البنكية'),
-        actions: [
-          IconButton(
-            onPressed: _active ? _refresh : null,
-            tooltip: 'تحديث',
-            icon: const Icon(Icons.refresh_rounded),
-          ),
-        ],
-      ),
+      appBar: AppBar(toolbarHeight: 0),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(18),
+          padding: EdgeInsets.all(phone ? 10 : 18),
           children: [
             NineSoftEntryHeading(
-              title: 'وَصْل | WASL',
+              title: 'تحويلات WASL',
               subtitle: !_active
                   ? 'التكامل معطل حتى تهيئة خادم NineSoft'
                   : !_allowed('view_transfers')
@@ -441,7 +433,52 @@ class _WaslPageState extends State<WaslPage> {
               icon: Icons.account_balance_rounded,
               accent: color,
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: phone ? 8 : 18),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final confirmed = _records
+                    .where((item) =>
+                        item.state == 'confirmed' ||
+                        item.state == 'manually_approved')
+                    .length;
+                final review = _records
+                    .where((item) =>
+                        item.state == 'needs_review' ||
+                        item.state == 'preliminary_match')
+                    .length;
+                final incoming = _records
+                    .where((item) => item.state == 'sms_received')
+                    .length;
+                final values = [
+                  ('إجمالي التحويلات', '${_records.length}', Icons.swap_horiz_rounded, const Color(0xFF4B45CA)),
+                  ('قيد المطابقة', '$incoming', Icons.schedule_rounded, const Color(0xFFF09A20)),
+                  ('مؤكدة', '$confirmed', Icons.verified_rounded, const Color(0xFF20A56B)),
+                  ('تحتاج مراجعة', '$review', Icons.error_outline_rounded, const Color(0xFFD14B5A)),
+                ];
+                final columns = constraints.maxWidth < 700 ? 4 : 4;
+                final gap = constraints.maxWidth < 700 ? 6.0 : 10.0;
+                final width =
+                    (constraints.maxWidth - gap * (columns - 1)) / columns;
+                return Wrap(
+                  spacing: gap,
+                  runSpacing: gap,
+                  children: [
+                    for (final item in values)
+                      SizedBox(
+                        width: width,
+                        child: _waslMetric(
+                          label: item.$1,
+                          value: item.$2,
+                          icon: item.$3,
+                          color: item.$4,
+                          compact: phone,
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+            SizedBox(height: phone ? 8 : 12),
             if (widget.branchIds.length > 1)
               DropdownButtonFormField<String>(
                 initialValue: _branchId,
@@ -468,10 +505,10 @@ class _WaslPageState extends State<WaslPage> {
               ),
             if (_error != null) _Info(text: _error!),
             if (_loading) const LinearProgressIndicator(minHeight: 2),
-            const SizedBox(height: 12),
+            SizedBox(height: phone ? 8 : 12),
             NineSoftEntrySection(
-              title: 'الاتصال والأجهزة',
-              subtitle: 'الربط والمزامنة حسب صلاحيات الحساب الحالي',
+              title: phone ? 'حالة الاتصال' : 'الاتصال والأجهزة',
+              subtitle: phone ? 'ربط الجهاز والمزامنة' : 'الربط والمزامنة حسب صلاحيات الحساب الحالي',
               icon: Icons.phonelink_rounded,
               child: Material(
                 color: Colors.transparent,
@@ -543,9 +580,9 @@ class _WaslPageState extends State<WaslPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: phone ? 10 : 20),
             Text(
-              'التحويلات والإشعارات',
+              phone ? 'التحويلات الأخيرة' : 'التحويلات والإشعارات',
               style: Theme.of(
                 context,
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
@@ -697,6 +734,52 @@ class _WaslPageState extends State<WaslPage> {
       ),
     );
   }
+
+  Widget _waslMetric({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color color,
+    required bool compact,
+  }) =>
+      Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 6 : 10,
+          vertical: compact ? 8 : 12,
+        ),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: .08),
+          borderRadius: BorderRadius.circular(compact ? 11 : 15),
+          border: Border.all(color: color.withValues(alpha: .12)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: compact ? 18 : 22, color: color),
+            SizedBox(height: compact ? 4 : 6),
+            Text(
+              value,
+              maxLines: 1,
+              textDirection: TextDirection.ltr,
+              style: TextStyle(
+                color: color,
+                fontSize: compact ? 14 : 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: compact ? 8.5 : 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      );
 
   String _statusLabel(String state) => switch (state) {
     'confirmed' => 'مؤكد بمصدر رسمي',

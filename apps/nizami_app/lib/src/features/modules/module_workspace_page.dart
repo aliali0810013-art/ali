@@ -1577,9 +1577,10 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
       await _addSupplierPayment();
       return;
     }
-    var record = await showDialog<_ModuleRecord>(
-      context: context,
-      builder: (context) => _AddRecordDialog(module: widget.module),
+    var record = await Navigator.of(context).push<_ModuleRecord>(
+      MaterialPageRoute(
+        builder: (_) => _AddRecordDialog(module: widget.module),
+      ),
     );
     if (record == null || !mounted) {
       return;
@@ -1669,207 +1670,257 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
           '';
       var channel = _channelForAccount(cashAccountCode);
 
-      final decision = await showDialog<String>(
-        context: context,
-        builder: (dialogContext) => StatefulBuilder(
-          builder: (context, update) {
-            final availableContacts = candidates();
-            return AlertDialog(
-              key: const ValueKey('voucher-document-shell'),
-              titlePadding: const EdgeInsets.fromLTRB(22, 20, 22, 8),
-              title: Row(
-                children: [
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8F0FF),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(
-                      receipt ? Icons.wallet_rounded : Icons.outbox_rounded,
-                      color: const Color(0xFF1554B8),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      receipt
-                          ? 'سند قبض لأي شخص أو جهة'
-                          : 'سند صرف لأي شخص أو جهة',
-                    ),
-                  ),
-                ],
-              ),
-              content: SizedBox(
-                width: 520,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      NineSoftDocumentTypeSwitch(
-                        value: receipt ? 'receipt' : 'payment',
-                        onChanged: (value) {
-                          if (value == (receipt ? 'receipt' : 'payment')) {
-                            return;
-                          }
-                          Navigator.pop(dialogContext, value);
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        initialValue: partyKind,
-                        decoration: const InputDecoration(
-                          labelText: 'نوع الطرف',
+      final decision = await Navigator.of(context).push<String>(
+        MaterialPageRoute(
+          builder: (dialogContext) => StatefulBuilder(
+            builder: (context, update) {
+              final availableContacts = candidates();
+              final phone = MediaQuery.sizeOf(context).width < 700;
+              return Scaffold(
+                key: const ValueKey('voucher-document-shell'),
+                appBar: AppBar(toolbarHeight: 0),
+                body: SafeArea(
+                  child: NineSoftResponsiveBody(
+                    child: ListView(
+                      children: [
+                        NineSoftEntryHeading(
+                          title: phone
+                              ? 'سندات القبض والصرف'
+                              : (receipt
+                                    ? 'سند قبض لأي شخص أو جهة'
+                                    : 'سند صرف لأي شخص أو جهة'),
+                          subtitle: phone
+                              ? (receipt ? 'إنشاء سند قبض' : 'إنشاء سند صرف')
+                              : (receipt
+                                    ? 'استلام مبلغ وترحيله إلى الحساب الفعلي'
+                                    : 'صرف مبلغ وترحيله من الحساب الفعلي'),
+                          icon: receipt
+                              ? Icons.wallet_rounded
+                              : Icons.outbox_rounded,
+                          status: receipt ? 'قبض' : 'صرف',
+                          accent: receipt
+                              ? NizamiColors.green
+                              : NizamiColors.red,
                         ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'customer',
-                            child: Text('عميل'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'supplier',
-                            child: Text('مورد'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'other',
-                            child: Text('موظف / عامل / شخص أو جهة أخرى'),
-                          ),
-                        ],
-                        onChanged: (value) => update(() {
-                          partyKind = value ?? 'other';
-                          final matches = candidates();
-                          selectedContact = matches.firstOrNull;
-                          final preferred = partyKind == 'customer'
-                              ? '1200-AR'
-                              : partyKind == 'supplier'
-                              ? '2100-AP'
-                              : (receipt ? '4100-SALES' : '5200-EXPENSES');
-                          counterAccountCode =
-                              counterAccounts
-                                  .where((item) => item.code == preferred)
-                                  .firstOrNull
-                                  ?.code ??
-                              counterAccountCode;
-                        }),
-                      ),
-                      const SizedBox(height: 10),
-                      if (partyKind != 'other')
-                        DropdownButtonFormField<Map<String, dynamic>>(
-                          initialValue:
-                              availableContacts.contains(selectedContact)
-                              ? selectedContact
-                              : null,
-                          decoration: const InputDecoration(
-                            labelText: 'اسم الطرف',
-                          ),
-                          items: availableContacts
-                              .map(
-                                (item) => DropdownMenuItem(
-                                  value: item,
-                                  child: Text(item['name']?.toString() ?? ''),
+                        SizedBox(height: phone ? 8 : 12),
+                        NineSoftDocumentTypeSwitch(
+                          value: receipt ? 'receipt' : 'payment',
+                          onChanged: (value) {
+                            if (value == (receipt ? 'receipt' : 'payment')) {
+                              return;
+                            }
+                            Navigator.pop(dialogContext, value);
+                          },
+                        ),
+                        SizedBox(height: phone ? 8 : 12),
+                        NineSoftEntrySection(
+                          title: 'بيانات السند',
+                          subtitle: phone ? 'الطرف والمبلغ والحساب' : 'الطرف والحسابات والمبلغ والبيان',
+                          icon: Icons.receipt_long_outlined,
+                          step: phone ? null : '01',
+                          accent: NizamiColors.blue,
+                          child: Column(
+                            children: [
+                              DropdownButtonFormField<String>(
+                                initialValue: partyKind,
+                                decoration: const InputDecoration(
+                                  labelText: 'نوع الطرف',
                                 ),
-                              )
-                              .toList(),
-                          onChanged: (value) =>
-                              update(() => selectedContact = value),
-                        )
-                      else ...[
-                        TextField(
-                          controller: partyName,
-                          decoration: const InputDecoration(
-                            labelText: 'اسم الشخص أو الجهة',
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'customer',
+                                    child: Text('عميل'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'supplier',
+                                    child: Text('مورد'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'other',
+                                    child: Text('موظف / عامل / شخص أو جهة أخرى'),
+                                  ),
+                                ],
+                                onChanged: (value) => update(() {
+                                  partyKind = value ?? 'other';
+                                  final matches = candidates();
+                                  selectedContact = matches.firstOrNull;
+                                  final preferred = partyKind == 'customer'
+                                      ? '1200-AR'
+                                      : partyKind == 'supplier'
+                                      ? '2100-AP'
+                                      : (receipt
+                                            ? '4100-SALES'
+                                            : '5200-EXPENSES');
+                                  counterAccountCode =
+                                      counterAccounts
+                                          .where(
+                                            (item) => item.code == preferred,
+                                          )
+                                          .firstOrNull
+                                          ?.code ??
+                                      counterAccountCode;
+                                }),
+                              ),
+                              const SizedBox(height: 10),
+                              if (partyKind != 'other')
+                                DropdownButtonFormField<Map<String, dynamic>>(
+                                  initialValue:
+                                      availableContacts.contains(selectedContact)
+                                      ? selectedContact
+                                      : null,
+                                  decoration: const InputDecoration(
+                                    labelText: 'اسم الطرف',
+                                  ),
+                                  items: availableContacts
+                                      .map(
+                                        (item) => DropdownMenuItem(
+                                          value: item,
+                                          child: Text(
+                                            item['name']?.toString() ?? '',
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: (value) =>
+                                      update(() => selectedContact = value),
+                                )
+                              else
+                                NineSoftEntryFieldGrid(
+                                  minFieldWidth: 220,
+                                  maxColumns: 2,
+                                  children: [
+                                    TextField(
+                                      controller: partyName,
+                                      decoration: const InputDecoration(
+                                        labelText: 'اسم الشخص أو الجهة',
+                                      ),
+                                    ),
+                                    TextField(
+                                      controller: partyPhone,
+                                      decoration: const InputDecoration(
+                                        labelText: 'رقم الهاتف (اختياري)',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              const SizedBox(height: 10),
+                              NineSoftEntryFieldGrid(
+                                minFieldWidth: 220,
+                                maxColumns: 2,
+                                children: [
+                                  TextField(
+                                    controller: amount,
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
+                                    inputFormatters: const [
+                                      latinDigitFormatter,
+                                    ],
+                                    textDirection: TextDirection.ltr,
+                                    decoration: InputDecoration(
+                                      labelText: receipt
+                                          ? 'المبلغ المقبوض'
+                                          : 'المبلغ المصروف',
+                                      suffixText: 'YER',
+                                    ),
+                                  ),
+                                  DropdownButtonFormField<String>(
+                                    initialValue: cashAccountCode.isEmpty
+                                        ? null
+                                        : cashAccountCode,
+                                    decoration: InputDecoration(
+                                      labelText: receipt
+                                          ? 'حساب استلام المبلغ'
+                                          : 'حساب دفع المبلغ',
+                                    ),
+                                    items: cashAccounts
+                                        .map(
+                                          (item) => DropdownMenuItem(
+                                            value: item.code,
+                                            child: Text(
+                                              '${item.code} — ${item.nameAr}',
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                    onChanged: (value) => update(() {
+                                      cashAccountCode = value ?? '';
+                                      channel = _channelForAccount(
+                                        cashAccountCode,
+                                      );
+                                    }),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              DropdownButtonFormField<String>(
+                                initialValue: counterAccountCode.isEmpty
+                                    ? null
+                                    : counterAccountCode,
+                                decoration: const InputDecoration(
+                                  labelText: 'الحساب المقابل',
+                                ),
+                                items: counterAccounts
+                                    .map(
+                                      (item) => DropdownMenuItem(
+                                        value: item.code,
+                                        child: Text(
+                                          '${item.code} — ${item.nameAr}',
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (value) => update(
+                                  () => counterAccountCode = value ?? '',
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              TextField(
+                                controller: notes,
+                                maxLines: phone ? 1 : 2,
+                                decoration: const InputDecoration(
+                                  labelText: 'البيان / الملاحظة',
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        TextField(
-                          controller: partyPhone,
-                          decoration: const InputDecoration(
-                            labelText: 'رقم الهاتف (اختياري)',
-                          ),
+                        SizedBox(height: phone ? 8 : 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () =>
+                                    Navigator.pop(dialogContext, 'cancel'),
+                                icon: const Icon(Icons.close_rounded),
+                                label: const Text('إلغاء'),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              flex: 2,
+                              child: FilledButton.icon(
+                                key: const ValueKey('voucher-save'),
+                                onPressed: () =>
+                                    Navigator.pop(dialogContext, 'save'),
+                                icon: const Icon(Icons.save_outlined),
+                                label: Text(
+                                  receipt
+                                      ? 'اعتماد سند القبض'
+                                      : 'اعتماد سند الصرف',
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: amount,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        inputFormatters: const [latinDigitFormatter],
-                        decoration: InputDecoration(
-                          labelText: receipt
-                              ? 'المبلغ المقبوض'
-                              : 'المبلغ المصروف',
-                          suffixText: 'YER',
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      DropdownButtonFormField<String>(
-                        initialValue: cashAccountCode.isEmpty
-                            ? null
-                            : cashAccountCode,
-                        decoration: InputDecoration(
-                          labelText: receipt
-                              ? 'حساب استلام المبلغ'
-                              : 'حساب دفع المبلغ',
-                        ),
-                        items: cashAccounts
-                            .map(
-                              (item) => DropdownMenuItem(
-                                value: item.code,
-                                child: Text('${item.code} — ${item.nameAr}'),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (value) => update(() {
-                          cashAccountCode = value ?? '';
-                          channel = _channelForAccount(cashAccountCode);
-                        }),
-                      ),
-                      const SizedBox(height: 10),
-                      DropdownButtonFormField<String>(
-                        initialValue: counterAccountCode.isEmpty
-                            ? null
-                            : counterAccountCode,
-                        decoration: const InputDecoration(
-                          labelText: 'الحساب المقابل',
-                        ),
-                        items: counterAccounts
-                            .map(
-                              (item) => DropdownMenuItem(
-                                value: item.code,
-                                child: Text('${item.code} — ${item.nameAr}'),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (value) =>
-                            update(() => counterAccountCode = value ?? ''),
-                      ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: notes,
-                        decoration: const InputDecoration(
-                          labelText: 'البيان / الملاحظة',
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, 'cancel'),
-                  child: const Text('إلغاء'),
-                ),
-                FilledButton(
-                  onPressed: () => Navigator.pop(context, 'save'),
-                  child: Text(
-                    receipt ? 'اعتماد سند القبض' : 'اعتماد سند الصرف',
-                  ),
-                ),
-              ],
-            );
-          },
+              );
+            },
+          ),
         ),
       );
       if (!mounted) return;
@@ -2352,10 +2403,13 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
       );
       return;
     }
-    final updated = await showDialog<_ModuleRecord>(
-      context: context,
-      builder: (context) =>
-          _AddRecordDialog(module: widget.module, initial: record),
+    final updated = await Navigator.of(context).push<_ModuleRecord>(
+      MaterialPageRoute(
+        builder: (_) => _AddRecordDialog(
+          module: widget.module,
+          initial: record,
+        ),
+      ),
     );
     if (updated == null || !mounted) return;
     if (widget.module.key == 'products' && record.serverId.isNotEmpty) {
@@ -2666,7 +2720,7 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
       }
       await outbox.discard(entity, record.title);
       if (canonicalContact != null) {
-        return _adoptCanonicalContact(record, canonicalContact);
+        return await _adoptCanonicalContact(record, canonicalContact);
       }
     } catch (error) {
       // Do not claim that an offline operation will sync unless persisted.
@@ -3505,7 +3559,9 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
   @override
   Widget build(BuildContext context) {
     final records = _visibleRecords;
-    final desktop = MediaQuery.sizeOf(context).width >= 900;
+    final viewportWidth = MediaQuery.sizeOf(context).width;
+    final desktop = viewportWidth >= 900;
+    final phone = viewportWidth < 700;
     final categoryPairs = _records
         .map((record) => record.details.split(' • '))
         .where((parts) => parts.isNotEmpty && parts.first.isNotEmpty)
@@ -3527,7 +3583,7 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
       appBar: AppBar(
         title: Text(widget.module.title),
         centerTitle: false,
-        toolbarHeight: desktop ? 0 : null,
+        toolbarHeight: 0,
         actions: [
           if (_exporting)
             const Padding(
@@ -3583,7 +3639,11 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final horizontalPadding = constraints.maxWidth >= 900 ? 32.0 : 16.0;
+            final horizontalPadding = constraints.maxWidth >= 900
+                ? 32.0
+                : constraints.maxWidth < 700
+                ? 8.0
+                : 16.0;
             return RefreshIndicator(
               onRefresh: _loadRecords,
               child: CustomScrollView(
@@ -3609,8 +3669,14 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
                         children: [
                           NineSoftPageHeader(
                             title: widget.module.title,
-                            subtitle:
-                                'إدارة ${widget.module.entityLabel} والبحث والتصفية من شاشة واحدة',
+                            subtitle: phone
+                                ? switch (widget.module.key) {
+                                    'customers' => 'إضافة وتعديل العملاء وكشف الحساب',
+                                    'suppliers' => 'إضافة وتعديل الموردين وكشف الحساب',
+                                    'products' => 'إضافة وتعديل الأصناف والمخزون',
+                                    _ => 'إدارة ${widget.module.entityLabel}',
+                                  }
+                                : 'إدارة ${widget.module.entityLabel} والبحث والتصفية من شاشة واحدة',
                             icon: widget.module.icon,
                             color: widget.module.color,
                             actions: [
@@ -3623,7 +3689,8 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
                                   icon: const Icon(Icons.add_rounded),
                                   label: Text(widget.module.actionLabel),
                                 ),
-                              PopupMenuButton<String>(
+                              if (!phone)
+                                PopupMenuButton<String>(
                                 tooltip: 'تصدير وطباعة',
                                 onSelected: _exportList,
                                 itemBuilder: (_) => const [
@@ -3671,12 +3738,29 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
                       horizontalPadding,
                       12,
                       horizontalPadding,
+                      10,
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: NineSoftSearchField(
+                        key: ValueKey('search-${widget.module.key}'),
+                        controller: _searchController,
+                        hintText: 'بحث في ${widget.module.title} بالاسم أو الرقم أو البيان...',
+                        onChanged: (value) => setState(() => _query = value),
+                      ),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
+                      horizontalPadding,
+                      12,
+                      horizontalPadding,
                       12,
                     ),
                     sliver: SliverToBoxAdapter(
                       child: _SummaryPanel(
                         module: widget.module,
                         records: _records,
+                        compact: phone,
                       ),
                     ),
                   ),
@@ -3746,35 +3830,6 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
                               icon: const Icon(Icons.close_rounded),
                             ),
                         ],
-                      ),
-                    ),
-                  ),
-                  SliverPadding(
-                    padding: EdgeInsets.fromLTRB(
-                      horizontalPadding,
-                      4,
-                      horizontalPadding,
-                      12,
-                    ),
-                    sliver: SliverToBoxAdapter(
-                      child: TextField(
-                        key: ValueKey('search-${widget.module.key}'),
-                        controller: _searchController,
-                        onChanged: (value) => setState(() => _query = value),
-                        decoration: InputDecoration(
-                          hintText: 'ابحث في ${widget.module.title}',
-                          prefixIcon: const Icon(Icons.search_rounded),
-                          suffixIcon: _query.isEmpty
-                              ? null
-                              : IconButton(
-                                  tooltip: 'مسح البحث',
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    setState(() => _query = '');
-                                  },
-                                  icon: const Icon(Icons.clear_rounded),
-                                ),
-                        ),
                       ),
                     ),
                   ),
@@ -4154,10 +4209,15 @@ class _AnalysisMetric extends StatelessWidget {
 }
 
 class _SummaryPanel extends StatelessWidget {
-  const _SummaryPanel({required this.module, required this.records});
+  const _SummaryPanel({
+    required this.module,
+    required this.records,
+    required this.compact,
+  });
 
   final ModuleDefinition module;
   final List<_ModuleRecord> records;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -4166,44 +4226,148 @@ class _SummaryPanel extends StatelessWidget {
         .where((record) => !record.settled)
         .fold<double>(0, (sum, record) => sum + record.amount);
     final overdue = records.where((record) => record.isOverdue).length;
+
+    final items = <Widget>[];
+    if (module.key == 'products') {
+      final totalStock = records.fold<double>(
+        0,
+        (sum, record) => sum + record.stockQuantity,
+      );
+      final low = records
+          .where((record) => record.stockQuantity > 0 && record.stockQuantity <= 5)
+          .length;
+      final out = records.where((record) => record.stockQuantity <= 0).length;
+      items.addAll([
+        _SummaryItem(
+          icon: Icons.inventory_2_outlined,
+          color: module.color,
+          label: 'عدد الأصناف',
+          value: '${records.length}',
+        ),
+        _SummaryItem(
+          icon: Icons.warehouse_outlined,
+          color: NizamiColors.blue,
+          label: 'إجمالي الرصيد',
+          value: totalStock.toStringAsFixed(2),
+        ),
+        _SummaryItem(
+          icon: Icons.warning_amber_rounded,
+          color: NizamiColors.amber,
+          label: 'مخزون منخفض',
+          value: '$low',
+        ),
+        _SummaryItem(
+          icon: Icons.remove_shopping_cart_outlined,
+          color: NizamiColors.red,
+          label: 'نافد',
+          value: '$out',
+        ),
+      ]);
+    } else if (module.key == 'customers') {
+      final receivable = records.fold<double>(
+        0,
+        (sum, record) => sum + record.amount,
+      );
+      final indebted = records.where((record) => record.amount > 0).length;
+      items.addAll([
+        _SummaryItem(
+          icon: Icons.people_alt_outlined,
+          color: module.color,
+          label: 'عدد العملاء',
+          value: '${records.length}',
+        ),
+        _SummaryItem(
+          icon: Icons.account_balance_wallet_outlined,
+          color: NizamiColors.blue,
+          label: 'إجمالي المستحق',
+          value: '${receivable.toStringAsFixed(2)} YER',
+        ),
+        _SummaryItem(
+          icon: Icons.schedule_rounded,
+          color: NizamiColors.amber,
+          label: 'عملاء عليهم رصيد',
+          value: '$indebted',
+        ),
+        _SummaryItem(
+          icon: Icons.verified_rounded,
+          color: NizamiColors.green,
+          label: 'بدون رصيد مستحق',
+          value: '${records.length - indebted}',
+        ),
+      ]);
+    } else if (module.key == 'suppliers') {
+      final phones = records.where((record) => record.details.trim().isNotEmpty).length;
+      final synced = records
+          .where((record) => record.serverId.isNotEmpty && !record.serverId.startsWith('local:'))
+          .length;
+      items.addAll([
+        _SummaryItem(
+          icon: Icons.local_shipping_outlined,
+          color: module.color,
+          label: 'عدد الموردين',
+          value: '${records.length}',
+        ),
+        _SummaryItem(
+          icon: Icons.phone_outlined,
+          color: NizamiColors.blue,
+          label: 'بأرقام هاتف',
+          value: '$phones',
+        ),
+        _SummaryItem(
+          icon: Icons.cloud_done_rounded,
+          color: NizamiColors.green,
+          label: 'متزامنة',
+          value: '$synced',
+        ),
+        _SummaryItem(
+          icon: Icons.sync_problem_outlined,
+          color: NizamiColors.amber,
+          label: 'محلية / بانتظار المزامنة',
+          value: '${records.length - synced}',
+        ),
+      ]);
+    } else {
+      items.addAll([
+        _SummaryItem(
+          icon: module.icon,
+          color: module.color,
+          label: 'إجمالي السجلات',
+          value: '${records.length}',
+        ),
+        if (isDebt)
+          _SummaryItem(
+            icon: Icons.account_balance_wallet_outlined,
+            color: const Color(0xFFE28B21),
+            label: 'الرصيد غير المسدد',
+            value: '${outstanding.toStringAsFixed(2)} YER',
+          )
+        else
+          const _SummaryItem(
+            icon: Icons.verified_rounded,
+            color: Color(0xFF22B968),
+            label: 'حالة القسم',
+            value: 'سجلات محفوظة',
+          ),
+        _SummaryItem(
+          icon: isDebt
+              ? Icons.notification_important_outlined
+              : Icons.cloud_done_rounded,
+          color: isDebt && overdue > 0
+              ? Theme.of(context).colorScheme.error
+              : Theme.of(context).colorScheme.primary,
+          label: isDebt ? 'متأخر بعد 48 ساعة' : 'وضع التشغيل',
+          value: isDebt ? '$overdue' : 'حفظ ومزامنة',
+        ),
+      ]);
+    }
+
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: EdgeInsets.all(compact ? 10 : 18),
         child: Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            _SummaryItem(
-              icon: module.icon,
-              color: module.color,
-              label: 'إجمالي السجلات',
-              value: '${records.length}',
-            ),
-            if (isDebt)
-              _SummaryItem(
-                icon: Icons.account_balance_wallet_outlined,
-                color: const Color(0xFFE28B21),
-                label: 'الرصيد غير المسدد',
-                value: '${outstanding.toStringAsFixed(2)} YER',
-              )
-            else
-              const _SummaryItem(
-                icon: Icons.verified_rounded,
-                color: Color(0xFF22B968),
-                label: 'حالة القسم',
-                value: 'سجلات محفوظة',
-              ),
-            _SummaryItem(
-              icon: isDebt
-                  ? Icons.notification_important_outlined
-                  : Icons.cloud_done_rounded,
-              color: isDebt && overdue > 0
-                  ? Theme.of(context).colorScheme.error
-                  : Theme.of(context).colorScheme.primary,
-              label: isDebt ? 'متأخر بعد 48 ساعة' : 'وضع التشغيل',
-              value: isDebt ? '$overdue' : 'حفظ ومزامنة',
-            ),
-          ],
+          spacing: compact ? 8 : 12,
+          runSpacing: compact ? 8 : 12,
+          children: items,
         ),
       ),
     );
@@ -4902,48 +5066,23 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final mobile = MediaQuery.sizeOf(context).width < 600;
-    return AlertDialog(
-      scrollable: false,
-      insetPadding: mobile
-          ? EdgeInsets.zero
-          : const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      shape: mobile
-          ? const RoundedRectangleBorder(borderRadius: BorderRadius.zero)
-          : null,
-      title: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: widget.module.color.withValues(alpha: .12),
-            foregroundColor: widget.module.color,
-            child: Icon(widget.module.icon),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              widget.initial == null
-                  ? '${widget.module.actionLabel} جديد'
-                  : 'تحرير ${widget.module.entityLabel}',
-            ),
-          ),
-          if (mobile)
-            IconButton(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.close_rounded),
-            ),
-        ],
-      ),
-      content: SizedBox(
-        width: mobile ? double.maxFinite : 420,
-        height: (MediaQuery.sizeOf(context).height * (mobile ? .72 : .68))
-            .clamp(360.0, 680.0),
-        child: SingleChildScrollView(
+    final viewportWidth = MediaQuery.sizeOf(context).width;
+    final desktop = viewportWidth >= 900;
+    final phone = viewportWidth < 700;
+    return Scaffold(
+      key: const ValueKey('module-record-document-editor'),
+      appBar: AppBar(toolbarHeight: 0),
+      body: SafeArea(
+        child: NineSoftResponsiveBody(
           child: Form(
             key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+            child: ListView(
+              padding: EdgeInsets.symmetric(
+                horizontal: desktop ? 28 : 4,
+                vertical: 12,
+              ),
               children: [
-                NineSoftEntryHeading(
+NineSoftEntryHeading(
                   title: widget.initial == null
                       ? 'إضافة ${widget.module.entityLabel}'
                       : 'تعديل ${widget.module.entityLabel}',
@@ -4952,8 +5091,8 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
                   status: 'إدخال جديد',
                   accent: widget.module.color,
                 ),
-                const SizedBox(height: 15),
-                if (_isBusinessDocument) ...[
+                SizedBox(height: phone ? 8 : 15),
+                if (_isBusinessDocument && !phone) ...[
                   Card(
                     color: widget.module.color.withValues(alpha: .08),
                     child: ListTile(
@@ -4967,17 +5106,19 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: phone ? 8 : 12),
                 ],
                 NineSoftEntrySection(
-                  title: _isContact ? 'بيانات التواصل' : 'المعلومات الرئيسية',
+                  title: _isContact
+                      ? (widget.initial == null ? 'إضافة / تعديل البيانات' : 'بيانات التواصل')
+                      : (_isProduct && phone ? 'إضافة / تعديل صنف' : 'المعلومات الرئيسية'),
                   subtitle: _isContact
-                      ? 'اسم الطرف ورقم هاتفه'
-                      : 'الاسم والبيان أو الوصف',
+                      ? (phone ? 'الاسم ورقم الهاتف' : 'اسم الطرف ورقم هاتفه')
+                      : (phone ? 'بيانات الصنف الأساسية' : 'الاسم والبيان أو الوصف'),
                   icon: _isContact
                       ? Icons.people_outline_rounded
                       : widget.module.icon,
-                  step: '01',
+                  step: phone ? null : '01',
                   accent: widget.module.color,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -5051,11 +5192,12 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
                 const SizedBox(height: 12),
                 if (_isProduct) ...[
                   NineSoftEntrySection(
-                    title: 'التسعير والباركود والمخزون',
-                    subtitle:
-                        'أسعار الصنف ووحدته ورصيده مع إمكانية مسح الباركود',
+                    title: phone ? 'التسعير والمخزون' : 'التسعير والباركود والمخزون',
+                    subtitle: phone
+                        ? 'الأسعار والباركود والوحدة والرصيد'
+                        : 'أسعار الصنف ووحدته ورصيده مع إمكانية مسح الباركود',
                     icon: Icons.inventory_2_outlined,
-                    step: '02',
+                    step: phone ? null : '02',
                     accent: NizamiColors.amber,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -5336,22 +5478,34 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
                     ),
                   ),
                 ],
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close_rounded),
+                        label: const Text('إلغاء'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 2,
+                      child: FilledButton.icon(
+                        key: const ValueKey('save-record'),
+                        onPressed: _submit,
+                        icon: const Icon(Icons.save_outlined),
+                        label: const Text('حفظ'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
               ],
             ),
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('إلغاء'),
-        ),
-        FilledButton(
-          key: const ValueKey('save-record'),
-          onPressed: _submit,
-          child: const Text('حفظ'),
-        ),
-      ],
     );
   }
 }

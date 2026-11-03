@@ -28,7 +28,13 @@ class NineSoftResponsiveBody extends StatelessWidget {
       constraints: BoxConstraints(maxWidth: maxWidth),
       child: Padding(
         padding:
-            padding ?? const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 28),
+            padding ??
+            EdgeInsetsDirectional.fromSTEB(
+              MediaQuery.sizeOf(context).width < NineSoftBreakpoints.compact ? 12 : 20,
+              16,
+              MediaQuery.sizeOf(context).width < NineSoftBreakpoints.compact ? 12 : 20,
+              28,
+            ),
         child: child,
       ),
     ),
@@ -128,9 +134,9 @@ class NineSoftPageHeader extends StatelessWidget {
             width: compact ? 46 : 54,
             height: compact ? 46 : 54,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: .11),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: color.withValues(alpha: .18)),
+              color: color.withValues(alpha: .10),
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(color: color.withValues(alpha: .12)),
             ),
             child: Icon(icon, color: color, size: compact ? 25 : 29),
           ),
@@ -145,8 +151,9 @@ class NineSoftPageHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontFamily: 'GESS',
-                    fontSize: compact ? 22 : 27,
-                    fontWeight: FontWeight.w700,
+                    fontSize: compact ? 24 : 30,
+                    fontWeight: FontWeight.w800,
+                    color: NizamiColors.ink,
                   ),
                 ),
                 if (subtitle != null)
@@ -222,7 +229,7 @@ class NineSoftPanel extends StatelessWidget {
     padding: padding,
     decoration: BoxDecoration(
       color: color ?? Theme.of(context).colorScheme.surface,
-      borderRadius: BorderRadius.circular(23),
+      borderRadius: BorderRadius.circular(17),
       border: Border.all(
         color: Theme.of(context).brightness == Brightness.dark
             ? Colors.white.withValues(alpha: .08)
@@ -233,8 +240,8 @@ class NineSoftPanel extends StatelessWidget {
           : const [
               BoxShadow(
                 color: Color(0x0B113F5B),
-                blurRadius: 24,
-                offset: Offset(0, 9),
+                blurRadius: 14,
+                offset: Offset(0, 5),
               ),
             ],
     ),
@@ -364,7 +371,10 @@ class NineSoftSearchField extends StatelessWidget {
     onChanged: onChanged,
     decoration: InputDecoration(
       hintText: hintText,
-      prefixIcon: const Icon(Icons.search_rounded),
+      fillColor: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF142238)
+          : Colors.white,
+      prefixIcon: const Icon(Icons.search_rounded, color: NizamiColors.ink),
       suffixIcon: controller.text.isEmpty
           ? null
           : IconButton(
@@ -393,67 +403,77 @@ class NineSoftMetricCard extends StatelessWidget {
   final Color color;
 
   @override
-  Widget build(BuildContext context) => NineSoftPanel(
-    padding: const EdgeInsets.all(14),
-    child: Row(
-      children: [
-        Container(
-          width: 46,
-          height: 46,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [color.withValues(alpha: .72), color],
-            ),
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: .22),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Icon(icon, color: Colors.white, size: 25),
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: dark ? Theme.of(context).colorScheme.surface : color.withValues(alpha: .10),
+        borderRadius: BorderRadius.circular(17),
+        border: Border.all(
+          color: dark ? Colors.white.withValues(alpha: .08) : color.withValues(alpha: .10),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              Text(
-                value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontFamily: 'ArialMTBlack',
-                  fontSize: 18,
-                  color: color,
+        boxShadow: dark
+            ? null
+            : const [
+                BoxShadow(
+                  color: Color(0x0A0E2A47),
+                  blurRadius: 12,
+                  offset: Offset(0, 5),
                 ),
-              ),
-              if (caption != null)
+              ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: .10),
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: Icon(icon, color: color, size: 25),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
                 Text(
-                  caption!,
+                  label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: dark ? Colors.white70 : NizamiColors.ink,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-            ],
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontFamily: 'ArialMTBlack',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: dark ? Colors.white : NizamiColors.ink,
+                  ),
+                ),
+                if (caption != null)
+                  Text(
+                    caption!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(color: color),
+                  ),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }
 
 class NineSoftEmptyState extends StatelessWidget {
@@ -515,67 +535,100 @@ class NineSoftMobileDock extends StatelessWidget {
     required this.currentIndex,
     required this.onSelected,
     this.centerAction,
+    this.contextLabel = 'العمليات',
+    this.contextIcon = Icons.layers_outlined,
   });
 
   final int currentIndex;
   final ValueChanged<int> onSelected;
   final VoidCallback? centerAction;
+  final String contextLabel;
+  final IconData contextIcon;
 
   @override
-  Widget build(BuildContext context) => ClipRRect(
-    borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
-    child: BottomAppBar(
-      height: 79,
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-      color: NizamiColors.navy,
-      surfaceTintColor: Colors.transparent,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          Expanded(
-            child: _DockButton(
-              icon: Icons.home_rounded,
-              label: 'الرئيسية',
-              selected: currentIndex == 0,
-              onTap: () => onSelected(0),
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final background = dark ? const Color(0xFF101B2D) : Colors.white;
+    return SafeArea(
+      top: false,
+      child: Container(
+        height: 82,
+        padding: const EdgeInsetsDirectional.fromSTEB(8, 8, 8, 7),
+        decoration: BoxDecoration(
+          color: background,
+          border: Border(
+            top: BorderSide(
+              color: dark ? Colors.white.withValues(alpha: .08) : NizamiColors.border,
             ),
           ),
-          Expanded(
-            child: _DockButton(
-              icon: Icons.inventory_2_rounded,
-              label: 'المخزون',
-              selected: currentIndex == 1,
-              onTap: () => onSelected(1),
+          boxShadow: dark
+              ? null
+              : const [
+                  BoxShadow(
+                    color: Color(0x100A2545),
+                    blurRadius: 20,
+                    offset: Offset(0, -6),
+                  ),
+                ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: _DockButton(
+                icon: Icons.home_rounded,
+                label: 'الرئيسية',
+                selected: currentIndex == 0,
+                onTap: () => onSelected(0),
+              ),
             ),
-          ),
-          Expanded(
-            child: _DockButton(
-              icon: Icons.shopping_bag_rounded,
-              label: 'المبيعات',
-              selected: false,
-              onTap: centerAction ?? () {},
+            Expanded(
+              child: _DockButton(
+                icon: contextIcon,
+                label: contextLabel,
+                selected: currentIndex == 1,
+                onTap: () => onSelected(1),
+              ),
             ),
-          ),
-          Expanded(
-            child: _DockButton(
-              icon: Icons.bar_chart_rounded,
-              label: 'التقارير',
-              selected: currentIndex == 2,
-              onTap: () => onSelected(2),
+            SizedBox(
+              width: 66,
+              child: Center(
+                child: Material(
+                  color: NizamiColors.navy,
+                  shape: const CircleBorder(),
+                  elevation: 2,
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: centerAction,
+                    child: const SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: Icon(Icons.add_rounded, color: Colors.white, size: 29),
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
-          Expanded(
-            child: _DockButton(
-              icon: Icons.apps_rounded,
-              label: 'ابدأ',
-              selected: currentIndex == 3,
-              onTap: () => onSelected(3),
+            Expanded(
+              child: _DockButton(
+                icon: Icons.bar_chart_rounded,
+                label: 'التقارير',
+                selected: currentIndex == 2,
+                onTap: () => onSelected(2),
+              ),
             ),
-          ),
-        ],
+            Expanded(
+              child: _DockButton(
+                icon: Icons.settings_outlined,
+                label: 'الإعدادات',
+                selected: currentIndex == 3,
+                onTap: () => onSelected(3),
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _DockButton extends StatelessWidget {
@@ -592,34 +645,42 @@ class _DockButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Material(
-    color: selected ? NizamiColors.tealDark : Colors.transparent,
-    borderRadius: BorderRadius.circular(17),
-    child: InkWell(
-      borderRadius: BorderRadius.circular(17),
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 23, color: selected ? Colors.white : Colors.white70),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-              style: TextStyle(
-                fontFamily: 'GESS',
-                fontSize: 9,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                color: selected ? Colors.white : Colors.white70,
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = selected
+        ? (dark ? const Color(0xFF9BC0FF) : NizamiColors.navy)
+        : (dark ? Colors.white60 : const Color(0xFF4E5E73));
+    return Material(
+      color: selected
+          ? (dark ? const Color(0xFF213653) : const Color(0xFFE4EEFF))
+          : Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 25, color: foreground),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: TextStyle(
+                  fontFamily: 'GESS',
+                  fontSize: 10,
+                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                  color: foreground,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }

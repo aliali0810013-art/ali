@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nizami/src/app.dart';
 import 'package:nizami/src/auth/auth_api.dart';
 import 'package:nizami/src/features/modules/module_workspace_page.dart';
+import 'package:nizami/src/features/navigation/ninesoft_app_launcher.dart';
 import 'package:nizami/src/theme/ninesoft_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,12 +18,15 @@ void main() {
     // The responsive shell intentionally exposes the same destination in the
     // dashboard grid and the persistent mobile shortcut bar. Exercise the
     // always-visible shortcut without making the test ambiguous.
-    final productsShortcut = find.descendant(
+    final operationsShortcut = find.descendant(
       of: find.byType(NineSoftMobileDock),
-      matching: find.text('المخزون'),
+      matching: find.text('العمليات'),
     );
-    expect(productsShortcut, findsOneWidget);
-    await tester.tap(productsShortcut);
+    expect(operationsShortcut, findsOneWidget);
+    await tester.tap(operationsShortcut);
+    await tester.pumpAndSettle();
+    expect(find.byType(NineSoftAppLauncher), findsOneWidget);
+    await tester.tap(find.byKey(const Key('launcher-app-products')));
     await tester.pumpAndSettle();
 
     expect(find.text('إضافة صنف'), findsWidgets);
@@ -39,8 +43,25 @@ void main() {
     );
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const ValueKey('save-record')));
-    await tester.tap(find.byKey(const ValueKey('save-record')));
+    for (
+      var index = 0;
+      index < 12 &&
+          find.byKey(const ValueKey('save-record')).evaluate().isEmpty;
+      index++
+    ) {
+      await tester.drag(
+        find.descendant(
+          of: find.byKey(const ValueKey('module-record-document-editor')),
+          matching: find.byType(Scrollable),
+        ).first,
+        const Offset(0, -360),
+      );
+      await tester.pumpAndSettle();
+    }
+    final save = find.byKey(const ValueKey('save-record'));
+    expect(save, findsOneWidget);
+    await tester.ensureVisible(save);
+    await tester.tap(save);
     await tester.pumpAndSettle();
 
     expect(find.text('طابعة حرارية'), findsOneWidget);

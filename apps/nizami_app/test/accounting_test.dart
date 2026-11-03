@@ -21,6 +21,11 @@ void main() {
           entries.first.lines.map((line) => line.accountCode),
           containsAll(['1100-CASH', '1200-AR', '4100-SALES']),
         );
+        expect(
+          entries.last.lines.map((line) => line.accountCode),
+          containsAll(['5100-COGS', '1300-INVENTORY']),
+        );
+        expect(entries.last.referenceId, 'inv-01');
       },
     );
 

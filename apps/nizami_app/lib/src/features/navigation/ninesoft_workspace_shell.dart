@@ -370,29 +370,61 @@ class _NineSoftWorkspaceShellState extends State<NineSoftWorkspaceShell> {
               ? ''
               : _activeModuleKey!.split('.').first;
           if (constraints.maxWidth < _desktopBreakpoint) {
+            const settingsModules = {
+              'settings',
+              'users',
+              'branches',
+              'backup',
+            };
             final mobileIndex = activeRootSection.isEmpty
                 ? 0
-                : activeRootSection == 'products'
-                ? 1
                 : activeRootSection == 'reports'
                 ? 2
-                : 3;
+                : settingsModules.contains(activeRootSection)
+                ? 3
+                : 1;
+            final activeModule = _activeModuleKey == null
+                ? null
+                : _module(_activeModuleKey!);
             return Scaffold(
-              body: IndexedStack(
-                index: activeIndex < 0 ? 0 : activeIndex,
+              body: Column(
                 children: [
-                  _dashboard(onOpenModule: _openModule, showMobileDock: false),
-                  for (final tab in _tabs) tab.buildNavigator(),
+                  if (_activeModuleKey != null)
+                    NineSoftReferenceMobileHeader(
+                      title: activeModule?.title ?? 'NineSoft',
+                      onMenu: _showAppLauncher,
+                      onProfile: () => _openByKey('settings'),
+                    ),
+                  Expanded(
+                    child: IndexedStack(
+                      index: activeIndex < 0 ? 0 : activeIndex,
+                      children: [
+                        _dashboard(
+                          onOpenModule: _openModule,
+                          showMobileDock: false,
+                        ),
+                        for (final tab in _tabs) tab.buildNavigator(),
+                      ],
+                    ),
+                  ),
                 ],
               ),
               bottomNavigationBar: NineSoftMobileDock(
                 currentIndex: mobileIndex,
+                contextLabel: mobileIndex == 1
+                    ? (activeModule?.title ?? 'العمليات')
+                    : 'العمليات',
+                contextIcon: mobileIndex == 1
+                    ? (activeModule?.icon ?? Icons.layers_outlined)
+                    : Icons.layers_outlined,
                 centerAction: () => _openByKey('sales'),
                 onSelected: (index) {
                   if (index == 0) setState(() => _activeModuleKey = null);
-                  if (index == 1) _openByKey('products');
+                  if (index == 1) {
+                    if (mobileIndex != 1) _showAppLauncher();
+                  }
                   if (index == 2) _openByKey('reports');
-                  if (index == 3) _showAppLauncher();
+                  if (index == 3) _openByKey('settings');
                 },
               ),
             );
@@ -451,4 +483,108 @@ class _NineSoftWorkspaceShellState extends State<NineSoftWorkspaceShell> {
       ),
     ),
   );
+}
+
+
+class NineSoftReferenceMobileHeader extends StatelessWidget {
+  const NineSoftReferenceMobileHeader({
+    super.key,
+    required this.title,
+    required this.onMenu,
+    required this.onProfile,
+  });
+
+  final String title;
+  final VoidCallback onMenu;
+  final VoidCallback onProfile;
+
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.paddingOf(context).top;
+    return Container(
+      constraints: const BoxConstraints(minHeight: 104),
+      padding: EdgeInsetsDirectional.fromSTEB(14, topPadding + 8, 14, 14),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: AlignmentDirectional.centerStart,
+          end: AlignmentDirectional.centerEnd,
+          colors: [Color(0xFF0B356F), Color(0xFF082B5D)],
+        ),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            tooltip: 'القائمة',
+            onPressed: onMenu,
+            icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 31),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Text(
+                  'NineSoft',
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'ArialMTBlack',
+                    fontWeight: FontWeight.w800,
+                    fontSize: 24,
+                    height: 1.05,
+                  ),
+                ),
+                SizedBox(height: 3),
+                Text(
+                  'نظام محاسبي متكامل',
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: Color(0xFFD7E5F8),
+                    fontFamily: 'GESS',
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 4),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                tooltip: 'التنبيهات',
+                onPressed: onMenu,
+                icon: const Icon(
+                  Icons.notifications_none_rounded,
+                  color: Colors.white,
+                  size: 29,
+                ),
+              ),
+              const PositionedDirectional(
+                top: 6,
+                end: 5,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Color(0xFFFF4C55),
+                    shape: BoxShape.circle,
+                  ),
+                  child: SizedBox(width: 8, height: 8),
+                ),
+              ),
+            ],
+          ),
+          IconButton(
+            tooltip: 'الحساب',
+            onPressed: onProfile,
+            style: IconButton.styleFrom(
+              backgroundColor: const Color(0xFF214B82),
+              foregroundColor: Colors.white,
+            ),
+            icon: const Icon(Icons.person_outline_rounded, size: 27),
+          ),
+        ],
+      ),
+    );
+  }
 }

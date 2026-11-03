@@ -43,7 +43,7 @@ class NineSoftDocumentCommandBar extends StatelessWidget {
         .map(
           (action) => SizedBox(
             width: mobile ? 90 : 108,
-            height: mobile ? 84 : 88,
+            height: mobile ? 90 : 96,
             child: Material(
               key: action.key,
               color: action.onPressed == null
@@ -340,13 +340,13 @@ class NineSoftEntryHeading extends StatelessWidget {
           gradient: const LinearGradient(
             begin: AlignmentDirectional.topStart,
             end: AlignmentDirectional.bottomEnd,
-            colors: [Color(0xFF08294D), Color(0xFF07546B), Color(0xFF04A58F)],
+            colors: [NizamiColors.navy, NizamiColors.navyDark, NizamiColors.navyLight],
             stops: [0, .56, 1],
           ),
           borderRadius: BorderRadius.circular(mobile ? 18 : 22),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x24093962),
+              color: Color(0x240B356F),
               blurRadius: 27,
               offset: Offset(0, 13),
             ),
@@ -391,7 +391,7 @@ class NineSoftEntrySection extends StatelessWidget {
     this.subtitle,
     this.step,
     this.action,
-    this.accent = NizamiColors.tealDark,
+    this.accent = NizamiColors.blue,
     this.padding,
   });
 
@@ -415,11 +415,11 @@ class NineSoftEntrySection extends StatelessWidget {
         padding: padding ?? EdgeInsets.all(mobile ? 15 : 20),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(17),
           border: Border.all(
             color: dark
                 ? Colors.white.withValues(alpha: .12)
-                : const Color(0xFFE0EDF6),
+                : NizamiColors.border,
           ),
           boxShadow: dark
               ? null
@@ -446,11 +446,11 @@ class NineSoftEntrySection extends StatelessWidget {
                     height: 40,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFFDFF9F2), Color(0xFFE6F5FF)],
+                        colors: [Color(0xFFEAF3FF), Color(0xFFF4F7FB)],
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(icon, color: Color(0xFF008E81), size: 22),
+                    child: Icon(icon, color: NizamiColors.blue, size: 22),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -466,7 +466,7 @@ class NineSoftEntrySection extends StatelessWidget {
                                 fontFamily: 'GESS',
                                 fontSize: 15,
                                 fontWeight: FontWeight.w900,
-                                color: const Color(0xFF0A3156),
+                                color: NizamiColors.ink,
                               ),
                         ),
                         if (subtitle != null)
@@ -511,7 +511,11 @@ class NineSoftEntrySection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            child,
+            Material(
+              color: Colors.transparent,
+              type: MaterialType.transparency,
+              child: child,
+            ),
           ],
         ),
       );
@@ -590,11 +594,11 @@ class _NineSoftEntryStep extends StatelessWidget {
     decoration: BoxDecoration(
       color: active ? null : Colors.white,
       gradient: active
-          ? const LinearGradient(colors: [Color(0xFFEDFFFA), Color(0xFFFFFFFF)])
+          ? const LinearGradient(colors: [Color(0xFFEAF3FF), Color(0xFFFFFFFF)])
           : null,
       borderRadius: BorderRadius.circular(mobile ? 12 : 15),
       border: Border.all(
-        color: active ? const Color(0xFFA4E8D6) : const Color(0xFFE3EDF5),
+        color: active ? const Color(0xFFBBD5FA) : const Color(0xFFE3EAF3),
       ),
       boxShadow: const [
         BoxShadow(
@@ -611,7 +615,7 @@ class _NineSoftEntryStep extends StatelessWidget {
           width: mobile ? 25 : 29,
           height: mobile ? 25 : 29,
           decoration: BoxDecoration(
-            color: active ? const Color(0xFF04A98F) : const Color(0xFFE7F4FB),
+            color: active ? NizamiColors.blue : const Color(0xFFE7F0FC),
             borderRadius: BorderRadius.circular(mobile ? 8 : 10),
           ),
           alignment: Alignment.center,
@@ -814,15 +818,19 @@ class _NineSoftEntryInputScope extends StatelessWidget {
 }
 
 class _NineSoftCompactEntryCell extends StatelessWidget {
-  const _NineSoftCompactEntryCell({required this.child});
+  const _NineSoftCompactEntryCell({
+    required this.child,
+    this.dense = false,
+  });
 
   final Widget child;
+  final bool dense;
 
   @override
   Widget build(BuildContext context) => _NineSoftEntryInputScope(
-    height: 43,
-    radius: 10,
-    horizontalPadding: 9,
+    height: dense ? 36 : 43,
+    radius: dense ? 8 : 10,
+    horizontalPadding: dense ? 5 : 9,
     child: child,
   );
 }
@@ -1147,12 +1155,12 @@ class NineSoftScannerStrip extends StatelessWidget {
           vertical: mobile ? 8 : 5,
         ),
         decoration: BoxDecoration(
-          color: const Color(0xFFEEFBF7),
+          color: const Color(0xFFF4F8FF),
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: const Color(0xFFB8E8DC)),
+          border: Border.all(color: const Color(0xFFCFE0F7)),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x0D089982),
+              color: Color(0x0D1769E8),
               blurRadius: 11,
               offset: Offset(0, 3),
             ),
@@ -1160,7 +1168,7 @@ class NineSoftScannerStrip extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, color: const Color(0xFF059B8B), size: 23),
+            Icon(icon, color: NizamiColors.blue, size: 23),
             const SizedBox(width: 9),
             Expanded(
               child: _NineSoftEntryInputScope(
@@ -1168,7 +1176,7 @@ class NineSoftScannerStrip extends StatelessWidget {
                 radius: 10,
                 horizontalPadding: 9,
                 child: DefaultTextStyle.merge(
-                  style: const TextStyle(color: Color(0xFF0B4B42)),
+                  style: const TextStyle(color: NizamiColors.ink),
                   child: input,
                 ),
               ),
@@ -1180,7 +1188,7 @@ class NineSoftScannerStrip extends StatelessWidget {
                 key: const Key('ninesoft-scanner-shortcut'),
                 maxLines: 1,
                 style: const TextStyle(
-                  color: Color(0xFF0B8A82),
+                  color: NizamiColors.blue,
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                 ),
@@ -1200,6 +1208,7 @@ class NineSoftEntryLineCells {
     required this.quantity,
     required this.price,
     required this.total,
+    this.discount,
     this.onDelete,
     this.semanticsLabel,
   });
@@ -1209,6 +1218,7 @@ class NineSoftEntryLineCells {
   final Widget quantity;
   final Widget price;
   final Widget total;
+  final Widget? discount;
   final VoidCallback? onDelete;
   final String? semanticsLabel;
 }
@@ -1218,15 +1228,22 @@ class NineSoftEntryLineTable extends StatelessWidget {
     super.key,
     required this.lines,
     this.priceLabel = 'السعر',
+    this.forceTableOnMobile = false,
+    this.showDiscount = false,
+    this.denseReference = false,
   });
 
   final List<NineSoftEntryLineCells> lines;
   final String priceLabel;
+  final bool forceTableOnMobile;
+  final bool showDiscount;
+  final bool denseReference;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      if (_isEntryMobile(context)) {
+      final compactTable = forceTableOnMobile && _isEntryMobile(context);
+      if (_isEntryMobile(context) && !forceTableOnMobile) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -1250,9 +1267,12 @@ class NineSoftEntryLineTable extends StatelessWidget {
           children: [
             Container(
               key: const Key('ninesoft-entry-line-header'),
-              padding: const EdgeInsets.only(top: 9, bottom: 6),
+              padding: EdgeInsets.only(
+                top: denseReference ? 6 : 9,
+                bottom: denseReference ? 5 : 6,
+              ),
               decoration: const BoxDecoration(
-                color: Color(0xFFF5FAFE),
+                color: Color(0xFFEAF2FF),
                 border: Border(bottom: BorderSide(color: Color(0xFFE6F0F6))),
               ),
               child: _EntryTableRow(
@@ -1262,37 +1282,64 @@ class NineSoftEntryLineTable extends StatelessWidget {
                 unit: const Text('الوحدة'),
                 quantity: const Text('الكمية'),
                 price: Text(priceLabel),
+                discount: showDiscount ? const Text('الخصم') : null,
                 total: const Text('الإجمالي'),
                 delete: const SizedBox.shrink(),
+                showDiscount: showDiscount,
+                compact: compactTable,
+                hideNumber: denseReference,
               ),
             ),
-            const SizedBox(height: 9),
+            SizedBox(height: denseReference ? 0 : 9),
             for (var index = 0; index < lines.length; index++)
               Padding(
                 padding: EdgeInsets.only(
-                  bottom: index == lines.length - 1 ? 0 : 9,
+                  bottom: index == lines.length - 1
+                      ? 0
+                      : (denseReference ? 0 : 9),
                 ),
                 child: Container(
                   key: Key('ninesoft-entry-line-row-$index'),
-                  padding: const EdgeInsets.symmetric(vertical: 7),
+                  height: denseReference ? 44 : null,
+                  padding: EdgeInsets.symmetric(
+                    vertical: denseReference ? 4 : 7,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF9FCFF),
-                    borderRadius: BorderRadius.circular(11),
-                    border: Border.all(color: const Color(0xFFE7F0F6)),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(denseReference ? 0 : 11),
+                    border: denseReference
+                        ? const Border(
+                            bottom: BorderSide(color: Color(0xFFE5EBF3)),
+                          )
+                        : Border.all(color: NizamiColors.border),
                   ),
                   child: _EntryTableRow(
                     number: _LineNumber(index: index, mobile: false),
                     product: _NineSoftCompactEntryCell(
+                      dense: denseReference,
                       child: lines[index].product,
                     ),
-                    unit: _NineSoftCompactEntryCell(child: lines[index].unit),
+                    unit: _NineSoftCompactEntryCell(
+                      dense: denseReference,
+                      child: lines[index].unit,
+                    ),
                     quantity: _NineSoftCompactEntryCell(
+                      dense: denseReference,
                       child: lines[index].quantity,
                     ),
-                    price: _NineSoftCompactEntryCell(child: lines[index].price),
+                    price: _NineSoftCompactEntryCell(
+                      dense: denseReference,
+                      child: lines[index].price,
+                    ),
+                    discount: showDiscount
+                        ? _NineSoftCompactEntryCell(
+                            dense: denseReference,
+                            child: lines[index].discount ?? const Text('0%'),
+                          )
+                        : null,
                     total: DefaultTextStyle.merge(
                       style: const TextStyle(
-                        color: Color(0xFF036C66),
+                        color: NizamiColors.navy,
                         fontSize: 12,
                         fontWeight: FontWeight.w900,
                       ),
@@ -1302,7 +1349,11 @@ class NineSoftEntryLineTable extends StatelessWidget {
                       index: index,
                       onDelete: lines[index].onDelete,
                       semanticsLabel: lines[index].semanticsLabel,
+                      referenceStyle: denseReference,
                     ),
+                    showDiscount: showDiscount,
+                    compact: compactTable,
+                    hideNumber: denseReference,
                   ),
                 ),
               ),
@@ -1320,9 +1371,13 @@ class _EntryTableRow extends StatelessWidget {
     required this.unit,
     required this.quantity,
     required this.price,
+    this.discount,
     required this.total,
     required this.delete,
+    this.showDiscount = false,
     this.header = false,
+    this.compact = false,
+    this.hideNumber = false,
   });
 
   final Widget number;
@@ -1330,16 +1385,20 @@ class _EntryTableRow extends StatelessWidget {
   final Widget unit;
   final Widget quantity;
   final Widget price;
+  final Widget? discount;
   final Widget total;
   final Widget delete;
+  final bool showDiscount;
   final bool header;
+  final bool compact;
+  final bool hideNumber;
 
   @override
   Widget build(BuildContext context) {
     Widget cell(Widget child, int flex) => Expanded(
       flex: flex,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 5),
+        padding: EdgeInsets.symmetric(horizontal: compact ? 3 : 5),
         child: child,
       ),
     );
@@ -1347,22 +1406,24 @@ class _EntryTableRow extends StatelessWidget {
     final row = Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        SizedBox(width: 28, child: Center(child: number)),
-        cell(product, 35),
-        cell(unit, 13),
-        cell(quantity, 11),
-        cell(price, 16),
-        cell(total, 16),
-        SizedBox(width: 35, child: Center(child: delete)),
+        if (!hideNumber)
+          SizedBox(width: compact ? 24 : 28, child: Center(child: number)),
+        cell(product, showDiscount ? 30 : 35),
+        cell(unit, showDiscount ? 11 : 13),
+        cell(quantity, showDiscount ? 12 : 11),
+        cell(price, showDiscount ? 13 : 16),
+        if (showDiscount) cell(discount ?? const SizedBox.shrink(), 10),
+        cell(total, showDiscount ? 15 : 16),
+        SizedBox(width: showDiscount ? 30 : 35, child: Center(child: delete)),
       ],
     );
     if (!header) return row;
     return DefaultTextStyle.merge(
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        color: Color(0xFF4C7893),
-        fontSize: 10.5,
+      style: TextStyle(
+        color: const Color(0xFF4C7893),
+        fontSize: compact ? 9.5 : 10.5,
         fontWeight: FontWeight.w900,
       ),
       child: row,
@@ -1528,11 +1589,13 @@ class _DeleteLineButton extends StatelessWidget {
     required this.index,
     required this.onDelete,
     required this.semanticsLabel,
+    this.referenceStyle = false,
   });
 
   final int index;
   final VoidCallback? onDelete;
   final String? semanticsLabel;
+  final bool referenceStyle;
 
   @override
   Widget build(BuildContext context) => IconButton(
@@ -1542,6 +1605,10 @@ class _DeleteLineButton extends StatelessWidget {
     padding: EdgeInsets.zero,
     constraints: const BoxConstraints.tightFor(width: 32, height: 32),
     style: IconButton.styleFrom(
+      backgroundColor:
+          referenceStyle ? const Color(0xFFFFE8EC) : Colors.transparent,
+      foregroundColor:
+          referenceStyle ? const Color(0xFFE33B4D) : null,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     ),
     icon: const Icon(Icons.delete_outline_rounded, size: 19),
@@ -1582,7 +1649,7 @@ class _MobileEntryCell extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.end,
                 style: const TextStyle(
-                  color: Color(0xFF036C66),
+                  color: NizamiColors.navy,
                   fontSize: 13,
                   fontWeight: FontWeight.w900,
                 ),
@@ -1656,11 +1723,11 @@ class NineSoftEntrySummary extends StatelessWidget {
         padding: EdgeInsets.all(mobile ? 15 : 20),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(19),
-          border: Border.all(color: const Color(0xFFB9E4DF)),
+          borderRadius: BorderRadius.circular(17),
+          border: Border.all(color: NizamiColors.border),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x130D6D61),
+              color: Color(0x0D0B356F),
               blurRadius: 27,
               offset: Offset(0, 10),
             ),
@@ -1672,13 +1739,13 @@ class NineSoftEntrySummary extends StatelessWidget {
             Container(
               padding: const EdgeInsets.only(bottom: 12),
               decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: Color(0xFFE5F4F0))),
+                border: Border(bottom: BorderSide(color: NizamiColors.border)),
               ),
               child: const Row(
                 children: [
                   Icon(
                     Icons.summarize_outlined,
-                    color: Color(0xFF009D8B),
+                    color: NizamiColors.blue,
                     size: 22,
                   ),
                   SizedBox(width: 8),
@@ -1713,9 +1780,9 @@ class NineSoftEntrySummary extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(17),
               decoration: BoxDecoration(
-                color: const Color(0xFFF2FAF9),
+                color: const Color(0xFFF6F9FE),
                 borderRadius: BorderRadius.circular(13),
-                border: Border.all(color: const Color(0xFFDEEDE9)),
+                border: Border.all(color: NizamiColors.border),
               ),
               child: Column(
                 children: [for (final row in rows) _SummaryAmountRow(row: row)],
@@ -1923,7 +1990,7 @@ class NineSoftEntryTotalPreview extends StatelessWidget {
     required this.amount,
     this.subtitle,
     this.currency = 'ر.ي',
-    this.accent = NizamiColors.tealDark,
+    this.accent = NizamiColors.blue,
   });
 
   final String label;

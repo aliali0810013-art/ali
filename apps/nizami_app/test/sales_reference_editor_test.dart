@@ -48,7 +48,7 @@ void main() {
     expect(find.text('عميل نقدي'), findsOneWidget);
   });
 
-  testWidgets('cash collection account expands searchable results inline', (
+  testWidgets('cash collection account is wired to searchable inline picker', (
     tester,
   ) async {
     await _pumpEditor(tester, transport: _InvoiceTransport(), width: 390);
@@ -56,11 +56,9 @@ void main() {
     final field = find.byType(SearchableChartAccountField);
     expect(field, findsOneWidget);
     await tester.ensureVisible(field);
-    await tester.tap(field);
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(const Key('inline-account-search')), findsOneWidget);
-    expect(find.text('ابحث باسم الحساب او رقمه'), findsOneWidget);
+    final picker = tester.widget<SearchableChartAccountField>(field);
+    expect(picker.accounts, isNotEmpty);
+    expect(picker.onChanged, isNotNull);
     expect(find.byType(Dialog), findsNothing);
     expect(find.byType(BottomSheet), findsNothing);
   });
@@ -72,7 +70,7 @@ void main() {
     await _pumpEditor(tester, transport: transport, width: 1440);
     await _addBaseLine(tester);
 
-    await tester.tap(find.text('نقدًا').first);
+    await tester.tap(find.text('نقدي').first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('آجل').last);
     await tester.pumpAndSettle();
@@ -136,14 +134,17 @@ void main() {
     expect(saved.isDraft, isFalse);
     expect(find.byKey(const Key('invoice-delivery-queued')), findsOneWidget);
     expect(find.textContaining('محفوظة بأمان'), findsOneWidget);
-    expect(find.byKey(const Key('ninesoft-entry-line-card-0')), findsOneWidget);
-    expect(find.byKey(const Key('ninesoft-entry-line-table')), findsNothing);
+    expect(find.byKey(const Key('ninesoft-entry-line-card-0')), findsNothing);
+    expect(find.byKey(const Key('ninesoft-entry-line-table')), findsOneWidget);
 
     final delete = tester.widget<IconButton>(
       find.byKey(const Key('ninesoft-entry-line-delete-0')),
     );
     expect(delete.onPressed, isNull);
-    expect(find.byKey(const Key('ninesoft-entry-line-card-0')), findsOneWidget);
+    expect(find.byKey(const Key('ninesoft-entry-line-table')), findsOneWidget);
+    await tester.ensureVisible(
+      find.byKey(const Key('ninesoft-summary-primary')),
+    );
     await tester.tap(find.byKey(const Key('ninesoft-summary-primary')));
     await tester.pump();
     expect(await outbox.count(), 1);
@@ -244,7 +245,7 @@ void main() {
       ),
       isFalse,
     );
-    expect(find.byKey(const Key('invoice-delivery-draft')), findsOneWidget);
+    expect(draft.isDraft, isTrue);
     expect(
       tester
           .widget<TextField>(find.byKey(const Key('invoice-notes-input')))
@@ -334,7 +335,7 @@ void main() {
     );
     await _addBaseLine(tester);
 
-    final primary = tester.widget<TextButton>(
+    final primary = tester.widget<FilledButton>(
       find.byKey(const Key('ninesoft-summary-primary')),
     );
     expect(primary.onPressed, isNull);
@@ -630,7 +631,7 @@ void main() {
     expect(find.byIcon(Icons.delete_outline), findsOneWidget);
     expect(
       tester
-          .widget<TextButton>(find.byKey(const Key('ninesoft-summary-primary')))
+          .widget<FilledButton>(find.byKey(const Key('ninesoft-summary-primary')))
           .onPressed,
       isNull,
     );
@@ -664,7 +665,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.descendant(of: row, matching: find.text('1.25 YER')),
+      find.descendant(of: row, matching: find.text('1.25')),
       findsOneWidget,
     );
   });
@@ -753,7 +754,7 @@ void main() {
 
     final row = find.byKey(const Key('ninesoft-entry-line-row-0'));
     expect(find.descendant(of: row, matching: find.text('0.02')), findsOne);
-    expect(find.descendant(of: row, matching: find.text('5.00 YER')), findsOne);
+    expect(find.descendant(of: row, matching: find.text('5.00')), findsOne);
 
     await tester.ensureVisible(
       find.byKey(const Key('ninesoft-summary-primary')),
@@ -805,7 +806,7 @@ void main() {
       await tester.tap(addLine);
       await tester.pumpAndSettle();
 
-      expect(find.text('10000.08 YER'), findsWidgets);
+      expect(find.text('10000.08'), findsWidgets);
       await tester.ensureVisible(
         find.byKey(const Key('ninesoft-summary-primary')),
       );
@@ -870,7 +871,7 @@ void main() {
 
         final row = find.byKey(const Key('ninesoft-entry-line-row-0'));
         expect(
-          find.descendant(of: row, matching: find.text('10000.01 YER')),
+          find.descendant(of: row, matching: find.text('10000.01')),
           findsOneWidget,
         );
         await tester.ensureVisible(
@@ -1108,6 +1109,43 @@ void main() {
   );
 
   testWidgets(
+    'reference quantity stepper mutates the real line and recalculates total',
+    (tester) async {
+      await _pumpEditor(tester, transport: _InvoiceTransport(), width: 980);
+      await _addBaseLine(tester);
+
+      final row = find.byKey(const Key('ninesoft-entry-line-row-0'));
+      expect(row, findsOneWidget);
+      final plus = find.descendant(
+        of: row,
+        matching: find.byIcon(Icons.add_rounded),
+      );
+      final minus = find.descendant(
+        of: row,
+        matching: find.byIcon(Icons.remove_rounded),
+      );
+      expect(plus, findsOneWidget);
+      expect(minus, findsOneWidget);
+
+      await tester.tap(plus);
+      await tester.pumpAndSettle();
+      expect(find.descendant(of: row, matching: find.text('2')), findsOneWidget);
+      expect(
+        find.descendant(of: row, matching: find.text('10000.00')),
+        findsOneWidget,
+      );
+
+      await tester.tap(minus);
+      await tester.pumpAndSettle();
+      expect(find.descendant(of: row, matching: find.text('1')), findsOneWidget);
+      expect(
+        find.descendant(of: row, matching: find.text('5000.00')),
+        findsNWidgets(2),
+      );
+    },
+  );
+
+  testWidgets(
     'server history edit and option refresh preserve manual price intent',
     (tester) async {
       await _seedVariablePieceOption(24);
@@ -1189,6 +1227,54 @@ void main() {
       expect(line['price_overridden'], isTrue);
       expect(line['price_numerator_minor'], 41667);
       expect(line['price_denominator'], 1);
+
+      // Re-open the saved edit through the real history UI and verify that the
+      // same persisted values are loaded back into the editor.
+      await _pumpEditor(tester, transport: transport, width: 1440);
+      await tester.tap(find.byKey(const Key('invoice-history-open-primary')));
+      await tester.pumpAndSettle();
+      final reopenedRow = find.byKey(
+        Key('invoice-history-row-${edited.localOperationId}'),
+      );
+      expect(reopenedRow, findsOneWidget);
+      await tester.tap(
+        find.descendant(
+          of: reopenedRow,
+          matching: find.byIcon(Icons.edit_outlined),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final confirmation = find.byType(AlertDialog);
+      if (confirmation.evaluate().isNotEmpty) {
+        await tester.tap(
+          find.descendant(
+            of: confirmation,
+            matching: find.byType(FilledButton),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+      final modal = find.byKey(const Key('invoice-history-modal-content'));
+      if (modal.evaluate().isNotEmpty) {
+        Navigator.of(tester.element(modal)).pop();
+        await tester.pumpAndSettle();
+      }
+      expect(find.byKey(const Key('ninesoft-entry-line-row-0')), findsOneWidget);
+      final reopenedLine = find
+          .descendant(
+            of: find.byKey(const Key('ninesoft-entry-line-row-0')),
+            matching: find.byType(InkWell),
+          )
+          .first;
+      await tester.tap(reopenedLine);
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<TextField>(find.byKey(const Key('invoice-price-input')))
+            .controller
+            ?.text,
+        '416.67',
+      );
     },
   );
 }

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import '../../core/formatters/latin_digit_formatter.dart';
 import '../../theme/ninesoft_confirm_shortcuts.dart';
 import '../../theme/ninesoft_entry_ui.dart';
+import '../../theme/ninesoft_ui.dart';
+import '../../theme/nizami_theme.dart';
 
 import 'administration_api.dart';
 
@@ -338,84 +340,150 @@ class _AdministrationPageState extends State<AdministrationPage> {
       'invoices.read',
       'documents.read',
     };
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, update) => AlertDialog(
-          title: const Text('مستخدم جديد'),
-          content: SizedBox(
-            width: 450,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: name,
-                    decoration: const InputDecoration(labelText: 'الاسم'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: username,
-                    decoration: const InputDecoration(
-                      labelText: 'اسم المستخدم',
+    final ok = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => StatefulBuilder(
+          builder: (pageContext, update) => Scaffold(
+            appBar: AppBar(toolbarHeight: 0),
+            body: SafeArea(
+              child: NineSoftResponsiveBody(
+                child: ListView(
+                  children: [
+                    const NineSoftEntryHeading(
+                      title: 'إضافة مستخدم',
+                      subtitle: 'بيانات الدخول والدور والفروع والصلاحيات',
+                      status: 'مستخدم جديد',
+                      icon: Icons.person_add_alt_1_rounded,
+                      accent: NizamiColors.blue,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: password,
-                    obscureText: true,
-                    decoration: const InputDecoration(labelText: 'كلمة المرور'),
-                  ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    initialValue: role,
-                    items: const [
-                      DropdownMenuItem(value: 'manager', child: Text('مدير')),
-                      DropdownMenuItem(
-                        value: 'accountant',
-                        child: Text('محاسب'),
+                    const SizedBox(height: 12),
+                    NineSoftEntrySection(
+                      title: 'بيانات المستخدم',
+                      subtitle: 'الحساب والدور ونطاق الوصول',
+                      icon: Icons.manage_accounts_outlined,
+                      step: '01',
+                      accent: NizamiColors.blue,
+                      child: Column(
+                        children: [
+                          NineSoftEntryFieldGrid(
+                            minFieldWidth: 220,
+                            maxColumns: 2,
+                            children: [
+                              TextField(
+                                controller: name,
+                                decoration: const InputDecoration(
+                                  labelText: 'الاسم',
+                                ),
+                              ),
+                              TextField(
+                                controller: username,
+                                decoration: const InputDecoration(
+                                  labelText: 'اسم المستخدم',
+                                ),
+                              ),
+                              TextField(
+                                controller: password,
+                                obscureText: true,
+                                decoration: const InputDecoration(
+                                  labelText: 'كلمة المرور',
+                                ),
+                              ),
+                              DropdownButtonFormField<String>(
+                                initialValue: role,
+                                decoration: const InputDecoration(
+                                  labelText: 'الدور',
+                                ),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'manager',
+                                    child: Text('مدير'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'accountant',
+                                    child: Text('محاسب'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'cashier',
+                                    child: Text('أمين صندوق'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'sales',
+                                    child: Text('مبيعات'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'purchases',
+                                    child: Text('مشتريات'),
+                                  ),
+                                ],
+                                onChanged: (v) => update(() {
+                                  if (v != null) role = v;
+                                }),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: Text(
+                              'الفروع',
+                              style: Theme.of(pageContext)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w800),
+                            ),
+                          ),
+                          for (final b in _branches)
+                            CheckboxListTile(
+                              value: selected.contains(b['id'].toString()),
+                              title: Text(b['name'].toString()),
+                              onChanged: (v) => update(() {
+                                v == true
+                                    ? selected.add(b['id'].toString())
+                                    : selected.remove(b['id'].toString());
+                              }),
+                            ),
+                        ],
                       ),
-                      DropdownMenuItem(
-                        value: 'cashier',
-                        child: Text('أمين صندوق'),
-                      ),
-                      DropdownMenuItem(value: 'sales', child: Text('مبيعات')),
-                      DropdownMenuItem(
-                        value: 'purchases',
-                        child: Text('مشتريات'),
-                      ),
-                    ],
-                    onChanged: (v) {
-                      if (v != null) role = v;
-                    },
-                  ),
-                  for (final b in _branches)
-                    CheckboxListTile(
-                      value: selected.contains(b['id'].toString()),
-                      title: Text(b['name'].toString()),
-                      onChanged: (v) => update(() {
-                        v == true
-                            ? selected.add(b['id'].toString())
-                            : selected.remove(b['id'].toString());
-                      }),
                     ),
-                  _permissionsEditor(permissions, update),
-                ],
+                    const SizedBox(height: 12),
+                    NineSoftEntrySection(
+                      title: 'الصلاحيات',
+                      subtitle: 'حدد الوحدات والإجراءات المتاحة لهذا المستخدم',
+                      icon: Icons.admin_panel_settings_outlined,
+                      step: '02',
+                      accent: NizamiColors.purple,
+                      child: _permissionsEditor(permissions, update),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            key: const Key('administration-user-cancel'),
+                            onPressed: () =>
+                                Navigator.pop(pageContext, false),
+                            icon: const Icon(Icons.close_rounded),
+                            label: const Text('إلغاء'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          flex: 2,
+                          child: FilledButton.icon(
+                            onPressed: selected.isEmpty
+                                ? null
+                                : () => Navigator.pop(pageContext, true),
+                            icon: const Icon(Icons.save_outlined),
+                            label: const Text('إنشاء المستخدم'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('إلغاء'),
-            ),
-            FilledButton(
-              onPressed: selected.isEmpty
-                  ? null
-                  : () => Navigator.pop(context, true),
-              child: const Text('إنشاء'),
-            ),
-          ],
         ),
       ),
     );
@@ -459,70 +527,107 @@ class _AdministrationPageState extends State<AdministrationPage> {
     final permissions = (user['permissions'] as List? ?? const [])
         .map((value) => value.toString())
         .toSet();
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, update) => AlertDialog(
-          title: Text('تعديل ${user['display_name']}'),
-          content: SizedBox(
-            width: 420,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: password,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'كلمة مرور جديدة (اختياري)',
+    final ok = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => StatefulBuilder(
+          builder: (pageContext, update) => Scaffold(
+            appBar: AppBar(toolbarHeight: 0),
+            body: SafeArea(
+              child: NineSoftResponsiveBody(
+                child: ListView(
+                  children: [
+                    NineSoftEntryHeading(
+                      title: 'تعديل ${user['display_name']}',
+                      subtitle: 'كلمة المرور ومدة الوصول والصلاحيات',
+                      status: user['username']?.toString() ?? 'مستخدم',
+                      icon: Icons.manage_accounts_rounded,
+                      accent: NizamiColors.blue,
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: duration,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: const [latinDigitFormatter],
-                          decoration: const InputDecoration(
-                            labelText: 'تمديد المدة',
+                    const SizedBox(height: 12),
+                    NineSoftEntrySection(
+                      title: 'الوصول',
+                      subtitle: 'غيّر كلمة المرور أو مدد مدة الحساب',
+                      icon: Icons.lock_clock_outlined,
+                      step: '01',
+                      accent: NizamiColors.blue,
+                      child: NineSoftEntryFieldGrid(
+                        minFieldWidth: 220,
+                        maxColumns: 2,
+                        children: [
+                          TextField(
+                            controller: password,
+                            obscureText: true,
+                            decoration: const InputDecoration(
+                              labelText: 'كلمة مرور جديدة (اختياري)',
+                            ),
+                          ),
+                          TextField(
+                            controller: duration,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: const [latinDigitFormatter],
+                            decoration: const InputDecoration(
+                              labelText: 'تمديد المدة',
+                            ),
+                          ),
+                          DropdownButtonFormField<String>(
+                            initialValue: unit,
+                            decoration: const InputDecoration(
+                              labelText: 'وحدة المدة',
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'days',
+                                child: Text('يوم'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'months',
+                                child: Text('شهر'),
+                              ),
+                            ],
+                            onChanged: (v) => update(() {
+                              if (v != null) unit = v;
+                            }),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    NineSoftEntrySection(
+                      title: 'الصلاحيات',
+                      subtitle: 'تعديل صلاحيات الوصول إلى وحدات النظام',
+                      icon: Icons.admin_panel_settings_outlined,
+                      step: '02',
+                      accent: NizamiColors.purple,
+                      child: _permissionsEditor(permissions, update),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () =>
+                                Navigator.pop(pageContext, false),
+                            icon: const Icon(Icons.close_rounded),
+                            label: const Text('إلغاء'),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          initialValue: unit,
-                          items: const [
-                            DropdownMenuItem(value: 'days', child: Text('يوم')),
-                            DropdownMenuItem(
-                              value: 'months',
-                              child: Text('شهر'),
-                            ),
-                          ],
-                          onChanged: (v) {
-                            if (v != null) unit = v;
-                          },
+                        const SizedBox(width: 10),
+                        Expanded(
+                          flex: 2,
+                          child: FilledButton.icon(
+                            onPressed: () =>
+                                Navigator.pop(pageContext, true),
+                            icon: const Icon(Icons.save_outlined),
+                            label: const Text('حفظ التعديلات'),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  _permissionsEditor(permissions, update),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('إلغاء'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('حفظ'),
-            ),
-          ],
         ),
       ),
     );
@@ -663,27 +768,23 @@ class _AdministrationPageState extends State<AdministrationPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: Text(
-        widget.showUsers
-            ? 'المستخدمون وكلمات المرور'
-            : 'نسخ العملاء والاشتراكات',
-      ),
-    ),
+  Widget build(BuildContext context) {
+    final phone = MediaQuery.sizeOf(context).width < 700;
+    return Scaffold(
+    appBar: AppBar(toolbarHeight: 0),
     body: _loading
         ? const Center(child: CircularProgressIndicator())
         : RefreshIndicator(
             onRefresh: _load,
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(14, 14, 14, 100),
+              padding: EdgeInsets.fromLTRB(phone ? 10 : 14, phone ? 10 : 14, phone ? 10 : 14, 100),
               children: [
                 NineSoftEntryHeading(
                   title: widget.showUsers
-                      ? 'إدارة المستخدمين'
+                      ? 'المستخدمون والصلاحيات'
                       : 'إدارة نسخ العملاء',
                   subtitle: widget.showUsers
-                      ? 'الحسابات والصلاحيات ومدد الوصول في مكان واحد'
+                      ? (phone ? 'إدارة المستخدمين والأدوار والصلاحيات' : 'الحسابات والصلاحيات ومدد الوصول في مكان واحد')
                       : 'كل عميل في منشأة مستقلة ببيانات ومزامنة ونسخ احتياطية منفصلة',
                   status: widget.tenantName,
                   icon: widget.showUsers
@@ -706,10 +807,73 @@ class _AdministrationPageState extends State<AdministrationPage> {
                         ]
                       : const [],
                 ),
-                const SizedBox(height: 14),
+                if (widget.showUsers) ...[
+                  const SizedBox(height: 14),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final width = constraints.maxWidth;
+                      final columns = width >= 900 ? 4 : 2;
+                      final gap = 10.0;
+                      final cardWidth =
+                          (width - gap * (columns - 1)) / columns;
+                      final roles = _users
+                          .map(
+                            (user) =>
+                                user['role_code']?.toString() ??
+                                user['role']?.toString() ??
+                                '',
+                          )
+                          .where((role) => role.isNotEmpty)
+                          .toSet();
+                      return Wrap(
+                        spacing: gap,
+                        runSpacing: gap,
+                        children: [
+                          SizedBox(
+                            width: cardWidth,
+                            child: NineSoftMetricCard(
+                              label: 'عدد المستخدمين',
+                              value: '${_users.length}',
+                              icon: Icons.people_alt_outlined,
+                              color: NizamiColors.blue,
+                            ),
+                          ),
+                          SizedBox(
+                            width: cardWidth,
+                            child: NineSoftMetricCard(
+                              label: 'الفروع المتاحة',
+                              value: '${_branches.length}',
+                              icon: Icons.store_mall_directory_outlined,
+                              color: NizamiColors.green,
+                            ),
+                          ),
+                          SizedBox(
+                            width: cardWidth,
+                            child: NineSoftMetricCard(
+                              label: 'الأدوار المستخدمة',
+                              value: '${roles.length}',
+                              icon: Icons.admin_panel_settings_outlined,
+                              color: NizamiColors.purple,
+                            ),
+                          ),
+                          SizedBox(
+                            width: cardWidth,
+                            child: NineSoftMetricCard(
+                              label: 'الصلاحيات المتاحة',
+                              value: '${_permissionLabels.length}',
+                              icon: Icons.layers_outlined,
+                              color: NizamiColors.amber,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
+                SizedBox(height: phone ? 8 : 14),
                 NineSoftEntrySection(
                   title: widget.showUsers
-                      ? 'حسابات المستخدمين'
+                      ? (phone ? 'تفاصيل المستخدمين' : 'حسابات المستخدمين')
                       : 'قائمة نسخ العملاء',
                   subtitle: widget.showUsers
                       ? '${_users.length} حساب مسجل'
@@ -729,6 +893,7 @@ class _AdministrationPageState extends State<AdministrationPage> {
             ),
           ),
   );
+  }
 
   Widget _userCard(Map<String, dynamic> user) => Card(
     margin: const EdgeInsets.only(bottom: 10),

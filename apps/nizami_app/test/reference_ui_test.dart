@@ -5,9 +5,9 @@ import 'package:nizami/src/theme/ninesoft_ui.dart';
 
 void main() {
   test('reference colors remain defined', () {
-    expect(NizamiColors.navy, const Color(0xFF092B50));
-    expect(NizamiColors.teal, const Color(0xFF00AF95));
-    expect(NizamiColors.canvas, const Color(0xFFF3FAFF));
+    expect(NizamiColors.navy, const Color(0xFF0B356F));
+    expect(NizamiColors.teal, const Color(0xFF14A966));
+    expect(NizamiColors.canvas, const Color(0xFFF4F7FB));
   });
 
   testWidgets('mobile dock retains original callbacks', (tester) async {
@@ -24,7 +24,7 @@ void main() {
       ),
     ));
     expect(find.text('الرئيسية'), findsOneWidget);
-    await tester.tap(find.text('المبيعات'));
+    await tester.tap(find.byIcon(Icons.add_rounded));
     expect(saleOpened, isTrue);
     await tester.tap(find.text('التقارير'));
     expect(selected, 2);

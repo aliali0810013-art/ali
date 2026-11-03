@@ -190,62 +190,6 @@ class _SimpleJournalPageState extends State<SimpleJournalPage> {
     result.complete(draft);
   }
 
-  List<DropdownMenuItem<String>> _accountItems() => _accounts
-      .map(
-        (account) => DropdownMenuItem(
-          value: account.code,
-          child: Text('${account.code} • ${account.nameAr}'),
-        ),
-      )
-      .toList(growable: false);
-
-  String? _partyType(String accountCode) => switch (accountCode) {
-    '1200-AR' => 'customer',
-    '2100-AP' => 'supplier',
-    _ => null,
-  };
-
-  Widget _partyPicker({
-    required String accountCode,
-    required String? value,
-    required ValueChanged<String?> onChanged,
-  }) {
-    final customer = _partyType(accountCode) == 'customer';
-    final source = customer ? _customers : _suppliers;
-    String label(Map<String, dynamic> item) => [
-      item['name']?.toString() ?? '',
-      item['account_number']?.toString() ?? '',
-      item['phone']?.toString() ?? '',
-    ].where((part) => part.isNotEmpty).join(' • ');
-    final selected = source.where((item) => item['id']?.toString() == value);
-    return Autocomplete<Map<String, dynamic>>(
-      initialValue: TextEditingValue(
-        text: selected.isEmpty ? '' : label(selected.first),
-      ),
-      displayStringForOption: label,
-      optionsBuilder: (editing) {
-        final query = editing.text.trim().toLowerCase();
-        if (query.isEmpty) return source;
-        return source.where(
-          (item) => label(item).toLowerCase().contains(query),
-        );
-      },
-      onSelected: (item) => onChanged(item['id']?.toString()),
-      fieldViewBuilder: (_, controller, focusNode, submit) => TextField(
-        controller: controller,
-        focusNode: focusNode,
-        onChanged: (_) => onChanged(null),
-        onSubmitted: (_) => submit(),
-        decoration: InputDecoration(
-          labelText: customer ? 'ابحث واختر العميل' : 'ابحث واختر المورد',
-          prefixIcon: Icon(
-            customer ? Icons.person_outline : Icons.local_shipping_outlined,
-          ),
-        ),
-      ),
-    );
-  }
-
   Future<void> _delete(Map<String, dynamic> entry) async {
     final id = entry['id']?.toString();
     if (id == null || id.isEmpty) return;
@@ -319,7 +263,7 @@ class _SimpleJournalPageState extends State<SimpleJournalPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('القيود اليومية'),
-        toolbarHeight: desktop ? 0 : null,
+        toolbarHeight: 0,
         actions: [
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh_rounded)),
         ],
@@ -664,26 +608,25 @@ class _JournalDraftEditorState extends State<_JournalDraftEditor> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('قيد يومية جديد'),
-      leading: IconButton(
-        onPressed: widget.onCancel,
-        icon: const Icon(Icons.arrow_back_rounded),
-      ),
-      actions: [
-        TextButton.icon(
-          onPressed: _submit,
-          icon: const Icon(Icons.save_outlined),
-          label: const Text('حفظ وترحيل'),
-        ),
-      ],
-    ),
+  Widget build(BuildContext context) {
+    final phone = MediaQuery.sizeOf(context).width < 700;
+    return Scaffold(
+    appBar: AppBar(toolbarHeight: 0),
     body: SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          NineSoftDocumentCommandBar(
+          NineSoftEntryHeading(
+            title: 'القيود اليومية',
+            subtitle: phone
+                ? 'إنشاء قيد يومي'
+                : 'مدين = عليه • دائن = له — مع الحفاظ على المصطلحات المحاسبية الصحيحة',
+            status: phone ? 'قيد يومي جديد' : 'قيد جديد',
+            icon: Icons.menu_book_rounded,
+            accent: NizamiColors.blue,
+          ),
+          SizedBox(height: phone ? 8 : 12),
+          if (!phone) NineSoftDocumentCommandBar(
             title: 'إجراءات القيد',
             actions: [
               NineSoftDocumentCommandAction(
@@ -704,7 +647,7 @@ class _JournalDraftEditorState extends State<_JournalDraftEditor> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: phone ? 6 : 10),
           if (widget.accounts.length < 2) ...[
             const NineSoftEntryHint(
               text:
@@ -716,13 +659,13 @@ class _JournalDraftEditorState extends State<_JournalDraftEditor> {
           NineSoftEntrySection(
             title: 'بيان القيد',
             icon: Icons.edit_note_outlined,
-            step: '01',
+            step: phone ? null : '01',
             accent: NizamiColors.blue,
             child: TextField(
               key: const ValueKey('journal-description'),
               controller: _description,
               maxLength: 500,
-              maxLines: 2,
+              maxLines: phone ? 1 : 2,
               decoration: const InputDecoration(
                 labelText: 'البيان / الوصف المحاسبي',
                 prefixIcon: Icon(Icons.notes_rounded),
@@ -735,9 +678,9 @@ class _JournalDraftEditorState extends State<_JournalDraftEditor> {
             maxColumns: 2,
             children: [
               NineSoftEntrySection(
-                title: 'الطرف المدين',
+                title: phone ? 'الحساب المدين' : 'الطرف المدين',
                 icon: Icons.south_west_rounded,
-                step: '02',
+                step: phone ? null : '02',
                 accent: NizamiColors.blue,
                 child: Column(
                   children: [
@@ -767,9 +710,9 @@ class _JournalDraftEditorState extends State<_JournalDraftEditor> {
                 ),
               ),
               NineSoftEntrySection(
-                title: 'الطرف الدائن',
+                title: phone ? 'الحساب الدائن' : 'الطرف الدائن',
                 icon: Icons.north_east_rounded,
-                step: '03',
+                step: phone ? null : '03',
                 accent: NizamiColors.purple,
                 child: Column(
                   children: [
@@ -802,9 +745,9 @@ class _JournalDraftEditorState extends State<_JournalDraftEditor> {
           ),
           const SizedBox(height: 10),
           NineSoftEntrySection(
-            title: 'المبلغ والتوازن',
+            title: phone ? 'المبلغ' : 'المبلغ والتوازن',
             icon: Icons.balance_rounded,
-            step: '04',
+            step: phone ? null : '04',
             accent: NizamiColors.green,
             child: TextField(
               key: const ValueKey('journal-amount'),
@@ -824,15 +767,16 @@ class _JournalDraftEditorState extends State<_JournalDraftEditor> {
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: phone ? 8 : 10),
           NineSoftEntryFooter(
             onSave: _submit,
             label: 'حفظ وترحيل القيد',
             icon: Icons.save_outlined,
-            note: 'يجب أن يتساوى الطرف المدين والدائن قبل الترحيل.',
+            note: phone ? 'يجب أن يكون القيد متوازنًا.' : 'يجب أن يتساوى الطرف المدين والدائن قبل الترحيل.',
           ),
         ],
       ),
     ),
   );
+  }
 }

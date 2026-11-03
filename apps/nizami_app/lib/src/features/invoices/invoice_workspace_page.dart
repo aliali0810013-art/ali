@@ -32,6 +32,9 @@ import '../sync/sales_invoice_outbox.dart';
 import '../modules/catalog_sync_api.dart';
 import '../whatsapp/whatsapp_api.dart';
 import 'invoice_history_store.dart';
+import 'presentation/sales_invoice_adapter.dart';
+import 'presentation/sales_invoice_reference_view.dart';
+import 'presentation/sales_invoice_view_model.dart';
 import 'invoice_pdf_service.dart';
 import 'weighted_sale_math.dart';
 
@@ -50,6 +53,7 @@ class InvoiceWorkspacePage extends StatefulWidget {
     required this.tenantName,
     this.tenantId,
     required this.employeeName,
+    this.branchDisplayName,
     required this.token,
     required this.roleCode,
     required this.permissions,
@@ -62,12 +66,15 @@ class InvoiceWorkspacePage extends StatefulWidget {
     this.synchronizeNow,
     this.restoreGenerationReader,
     this.restoreEpochReader,
+    this.nowProvider,
+    this.invoiceNumberFactory,
     super.key,
   });
   final List<String> branchIds;
   final String tenantName;
   final String? tenantId;
   final String employeeName;
+  final String? branchDisplayName;
   final String token;
   final String roleCode;
   final List<String> permissions;
@@ -83,6 +90,8 @@ class InvoiceWorkspacePage extends StatefulWidget {
   final Future<void> Function()? synchronizeNow;
   final int Function()? restoreGenerationReader;
   final DateTime? Function()? restoreEpochReader;
+  final DateTime Function()? nowProvider;
+  final String Function(DateTime now)? invoiceNumberFactory;
   @override
   State<InvoiceWorkspacePage> createState() => _InvoiceWorkspacePageState();
 }
@@ -175,6 +184,10 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
   DateTime? get _currentRestoreEpoch =>
       widget.restoreEpochReader?.call() ??
       RealtimeSyncCoordinator.instance.restoreEpoch;
+  DateTime get _now => widget.nowProvider?.call() ?? DateTime.now();
+  String _nextInvoiceNumber(DateTime now) =>
+      widget.invoiceNumberFactory?.call(now) ??
+      'INV-${now.microsecondsSinceEpoch}';
   bool get _documentLocked => switch (_deliveryState) {
     _InvoiceDeliveryState.queued ||
     _InvoiceDeliveryState.needsReview ||
@@ -459,7 +472,8 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       currency: 'YER',
       employeeName:
           value['creator_display_name']?.toString() ?? widget.employeeName,
-      branchLabel: 'الفرع ${_branches.indexOf(_branchId) + 1}',
+      branchLabel:
+          widget.branchDisplayName ?? 'الفرع ${_branches.indexOf(_branchId) + 1}',
       createdAt:
           DateTime.tryParse(value['occurred_at']?.toString() ?? '') ??
           DateTime.now(),
@@ -503,24 +517,27 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
     final effectiveTendered = _paymentMode == 'cash' && enteredTendered == 0
         ? net
         : enteredTendered;
-    return InvoiceDocument(
-      number: number ?? 'INV-${DateTime.now().microsecondsSinceEpoch}',
+    final viewModel = SalesInvoiceViewModel(
+      number: number ?? _nextInvoiceNumber(_now),
       customerName: _customer.text.trim().isEmpty
           ? 'عميل نقدي'
           : _customer.text.trim(),
       customerPhone: _phone.text.trim(),
       customerId: _selectedCustomerId,
-      lines: List.unmodifiable(_lines),
+      lines: _lines
+          .map(SalesInvoicePresentationAdapter.fromDomainLine)
+          .toList(growable: false),
       currency: 'YER',
       employeeName: widget.employeeName,
-      branchLabel: 'الفرع ${_branches.indexOf(_branchId) + 1}',
-      createdAt: createdAt ?? DateTime.now(),
+      branchLabel:
+          widget.branchDisplayName ?? 'الفرع ${_branches.indexOf(_branchId) + 1}',
+      createdAt: createdAt ?? _now,
       paymentMode: _paymentMode,
-      discountAmount: discount,
-      amountTendered: effectiveTendered,
       paidAmount: _paymentMode == 'credit'
           ? enteredTendered.clamp(0, net).toDouble()
           : net,
+      discountAmount: discount,
+      amountTendered: effectiveTendered,
       paymentChannel: _paymentChannel ?? '',
       paymentAccountCode: _paymentAccountCode,
       notes: _notes.text.trim(),
@@ -529,8 +546,14 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       serverNumber: _remoteNumber,
       replacementInvoiceId: _replacementInvoiceId,
       restoreGenerationAtCreation: _operationRestoreGeneration,
+      serverTotalMinor: null,
+      currentPaidMinor: null,
+      currentDueMinor: null,
+      returnedMinor: 0,
       isDraft: isDraft ?? _explicitDraft,
+      quarantineReason: '',
     );
+    return SalesInvoicePresentationAdapter.toDomain(viewModel);
   }
 
   void _pickProduct(CatalogProduct product) {
@@ -576,9 +599,9 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       if (!mounted || _selectedProduct?.id != product.id) return;
       _replaceSaleOptions(values, selectedOptionId: selectedOptionId);
     } catch (_) {
-      if (mounted && cached.isEmpty) {
-        _message('تعذر تحميل خيارات الوزن والوحدة. تحقق من الاتصال.');
-      }
+      // Sale options are an optional enhancement. When offline and no option
+      // snapshot exists, keep the base product price usable without covering
+      // the invoice actions with a transient error surface.
     }
   }
 
@@ -1759,7 +1782,6 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
 
   @override
   Widget build(BuildContext context) {
-    final desktop = MediaQuery.sizeOf(context).width >= 980;
     return CallbackShortcuts(
       bindings: <ShortcutActivator, VoidCallback>{
         const SingleActivator(LogicalKeyboardKey.keyS, control: true): () {
@@ -1783,7 +1805,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
         child: Scaffold(
           appBar: AppBar(
             title: const Text('المبيعات'),
-            toolbarHeight: desktop ? 0 : null,
+            toolbarHeight: 0,
             actions: [
               IconButton(
                 onPressed: _showReturns,
@@ -1805,6 +1827,16 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
           ),
           body: SafeArea(
             child: NineSoftResponsiveBody(
+              padding: EdgeInsetsDirectional.fromSTEB(
+                MediaQuery.sizeOf(context).width < NineSoftBreakpoints.compact
+                    ? 12
+                    : 20,
+                16,
+                MediaQuery.sizeOf(context).width < NineSoftBreakpoints.compact
+                    ? 12
+                    : 20,
+                0,
+              ),
               child: ListView(
                 key: const ValueKey('invoice-document-editor'),
                 children: [_editor()],
@@ -2118,6 +2150,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
     );
   }
 
+  // ignore: unused_element
   Widget _paymentSection() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
@@ -2313,6 +2346,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
     );
   }
 
+  // ignore: unused_element
   Widget _referenceSummary(InvoiceDocument preview) {
     final busy = _saving || _finalizing;
     final controls = _documentLocked
@@ -2426,7 +2460,162 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
     );
   }
 
+  CatalogProduct? _referenceProduct(InvoiceLine line) {
+    for (final product in _products) {
+      if (product.id.isNotEmpty && product.id == line.productId) return product;
+    }
+    return null;
+  }
+
+  IconData _referenceProductIcon(InvoiceLine line) {
+    final name = line.name;
+    if (name.contains('لابتوب')) return Icons.laptop_mac_rounded;
+    if (name.contains('ماوس')) return Icons.mouse_outlined;
+    if (name.contains('مفاتيح')) return Icons.keyboard_alt_outlined;
+    if (name.contains('شاشة')) return Icons.desktop_windows_outlined;
+    return Icons.inventory_2_outlined;
+  }
+
+  Widget _referenceDiscountBadge(InvoiceLine line) {
+    final hasDiscount = line.lineDiscountMinor > 0 && line.grossMinor > 0;
+    final label = hasDiscount
+        ? '${((line.lineDiscountMinor * 100) / line.grossMinor).round()}%'
+        : '0%';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+      decoration: BoxDecoration(
+        color: hasDiscount ? const Color(0xFFFFE8EC) : const Color(0xFFF1F4F8),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        textDirection: TextDirection.ltr,
+        style: TextStyle(
+          color: hasDiscount ? const Color(0xFFE1394A) : const Color(0xFF5C6C7D),
+          fontWeight: FontWeight.w800,
+          fontSize: 10.5,
+        ),
+      ),
+    );
+  }
+
+  void _stepReferenceLineQuantity(int index, double delta) {
+    if (_documentLocked || index < 0 || index >= _lines.length) return;
+    final line = _lines[index];
+    final nextQuantity = line.quantity + delta;
+    if (nextQuantity <= 0) return;
+    final ratio = line.quantity == 0 ? 1.0 : nextQuantity / line.quantity;
+    final replacement = InvoiceLine(
+      name: line.name,
+      quantity: nextQuantity,
+      unitPrice: line.unitPrice,
+      productId: line.productId,
+      saleOptionId: line.saleOptionId,
+      optionUnitCode: line.optionUnitCode,
+      optionQuantity: line.optionQuantity,
+      optionMassG: line.optionMassG,
+      displayUnit: line.displayUnit,
+      exactQuantityMilli: line.exactQuantityMilli == null
+          ? null
+          : (line.exactQuantityMilli! * ratio).round(),
+      priceNumeratorMinor: line.priceNumeratorMinor,
+      priceDenominator: line.priceDenominator,
+      priceOverridden: line.priceOverridden,
+      lineDiscountMinor: line.lineDiscountMinor == 0
+          ? 0
+          : (line.lineDiscountMinor * ratio).round(),
+      weightGramsMilli: line.weightGramsMilli == null
+          ? null
+          : (line.weightGramsMilli! * ratio).round(),
+      pendingCatalogSync: line.pendingCatalogSync,
+    );
+    setState(() {
+      _lines[index] = replacement;
+      _invoice = _readInvoice(
+        number: _invoice.number,
+        createdAt: _invoice.createdAt,
+      );
+    });
+  }
+
+  Widget _referenceUnitControl(int index, InvoiceLine line) => InkWell(
+        onTap: _documentLocked ? null : () => _editLine(index),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFD6DFEB)),
+          ),
+          child: Row(
+            textDirection: TextDirection.ltr,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.keyboard_arrow_down_rounded, size: 14),
+              const SizedBox(width: 2),
+              Flexible(
+                child: Text(
+                  line.resolvedDisplayUnit.isEmpty
+                      ? 'وحدة'
+                      : line.resolvedDisplayUnit,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 10.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Widget _referenceQuantityControl(int index, InvoiceLine line) {
+    final value = line.displayQuantity.replaceFirst(RegExp(r'\s+\S+$'), '');
+    Widget stepButton(IconData icon, VoidCallback? onTap) => InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(5),
+          child: SizedBox(
+            width: 10,
+            height: 22,
+            child: Icon(icon, size: 10, color: const Color(0xFF176DE5)),
+          ),
+        );
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 1),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFD6DFEB)),
+      ),
+      child: Row(
+        textDirection: TextDirection.ltr,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          stepButton(
+            Icons.remove_rounded,
+            _documentLocked ? null : () => _stepReferenceLineQuantity(index, -1),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.center,
+              textDirection: TextDirection.ltr,
+              style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800),
+            ),
+          ),
+          stepButton(
+            Icons.add_rounded,
+            _documentLocked ? null : () => _stepReferenceLineQuantity(index, 1),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _referenceLines() => NineSoftEntryLineTable(
+    forceTableOnMobile: true,
+    showDiscount: true,
+    denseReference: true,
     lines: [
       for (var index = 0; index < _lines.length; index++)
         NineSoftEntryLineCells(
@@ -2434,11 +2623,43 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
             onTap: _documentLocked ? null : () => _editLine(index),
             child: Row(
               children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  margin: const EdgeInsetsDirectional.only(end: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F6FD),
+                    borderRadius: BorderRadius.circular(7),
+                    border: Border.all(color: const Color(0xFFDCE6F2)),
+                  ),
+                  child: Icon(
+                    _referenceProductIcon(_lines[index]),
+                    size: 18,
+                    color: const Color(0xFF147BE0),
+                  ),
+                ),
                 Expanded(
-                  child: Text(
-                    _lines[index].name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _lines[index].name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      if ((_referenceProduct(_lines[index])?.sku ?? '').isNotEmpty)
+                        Text(
+                          _referenceProduct(_lines[index])!.sku,
+                          textDirection: TextDirection.ltr,
+                          style: const TextStyle(
+                            color: Color(0xFF65758A),
+                            fontSize: 9.5,
+                            height: 1.1,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 if (_lines[index].pendingCatalogSync)
@@ -2446,26 +2667,20 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
                     Icons.sync_problem_rounded,
                     key: Key('invoice-line-pending-catalog-$index'),
                     color: Colors.orange,
-                    size: 18,
+                    size: 16,
                   ),
               ],
             ),
           ),
-          unit: Text(
-            _lines[index].resolvedDisplayUnit.isEmpty
-                ? 'وحدة'
-                : _lines[index].resolvedDisplayUnit,
-          ),
-          quantity: Text(
-            _lines[index].displayQuantity.replaceFirst(RegExp(r'\s+\S+$'), ''),
-            textDirection: TextDirection.ltr,
-          ),
+          unit: _referenceUnitControl(index, _lines[index]),
+          quantity: _referenceQuantityControl(index, _lines[index]),
           price: Text(
             _lines[index].displayUnitPrice,
             textDirection: TextDirection.ltr,
           ),
+          discount: _referenceDiscountBadge(_lines[index]),
           total: Text(
-            '${_lines[index].total.toStringAsFixed(2)} YER',
+            _lines[index].total.toStringAsFixed(2),
             textDirection: TextDirection.ltr,
           ),
           onDelete: _documentLocked
@@ -2482,6 +2697,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
     ],
   );
 
+  // ignore: unused_element
   Widget _invoiceShortcutStrip() => NineSoftDocumentCommandBar(
     key: const Key('invoice-shortcut-strip'),
     title: 'اختصارات تحرير الفاتورة',
@@ -2536,417 +2752,619 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       number: _invoice.number,
       createdAt: _invoice.createdAt,
     );
-    return Column(
+    final document = SalesInvoicePresentationAdapter.fromDomain(preview);
+
+    Future<void> editReferenceMoney({
+      required String title,
+      required TextEditingController target,
+    }) async {
+      final editor = TextEditingController(text: target.text);
+      final result = await showDialog<String>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(title),
+          content: TextField(
+            controller: editor,
+            autofocus: true,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: const [latinDigitFormatter],
+            textDirection: TextDirection.ltr,
+            decoration: const InputDecoration(hintText: '0.00'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('إلغاء'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, editor.text.trim()),
+              child: const Text('تطبيق'),
+            ),
+          ],
+        ),
+      );
+      editor.dispose();
+      if (result == null) return;
+      final value = double.tryParse(result);
+      if (value == null || !value.isFinite || value < 0) {
+        _message('أدخل قيمة مالية صحيحة.');
+        return;
+      }
+      setState(() => target.text = value.toStringAsFixed(2));
+    }
+
+    Widget referenceFieldIcon(
+      IconData icon, {
+      required Color foreground,
+      required Color background,
+    }) =>
+        Padding(
+          padding: const EdgeInsets.all(5),
+          child: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: background,
+              borderRadius: BorderRadius.circular(9),
+            ),
+            alignment: Alignment.center,
+            child: Icon(icon, size: 19, color: foreground),
+          ),
+        );
+
+    Widget customerField() => Autocomplete<SavedCustomer>(
+      initialValue: TextEditingValue(text: _customer.text),
+      displayStringForOption: (customer) => customer.name,
+      optionsBuilder: (value) {
+        final query = value.text.trim().toLowerCase();
+        if (query.isEmpty) return _customers;
+        return _customers.where(
+          (customer) =>
+              customer.name.toLowerCase().contains(query) ||
+              customer.phone.contains(query),
+        );
+      },
+      onSelected: (customer) {
+        setState(() {
+          _customer.text = customer.name;
+          _phone.text = customer.phone;
+          _selectedCustomerId = customer.id;
+        });
+      },
+      fieldViewBuilder: (_, controller, focus, submit) {
+        _autoCustomerController = controller;
+        return TextField(
+          key: const Key('invoice-reference-customer'),
+          controller: controller,
+          focusNode: focus,
+          onChanged: (value) {
+            _customer.text = value;
+            final normalized = value.trim().toLowerCase();
+            final exact = _customers.where(
+              (customer) =>
+                  customer.name.trim().toLowerCase() == normalized,
+            );
+            _selectedCustomerId = exact.isEmpty ? '' : exact.first.id;
+            setState(() {});
+          },
+          onSubmitted: (_) => submit(),
+          decoration: InputDecoration(
+            labelText: 'العميل *',
+            suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded),
+            prefixIcon: referenceFieldIcon(
+              Icons.people_alt_outlined,
+              foreground: const Color(0xFF147BE0),
+              background: const Color(0xFFE8F1FF),
+            ),
+          ),
+        );
+      },
+    );
+
+    Widget readOnlyField({
+      required String label,
+      required String value,
+      required IconData icon,
+      required Color iconColor,
+      required Color iconBackground,
+      TextDirection? direction,
+    }) =>
+        TextFormField(
+          initialValue: value,
+          readOnly: true,
+          textDirection: direction,
+          decoration: InputDecoration(
+            labelText: label,
+            suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded),
+            prefixIcon: referenceFieldIcon(
+              icon,
+              foreground: iconColor,
+              background: iconBackground,
+            ),
+          ),
+        );
+
+    Widget referenceChoiceField({
+      required String label,
+      required String value,
+      required IconData icon,
+      required Color iconColor,
+      required Color iconBackground,
+    }) =>
+        InputDecorator(
+          decoration: InputDecoration(
+            labelText: label,
+            suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded),
+            prefixIcon: referenceFieldIcon(
+              icon,
+              foreground: iconColor,
+              background: iconBackground,
+            ),
+          ),
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+        );
+
+    final productSearchField = Autocomplete<CatalogProduct>(
+      displayStringForOption: (product) => product.name,
+      optionsBuilder: (value) {
+        final query = value.text.trim().toLowerCase();
+        return query.isEmpty
+            ? _products
+            : _products.where(
+                (product) =>
+                    product.name.toLowerCase().contains(query) ||
+                    product.barcode.toLowerCase().contains(query) ||
+                    product.sku.toLowerCase().contains(query),
+              );
+      },
+      onSelected: _pickProduct,
+      fieldViewBuilder: (_, controller, focus, onSubmit) {
+        _autoItemController = controller;
+        _autoItemFocus = focus;
+        return TextField(
+          key: const Key('invoice-product-input'),
+          controller: controller,
+          focusNode: focus,
+          onChanged: (value) {
+            _item.text = value;
+            if (mounted) setState(() {});
+          },
+          textInputAction: TextInputAction.next,
+          onSubmitted: (_) {
+            onSubmit();
+            _quantityFocus.requestFocus();
+          },
+          decoration: const InputDecoration(
+            hintText: 'بحث عن صنف (الاسم أو الباركود أو الكود)...',
+            prefixIcon: Icon(Icons.search_rounded),
+          ),
+        );
+      },
+    );
+
+    final barcodeField = TextField(
+      key: const Key('invoice-barcode-input'),
+      controller: _barcodeInput,
+      focusNode: _barcodeFocus,
+      autofocus: kIsWeb || defaultTargetPlatform == TargetPlatform.windows,
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.left,
+      textInputAction: TextInputAction.done,
+      decoration: const InputDecoration(
+        hintText: 'الباركود',
+        prefixIcon: Icon(Icons.qr_code_rounded),
+      ),
+      onSubmitted: (code) => unawaited(_acceptBarcode(code)),
+    );
+
+    final paymentModeField = DropdownButtonFormField<String>(
+      key: ValueKey('reference-payment-$_paymentMode'),
+      initialValue: _paymentMode,
+      decoration: InputDecoration(
+        labelText: 'طريقة الدفع',
+        prefixIcon: referenceFieldIcon(
+          Icons.account_balance_wallet_outlined,
+          foreground: const Color(0xFFE9770A),
+          background: const Color(0xFFFFF0DD),
+        ),
+      ),
+      items: const [
+        DropdownMenuItem(value: 'cash', child: Text('نقدي')),
+        DropdownMenuItem(value: 'credit', child: Text('آجل')),
+      ],
+      onChanged: _documentLocked
+          ? null
+          : (value) {
+              if (value == null) return;
+              setState(() {
+                _paymentMode = value;
+                _paymentChannel = value == 'cash' ? 'cash' : null;
+                if (value == 'cash' && _paymentAccountCode.isEmpty) {
+                  _paymentAccountCode =
+                      _paymentAccounts.firstOrNull?.code ?? '';
+                }
+              });
+            },
+    );
+
+    final lineEntryControls = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        NineSoftEntryHeading(
-          title: 'فاتورة بيع جديدة',
-          subtitle: 'إدخال سريع: اختر الصنف والوحدة والكمية ثم احفظ مرة واحدة',
-          icon: Icons.point_of_sale_rounded,
-          status: 'بيع / نقطة بيع',
-          accent: NizamiColors.teal,
-          actions: [
-            OutlinedButton.icon(
-              key: const Key('invoice-history-open-primary'),
-              onPressed: _showHistory,
-              icon: const Icon(Icons.history_rounded),
-              label: const Text('الفواتير السابقة'),
+        if (_selectedProduct != null && _saleOptions.isNotEmpty) ...[
+          DropdownButtonFormField<String>(
+            isExpanded: true,
+            key: ValueKey(_selectedSaleOption?.id ?? 'empty-option'),
+            initialValue: _saleOptions.any(
+              (option) => option.id == _selectedSaleOption?.id,
+            )
+                ? _selectedSaleOption?.id
+                : null,
+            decoration: const InputDecoration(
+              labelText: 'وحدة / وزن البيع',
+              prefixIcon: Icon(Icons.scale_outlined),
             ),
-            FilledButton.icon(
-              onPressed: _finalizing ? null : _startNewInvoice,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('فاتورة جديدة'),
+            hint: const Text('اختر وحدة البيع'),
+            items: _saleOptions
+                .map(
+                  (option) => DropdownMenuItem(
+                    key: Key(
+                      'invoice-sale-option-${option.id}-v${option.version}',
+                    ),
+                    value: option.id,
+                    child: Text(
+                      option.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                )
+                .toList(),
+            onChanged: _documentLocked ? null : _selectSaleOptionId,
+          ),
+          const SizedBox(height: 8),
+        ],
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                key: const Key('invoice-quantity-input'),
+                controller: _quantity,
+                focusNode: _quantityFocus,
+                enabled: !_documentLocked,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: const [latinDigitFormatter],
+                textDirection: TextDirection.ltr,
+                decoration: const InputDecoration(
+                  labelText: 'الكمية *',
+                  prefixIcon: Icon(Icons.numbers_rounded),
+                ),
+                onChanged: (_) {
+                  _pendingLineDiscountMinor = 0;
+                  _pendingWeightGramsMilli = null;
+                },
+                onSubmitted: (_) => _priceFocus.requestFocus(),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextField(
+                key: const Key('invoice-price-input'),
+                controller: _price,
+                focusNode: _priceFocus,
+                enabled: !_documentLocked,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: const [latinDigitFormatter],
+                textDirection: TextDirection.ltr,
+                decoration: const InputDecoration(
+                  labelText: 'سعر البيع *',
+                  prefixIcon: Icon(Icons.sell_outlined),
+                ),
+                onChanged: (_) {
+                  _pendingLineDiscountMinor = 0;
+                  _pendingWeightGramsMilli = null;
+                  _markPriceManuallyOverridden();
+                },
+                onSubmitted: (_) => unawaited(_addLineFromKeyboard()),
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 10),
-        _invoiceShortcutStrip(),
-        const SizedBox(height: 10),
-        const NineSoftEntrySteps(
-          activeIndex: 1,
-          steps: [
-            NineSoftEntryStepData(
-              title: 'بيانات المستند',
-              subtitle: 'العميل والدفع',
-            ),
-            NineSoftEntryStepData(
-              title: 'الأصناف',
-              subtitle: 'بحث وإضافة سريعة',
-            ),
-            NineSoftEntryStepData(
-              title: 'المراجعة',
-              subtitle: 'الإجمالي والتسوية',
-            ),
-            NineSoftEntryStepData(title: 'الحفظ', subtitle: 'ترحيل تلقائي'),
-          ],
-        ),
-        _deliveryBanner(),
-        NineSoftDocumentEditorScaffold(
-          main: IgnorePointer(
-            ignoring: _documentLocked,
-            child: Padding(
-              padding: const EdgeInsetsDirectional.only(end: 2),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  NineSoftEntrySection(
-                    key: const Key('invoice-section-document'),
-                    title: 'بيانات الفاتورة والعميل',
-                    subtitle: 'حدد العميل وطريقة السداد قبل اعتماد المستند',
-                    step: '01',
-                    icon: Icons.account_balance_wallet_outlined,
-                    accent: NizamiColors.purple,
-                    child: _paymentSection(),
-                  ),
-                  const SizedBox(height: 13),
-                  NineSoftEntrySection(
-                    key: const Key('invoice-section-lines'),
-                    title: 'إدخال الأصناف',
-                    subtitle:
-                        'امسح الباركود أو ابحث عن الصنف، ثم أدخل الكمية والسعر',
-                    step: '02',
-                    icon: Icons.inventory_2_outlined,
-                    accent: NizamiColors.blue,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const NineSoftEntryHint(
-                          text:
-                              'قارئ الباركود يُدخل الصنف مباشرة. ويمكن استخدام Enter لإضافة البند دون لمس الشاشة.',
-                          icon: Icons.keyboard_rounded,
-                        ),
-                        const SizedBox(height: 11),
-                        NineSoftScannerStrip(
-                          input: TextField(
-                            key: const Key('invoice-barcode-input'),
-                            controller: _barcodeInput,
-                            focusNode: _barcodeFocus,
-                            autofocus:
-                                kIsWeb ||
-                                defaultTargetPlatform == TargetPlatform.windows,
-                            textDirection: TextDirection.ltr,
-                            textAlign: TextAlign.left,
-                            textInputAction: TextInputAction.done,
-                            decoration: InputDecoration(
-                              labelText: 'مسح سريع للباركود',
-                              hintText: 'امسح بكاشف USB أو اكتب الرقم ثم Enter',
-                              suffixIcon: IconButton(
-                                onPressed: _documentLocked
-                                    ? null
-                                    : _scanProductBarcode,
-                                tooltip: 'فتح الكاميرا',
-                                icon: const Icon(Icons.qr_code_scanner_rounded),
-                              ),
-                            ),
-                            onSubmitted: (code) =>
-                                unawaited(_acceptBarcode(code)),
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'بنود الفاتورة',
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                            ),
-                            if (MediaQuery.sizeOf(context).width > 700)
-                              Chip(
-                                avatar: const Icon(
-                                  Icons.keyboard_return_rounded,
-                                  size: 17,
-                                ),
-                                label: const Text('Enter = إضافة سطر'),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Autocomplete<CatalogProduct>(
-                          displayStringForOption: (p) => p.name,
-                          optionsBuilder: (value) {
-                            final q = value.text.trim().toLowerCase();
-                            return q.isEmpty
-                                ? _products
-                                : _products.where(
-                                    (p) =>
-                                        p.name.toLowerCase().contains(q) ||
-                                        p.barcode.toLowerCase().contains(q) ||
-                                        p.sku.toLowerCase().contains(q),
-                                  );
-                          },
-                          onSelected: _pickProduct,
-                          fieldViewBuilder: (_, controller, focus, onSubmit) {
-                            // Autocomplete owns this controller. Never add a listener inside build;
-                            // rebuilding the widget would otherwise attach multiple listeners.
-                            _autoItemController = controller;
-                            _autoItemFocus = focus;
-                            return TextField(
-                              key: const Key('invoice-product-input'),
-                              controller: controller,
-                              focusNode: focus,
-                              onChanged: (value) => _item.text = value,
-                              textInputAction: TextInputAction.next,
-                              onSubmitted: (_) {
-                                onSubmit();
-                                _quantityFocus.requestFocus();
-                              },
-                              decoration: const InputDecoration(
-                                labelText: 'الصنف / رقم الاختصار / الباركود',
-                                prefixIcon: Icon(Icons.inventory_2_outlined),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        if (_selectedProduct != null) ...[
-                          Row(
-                            children: [
-                              Expanded(
-                                child: DropdownButtonFormField<String>(
-                                  isExpanded: true,
-                                  key: ValueKey(
-                                    _selectedSaleOption?.id ?? 'empty-option',
-                                  ),
-                                  initialValue:
-                                      _saleOptions.any(
-                                        (option) =>
-                                            option.id ==
-                                            _selectedSaleOption?.id,
-                                      )
-                                      ? _selectedSaleOption?.id
-                                      : null,
-                                  decoration: const InputDecoration(
-                                    labelText: 'وزن أو وحدة البيع المحفوظة',
-                                    prefixIcon: Icon(Icons.scale_outlined),
-                                  ),
-                                  hint: Text(
-                                    _saleOptions.isEmpty
-                                        ? 'لا توجد خيارات محفوظة'
-                                        : 'اختر الوزن أو الوحدة',
-                                  ),
-                                  items: _saleOptions
-                                      .map(
-                                        (option) => DropdownMenuItem(
-                                          key: Key(
-                                            'invoice-sale-option-${option.id}-v${option.version}',
-                                          ),
-                                          value: option.id,
-                                          child: Text(
-                                            option.label,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                                  onChanged: _selectSaleOptionId,
-                                ),
-                              ),
-                              if (_canManageSaleOptions) ...[
-                                const SizedBox(width: 8),
-                                IconButton.filledTonal(
-                                  onPressed: () => _editSaleOption(),
-                                  tooltip: 'إضافة وزن أو وحدة وسعر',
-                                  icon: const Icon(Icons.add),
-                                ),
-                                if (_selectedSaleOption != null)
-                                  IconButton(
-                                    onPressed: () => _editSaleOption(
-                                      existing: _selectedSaleOption,
-                                    ),
-                                    tooltip: 'تعديل سعر هذا الخيار فقط',
-                                    icon: const Icon(Icons.edit_outlined),
-                                  ),
-                              ],
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                        ],
-                        if (_selectedProduct != null &&
-                            WeightedSaleMath.isMassUnit(
-                              _selectedProduct!.unitName,
-                            )) ...[
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEAF8F0),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Text(
-                                  'بيع بالمبلغ للصنف الموزون',
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.titleMedium,
-                                ),
-                                const SizedBox(height: 6),
-                                const Text(
-                                  'أدخل المبلغ الذي طلبه العميل؛ سيحسب النظام الوزن من سعر الوحدة ويخصم الكمية من المخزون.'
-                                  ' الدقة الأساسية: 1 جرام للصنف المخزن بالكيلو.',
-                                ),
-                                const SizedBox(height: 8),
-                                TextField(
-                                  key: const Key('invoice-sale-amount-input'),
-                                  controller: _saleAmount,
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                        decimal: true,
-                                      ),
-                                  inputFormatters: const [latinDigitFormatter],
-                                  textDirection: TextDirection.ltr,
-                                  decoration: const InputDecoration(
-                                    labelText:
-                                        'مبلغ العميل بالريال (مثلاً 500)',
-                                    prefixIcon: Icon(Icons.scale_rounded),
-                                  ),
-                                  onSubmitted: (_) =>
-                                      unawaited(_addWeightedAmountLine()),
-                                ),
-                                const SizedBox(height: 8),
-                                FilledButton.tonalIcon(
-                                  key: const Key('invoice-sale-amount-add'),
-                                  onPressed: _saving
-                                      ? null
-                                      : () =>
-                                            unawaited(_addWeightedAmountLine()),
-                                  icon: const Icon(Icons.calculate_rounded),
-                                  label: const Text(
-                                    'احسب الوزن وأضف السطر بالمبلغ',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 8),
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            final quantityField = TextField(
-                              key: const Key('invoice-quantity-input'),
-                              controller: _quantity,
-                              focusNode: _quantityFocus,
-                              onChanged: (_) {
-                                _pendingLineDiscountMinor = 0;
-                                _pendingWeightGramsMilli = null;
-                              },
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
-                              inputFormatters: const [latinDigitFormatter],
-                              textDirection: TextDirection.ltr,
-                              textAlign: TextAlign.left,
-                              style: const TextStyle(
-                                fontFamily: 'ArialMTBlack',
-                                fontWeight: FontWeight.w900,
-                              ),
-                              textInputAction: TextInputAction.next,
-                              onSubmitted: (_) => _priceFocus.requestFocus(),
-                              decoration: const InputDecoration(
-                                labelText: 'الكمية',
-                                prefixIcon: Icon(Icons.numbers_rounded),
-                              ),
-                            );
-                            final priceField = TextField(
-                              key: const Key('invoice-price-input'),
-                              controller: _price,
-                              focusNode: _priceFocus,
-                              onChanged: (_) {
-                                _pendingLineDiscountMinor = 0;
-                                _pendingWeightGramsMilli = null;
-                                _markPriceManuallyOverridden();
-                              },
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
-                              inputFormatters: const [latinDigitFormatter],
-                              textDirection: TextDirection.ltr,
-                              textAlign: TextAlign.left,
-                              style: const TextStyle(
-                                fontFamily: 'ArialMTBlack',
-                                fontWeight: FontWeight.w900,
-                              ),
-                              textInputAction: TextInputAction.done,
-                              onSubmitted: (_) =>
-                                  unawaited(_addLineFromKeyboard()),
-                              decoration: const InputDecoration(
-                                labelText: 'سعر البيع',
-                                prefixIcon: Icon(Icons.payments_outlined),
-                              ),
-                            );
-                            if (constraints.maxWidth < 520) {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  NineSoftEntryFieldGrid(
-                                    minFieldWidth: 195,
-                                    maxColumns: 2,
-                                    children: [quantityField, priceField],
-                                  ),
-                                  const SizedBox(height: 9),
-                                  FilledButton.icon(
-                                    key: const Key('invoice-add-line'),
-                                    onPressed: _addLineFromKeyboard,
-                                    icon: const Icon(Icons.add_rounded),
-                                    label: const Text(
-                                      'إضافة الصنف إلى الفاتورة',
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }
-                            return Row(
-                              children: [
-                                Expanded(child: quantityField),
-                                const SizedBox(width: 8),
-                                Expanded(child: priceField),
-                                const SizedBox(width: 8),
-                                FilledButton.icon(
-                                  key: const Key('invoice-add-line'),
-                                  onPressed: _addLineFromKeyboard,
-                                  icon: const Icon(Icons.add_rounded),
-                                  label: const Text('إضافة'),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        if (_lines.isEmpty)
-                          const _EmptyInvoiceLines()
-                        else
-                          _referenceLines(),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 13),
-                  NineSoftEntrySection(
-                    key: const Key('invoice-section-notes'),
-                    title: 'ملاحظات إضافية',
-                    step: '03',
-                    icon: Icons.sticky_note_2_outlined,
-                    child: TextField(
-                      key: const Key('invoice-notes-input'),
-                      controller: _notes,
-                      minLines: 1,
-                      maxLines: 2,
-                      decoration: const InputDecoration(
-                        labelText: 'ملاحظات الفاتورة (اختياري)',
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                ],
+        if (_selectedProduct != null && _canManageSaleOptions) ...[
+          const SizedBox(height: 8),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton.icon(
+              onPressed: _documentLocked
+                  ? null
+                  : () => _editSaleOption(existing: _selectedSaleOption),
+              icon: Icon(
+                _selectedSaleOption == null
+                    ? Icons.add_circle_outline_rounded
+                    : Icons.edit_outlined,
+              ),
+              label: Text(
+                _selectedSaleOption == null
+                    ? 'إضافة وحدة / وزن بيع'
+                    : 'تعديل وحدة البيع المحددة',
               ),
             ),
           ),
-          summary: _referenceSummary(preview),
-        ),
+        ],
+        if (_selectedProduct != null &&
+            WeightedSaleMath.isMassUnit(_selectedProduct!.unitName)) ...[
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  key: const Key('invoice-sale-amount-input'),
+                  controller: _saleAmount,
+                  enabled: !_documentLocked,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: const [latinDigitFormatter],
+                  textDirection: TextDirection.ltr,
+                  decoration: const InputDecoration(
+                    labelText: 'بيع بالمبلغ للصنف الموزون',
+                    prefixIcon: Icon(Icons.scale_rounded),
+                  ),
+                  onSubmitted: (_) => unawaited(_addWeightedAmountLine()),
+                ),
+              ),
+              const SizedBox(width: 8),
+              FilledButton.tonalIcon(
+                key: const Key('invoice-sale-amount-add'),
+                onPressed: _documentLocked || _saving
+                    ? null
+                    : () => unawaited(_addWeightedAmountLine()),
+                icon: const Icon(Icons.calculate_rounded),
+                label: const Text('إضافة بالمبلغ'),
+              ),
+            ],
+          ),
+        ],
       ],
+    );
+
+    final settlementField = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          child: Row(
+            children: [
+              referenceFieldIcon(
+                Icons.percent_rounded,
+                foreground: const Color(0xFF7B3FE4),
+                background: const Color(0xFFF1E8FF),
+              ),
+              const SizedBox(width: 5),
+              const Expanded(
+                child: Text(
+                  'شامل الضريبة',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11),
+                ),
+              ),
+              const Switch(
+                value: false,
+                onChanged: null,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 5),
+        Row(
+          children: [
+            Expanded(
+              child: referenceChoiceField(
+                label: 'نوع السعر',
+                value: 'سعر البيع',
+                icon: Icons.sell_outlined,
+                iconColor: const Color(0xFFE9770A),
+                iconBackground: const Color(0xFFFFF0DD),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: referenceChoiceField(
+                label: 'العملة',
+                value: 'ر.ي (الريال اليمني)',
+                icon: Icons.monetization_on_outlined,
+                iconColor: const Color(0xFFE9770A),
+                iconBackground: const Color(0xFFFFF0DD),
+              ),
+            ),
+          ],
+        ),
+        if (_paymentMode == 'cash' && _paymentAccounts.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          SearchableChartAccountField(
+            accounts: _paymentAccounts,
+            value: _paymentAccounts.any(
+              (item) => item.code == _paymentAccountCode,
+            )
+                ? _paymentAccountCode
+                : null,
+            label: 'حساب التحصيل',
+            hint: 'الصندوق أو البنك أو المحفظة',
+            onChanged: _documentLocked
+                ? null
+                : (value) => setState(() {
+                      _paymentAccountCode = value ?? '';
+                      _paymentChannel =
+                          _channelForAccount(_paymentAccountCode);
+                    }),
+          ),
+        ],
+        if (_paymentMode == 'credit') ...[
+          const SizedBox(height: 8),
+          const Text(
+            'البيع الآجل يتطلب عميلاً مسجلاً أو اسم عميل جديد.',
+            style: TextStyle(
+              color: Color(0xFFA55300),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ],
+    );
+
+    Future<void> printCurrent() async {
+      if (!_documentLocked && !await _saveDraft(notify: false)) return;
+      await _printThermal();
+    }
+
+    Future<void> whatsappCurrent() async {
+      if (!_documentLocked && !await _saveDraft(notify: false)) return;
+      await _sendInvoiceWhatsapp(_invoice);
+    }
+
+    final lockedControls = !_documentLocked
+        ? null
+        : Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OutlinedButton.icon(
+                onPressed: _previewInvoice,
+                icon: const Icon(Icons.visibility_outlined),
+                label: const Text('عرض'),
+              ),
+              OutlinedButton.icon(
+                onPressed: () => _previewThermal(_invoice),
+                icon: const Icon(Icons.receipt_long_outlined),
+                label: const Text('فاتورة مبسطة'),
+              ),
+              OutlinedButton.icon(
+                onPressed: () => unawaited(_share()),
+                icon: const Icon(Icons.picture_as_pdf_outlined),
+                label: const Text('PDF'),
+              ),
+              OutlinedButton.icon(
+                onPressed: _sendingWhatsapp
+                    ? null
+                    : () => unawaited(_sendInvoiceWhatsapp(_invoice)),
+                icon: const Icon(Icons.chat_outlined),
+                label: const Text('إرسال واتساب'),
+              ),
+              if (_canEdit &&
+                  (_invoice.postedToServer ||
+                      _invoice.isDraft ||
+                      _invoice.isQuarantined))
+                OutlinedButton.icon(
+                  onPressed: () => _editSaved(_invoice),
+                  icon: const Icon(Icons.edit_outlined),
+                  label: const Text('تعديل'),
+                ),
+              if (_canDelete &&
+                  (_invoice.postedToServer ||
+                      _invoice.isDraft ||
+                      _invoice.isQuarantined))
+                OutlinedButton.icon(
+                  onPressed: () => _deleteSaved(_invoice),
+                  icon: const Icon(Icons.delete_outline),
+                  label: const Text('حذف'),
+                ),
+            ],
+          );
+
+    return SalesInvoiceReferenceView(
+      key: const ValueKey('sales-invoice-reference-view'),
+      document: document,
+      customerField: customerField(),
+      invoiceNumberField: readOnlyField(
+        label: 'رقم الفاتورة *',
+        value: preview.displayNumber,
+        icon: Icons.description_outlined,
+        iconColor: const Color(0xFF147BE0),
+        iconBackground: const Color(0xFFE8F1FF),
+        direction: TextDirection.ltr,
+      ),
+      branchField: readOnlyField(
+        label: 'المخزن / الفرع *',
+        value: preview.branchLabel,
+        icon: Icons.warehouse_outlined,
+        iconColor: const Color(0xFF169B44),
+        iconBackground: const Color(0xFFE9F8EE),
+      ),
+      dateField: readOnlyField(
+        label: 'التاريخ *',
+        value:
+            '${preview.createdAt.year.toString().padLeft(4, '0')}/${preview.createdAt.month.toString().padLeft(2, '0')}/${preview.createdAt.day.toString().padLeft(2, '0')}',
+        icon: Icons.calendar_month_outlined,
+        iconColor: const Color(0xFF7B3FE4),
+        iconBackground: const Color(0xFFF1E8FF),
+        direction: TextDirection.ltr,
+      ),
+      employeeField: readOnlyField(
+        label: 'مندوب المبيعات',
+        value: preview.employeeName,
+        icon: Icons.person_outline_rounded,
+        iconColor: const Color(0xFF147BE0),
+        iconBackground: const Color(0xFFE8F1FF),
+      ),
+      paymentModeField: paymentModeField,
+      productSearchField: productSearchField,
+      barcodeField: barcodeField,
+      lineEntryControls:
+          (_selectedProduct == null && _item.text.trim().isEmpty)
+              ? null
+              : lineEntryControls,
+      linesTable:
+          _lines.isEmpty ? const _EmptyInvoiceLines() : _referenceLines(),
+      notesField: TextField(
+        key: const Key('invoice-notes-input'),
+        controller: _notes,
+        enabled: !_documentLocked,
+        minLines: 2,
+        maxLines: 3,
+        decoration: const InputDecoration(
+          hintText: 'أضف ملاحظات على الفاتورة...',
+        ),
+      ),
+      settlementField: settlementField,
+      deliveryBanner: _deliveryState == _InvoiceDeliveryState.editingDraft
+          ? const SizedBox.shrink()
+          : _deliveryBanner(),
+      lockedControls: lockedControls,
+      onAddLine: _handleF2,
+      onScanBarcode: _scanProductBarcode,
+      onSave: _canFinalizeCurrent
+          ? () => unawaited(_finalizeInvoice())
+          : null,
+      onPrint: preview.lines.isEmpty ? null : () => unawaited(printCurrent()),
+      onPdf: preview.lines.isEmpty ? null : () => unawaited(_share()),
+      onWhatsapp:
+          preview.lines.isEmpty ? null : () => unawaited(whatsappCurrent()),
+      onEditDiscount: _documentLocked
+          ? null
+          : () => unawaited(
+                editReferenceMoney(
+                  title: 'تعديل خصم الفاتورة',
+                  target: _discount,
+                ),
+              ),
+      onEditPaid: _documentLocked
+          ? null
+          : () => unawaited(
+                editReferenceMoney(
+                  title: _paymentMode == 'cash'
+                      ? 'تعديل المبلغ المستلم'
+                      : 'تعديل المبلغ المدفوع',
+                  target: _amountTendered,
+                ),
+              ),
+      onNewInvoice: _finalizing ? null : _startNewInvoice,
+      onHistory: _showHistory,
+      busy: _saving || _finalizing,
+      locked: _documentLocked,
     );
   }
 }
