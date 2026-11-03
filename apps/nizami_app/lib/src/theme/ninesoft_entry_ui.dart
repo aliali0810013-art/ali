@@ -1282,6 +1282,7 @@ class NineSoftEntryLineTable extends StatelessWidget {
                 total: const Text('الإجمالي'),
                 delete: const SizedBox.shrink(),
                 showDiscount: showDiscount,
+                compact: compactTable,
               ),
             ),
             const SizedBox(height: 9),
@@ -1335,6 +1336,7 @@ class NineSoftEntryLineTable extends StatelessWidget {
                       semanticsLabel: lines[index].semanticsLabel,
                     ),
                     showDiscount: showDiscount,
+                    compact: compactTable,
                   ),
                 ),
               ),
@@ -1357,6 +1359,7 @@ class _EntryTableRow extends StatelessWidget {
     required this.delete,
     this.showDiscount = false,
     this.header = false,
+    this.compact = false,
   });
 
   final Widget number;
