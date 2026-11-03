@@ -968,7 +968,7 @@ class _PurchaseWorkspacePageState extends State<PurchaseWorkspacePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('سجل المشتريات'),
-        toolbarHeight: desktop ? 0 : null,
+        toolbarHeight: 0,
         actions: [
           IconButton(
             onPressed: _load,
