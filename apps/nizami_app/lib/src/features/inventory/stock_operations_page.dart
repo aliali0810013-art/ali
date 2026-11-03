@@ -265,7 +265,7 @@ class _StockOperationsPageState extends State<StockOperationsPage> {
                     : Icons.inventory_outlined,
                 status: 'حركة مخزون',
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: phone ? 8 : 12),
               NineSoftEntrySection(
                 title: 'بيانات الحركة',
                 subtitle: 'حدد المصدر والصنف والكمية ثم راجع سبب الحركة',
@@ -426,7 +426,7 @@ class _StockOperationsPageState extends State<StockOperationsPage> {
                         labelText: 'سبب الحركة (لأثر المراجعة)',
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: phone ? 10 : 20),
                     NineSoftEntryFooter(
                       label: _saving ? 'جار الترحيل' : 'اعتماد وترحيل الحركة',
                       enabled:
