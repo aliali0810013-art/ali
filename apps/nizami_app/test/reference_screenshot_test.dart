@@ -123,7 +123,19 @@ void main() {
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = devicePixelRatio;
-    final logicalWidth = size.width / devicePixelRatio;
+    final logicalSize = Size(
+      size.width / devicePixelRatio,
+      size.height / devicePixelRatio,
+    );
+    final logicalWidth = logicalSize.width;
+    expect(
+      logicalSize.width * devicePixelRatio,
+      closeTo(size.width, 0.000001),
+    );
+    expect(
+      logicalSize.height * devicePixelRatio,
+      closeTo(size.height, 0.000001),
+    );
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
@@ -145,6 +157,13 @@ void main() {
         child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: NizamiTheme.light,
+        locale: const Locale('ar', 'YE'),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.noScaling,
+          ),
+          child: child!,
+        ),
         home: logicalWidth < 700
             ? Directionality(
                 textDirection: TextDirection.rtl,
@@ -213,10 +232,13 @@ void main() {
 
     final editorScroll = find.byKey(const ValueKey('invoice-document-editor'));
     if (editorScroll.evaluate().isNotEmpty) {
-      for (var i = 0; i < 4; i++) {
-        await tester.drag(editorScroll, const Offset(0, 1200));
-        await tester.pumpAndSettle();
-      }
+      final scrollable = find
+          .descendant(of: editorScroll, matching: find.byType(Scrollable))
+          .first;
+      final position = tester.state<ScrollableState>(scrollable).position;
+      position.jumpTo(0);
+      await tester.pumpAndSettle();
+      expect(position.pixels, closeTo(0, 0.001));
     }
 
     await tester.runAsync(() async {
@@ -224,6 +246,8 @@ void main() {
         find.byKey(captureKey),
       );
       final image = await boundary.toImage(pixelRatio: devicePixelRatio);
+      expect(image.width, size.width.round());
+      expect(image.height, size.height.round());
       final png = await image.toByteData(format: ui.ImageByteFormat.png);
       if (png == null) {
         fail('Failed to encode visual capture $name');
@@ -231,6 +255,23 @@ void main() {
       final captures = Directory('test/captures')..createSync(recursive: true);
       File('${captures.path}/$name.png').writeAsBytesSync(
         png.buffer.asUint8List(),
+        flush: true,
+      );
+      File('${captures.path}/$name-metadata.json').writeAsStringSync(
+        jsonEncode({
+          'logical_width': logicalSize.width,
+          'logical_height': logicalSize.height,
+          'dpr': devicePixelRatio,
+          'physical_width': image.width,
+          'physical_height': image.height,
+          'reference_width': size.width.round(),
+          'reference_height': size.height.round(),
+          'text_scale': 1.0,
+          'locale': 'ar_YE',
+          'direction': 'rtl',
+          'scroll_offset': 0.0,
+          'font_wait_ms': 700,
+        }),
         flush: true,
       );
     });
