@@ -8,6 +8,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nizami/src/features/invoices/invoice_workspace_page.dart';
+import 'package:nizami/src/features/invoices/invoice_history_store.dart';
+import 'package:nizami/src/features/invoices/invoice_pdf_service.dart';
 import 'package:nizami/src/features/navigation/ninesoft_workspace_shell.dart';
 import 'package:nizami/src/theme/ninesoft_ui.dart';
 import 'package:nizami/src/features/accounting/simple_journal_page.dart';
@@ -143,12 +145,67 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    await InvoiceHistoryStore().save(
+      'NineSoft',
+      'branch-preview',
+      InvoiceDocument(
+        number: 'INV-01542',
+        customerName: 'مؤسسة النور للتجارة',
+        customerPhone: '551234567',
+        customerId: 'cus-1024',
+        lines: const [
+          InvoiceLine(
+            name: 'لابتوب 15 بوصة',
+            quantity: 30,
+            unitPrice: 800,
+            productId: 'prd-1001',
+            displayUnit: 'حبة',
+            lineDiscountMinor: 240000,
+          ),
+          InvoiceLine(
+            name: 'ماوس لاسلكي',
+            quantity: 30,
+            unitPrice: 95,
+            productId: 'prd-2005',
+            displayUnit: 'حبة',
+          ),
+          InvoiceLine(
+            name: 'لوحة مفاتيح',
+            quantity: 5,
+            unitPrice: 280,
+            productId: 'prd-2006',
+            displayUnit: 'حبة',
+            lineDiscountMinor: 14000,
+          ),
+          InvoiceLine(
+            name: 'شاشة 24 بوصة',
+            quantity: 6,
+            unitPrice: 760,
+            productId: 'prd-3001',
+            displayUnit: 'حبة',
+          ),
+        ],
+        currency: 'YER',
+        employeeName: 'أحمد سالم',
+        branchLabel: 'المخزن الرئيسي',
+        createdAt: DateTime(2025, 1, 30, 10, 24),
+        paymentMode: 'cash',
+        paidAmount: 20000,
+        discountAmount: 2160,
+        amountTendered: 20000,
+        paymentChannel: 'cash',
+        localOperationId: 'reference-sales-draft',
+        isDraft: true,
+      ),
+    );
+
     final invoice = const Directionality(
       textDirection: TextDirection.rtl,
       child: InvoiceWorkspacePage(
         branchIds: ['branch-preview'],
         tenantName: 'NineSoft',
         employeeName: 'أحمد سالم',
+        branchDisplayName: 'المخزن الرئيسي',
         token: '',
         roleCode: 'owner',
         permissions: [],
@@ -199,42 +256,26 @@ void main() {
     );
     await tester.pumpAndSettle(const Duration(milliseconds: 700));
 
-    await tester.enterText(
-      find.byKey(const Key('invoice-reference-customer')),
-      'مؤسسة النور للتجارة',
+    await tester.tap(find.byKey(const Key('invoice-history-open-primary')));
+    await tester.pumpAndSettle();
+    final historyRow = find.byKey(
+      const Key('invoice-history-row-reference-sales-draft'),
     );
-    await tester.pump();
-
-    Future<void> addProduct(String name, String quantity) async {
-      final productField = find.byKey(const Key('invoice-product-input'));
-      await tester.enterText(productField, name);
-      await tester.pumpAndSettle();
-      final option = find.text(name);
-      if (option.evaluate().length > 1) {
-        await tester.tap(option.last);
-        await tester.pumpAndSettle();
-      }
-      await tester.enterText(
-        find.byKey(const Key('invoice-quantity-input')),
-        quantity,
-      );
-      await tester.pump();
-      final addLine = find.byKey(const Key('invoice-add-line'));
-      await tester.ensureVisible(addLine);
-      await tester.pump();
-      await tester.tap(addLine);
+    expect(historyRow, findsOneWidget);
+    await tester.tap(
+      find.descendant(
+        of: historyRow,
+        matching: find.byIcon(Icons.visibility_outlined),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final historyModal = find.byKey(
+      const Key('invoice-history-modal-content'),
+    );
+    if (historyModal.evaluate().isNotEmpty) {
+      Navigator.of(tester.element(historyModal)).pop();
       await tester.pumpAndSettle();
     }
-
-    await addProduct('لابتوب 15 بوصة', '30');
-    await addProduct('ماوس لاسلكي', '30');
-    await addProduct('لوحة مفاتيح', '5');
-    await addProduct('شاشة 24 بوصة', '6');
-
-    final productField = find.byKey(const Key('invoice-product-input'));
-    await tester.enterText(productField, '');
-    FocusManager.instance.primaryFocus?.unfocus();
-    await tester.pumpAndSettle();
 
     final editorScroll = find.byKey(const ValueKey('invoice-document-editor'));
     if (editorScroll.evaluate().isNotEmpty) {
