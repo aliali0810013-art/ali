@@ -574,14 +574,14 @@ class _MoneyRow extends StatelessWidget {
             color: muted ? Colors.blueGrey : color,
             fontFamily: 'ArialMTBlack',
             fontWeight: FontWeight.w900,
-            fontSize: compact ? (emphasized ? 13 : 11.5) : (emphasized ? 18 : 15),
+            fontSize: compact ? (emphasized ? 11.5 : 10) : (emphasized ? 18 : 15),
           ),
         );
         return Container(
-          margin: const EdgeInsets.only(bottom: 5),
+          margin: EdgeInsets.only(bottom: compact ? 2 : 5),
           padding: EdgeInsets.symmetric(
-            horizontal: compact ? 7 : 10,
-            vertical: compact ? 6 : 9,
+            horizontal: compact ? 5 : 10,
+            vertical: compact ? 3 : 9,
           ),
           decoration: BoxDecoration(
             color: emphasized
@@ -591,25 +591,13 @@ class _MoneyRow extends StatelessWidget {
                     : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: compact
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    title,
-                    const SizedBox(height: 3),
-                    Align(
-                      alignment: AlignmentDirectional.centerEnd,
-                      child: amount,
-                    ),
-                  ],
-                )
-              : Row(
-                  children: [
-                    Expanded(child: title),
-                    const SizedBox(width: 6),
-                    Flexible(child: amount),
-                  ],
-                ),
+          child: Row(
+            children: [
+              Expanded(child: title),
+              SizedBox(width: compact ? 3 : 6),
+              Flexible(child: amount),
+            ],
+          ),
         );
       },
     );
