@@ -459,6 +459,7 @@ class _AdministrationPageState extends State<AdministrationPage> {
                       children: [
                         Expanded(
                           child: OutlinedButton.icon(
+                            key: const Key('administration-user-cancel'),
                             onPressed: () =>
                                 Navigator.pop(pageContext, false),
                             icon: const Icon(Icons.close_rounded),
