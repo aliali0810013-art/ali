@@ -76,7 +76,10 @@ void main() {
       );
       expect(
         inputDecorator.decoration.contentPadding,
-        const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        EdgeInsets.symmetric(
+          horizontal: width <= 700 ? 9 : 12,
+          vertical: 10,
+        ),
       );
       expect(tester.takeException(), isNull);
     }
