@@ -1,0 +1,5 @@
+# انسخ هذا الملف إلى key.properties محليًا فقط. لا ترفع الملف الحقيقي أو المفتاح إلى المستودع.
+storeFile=../private/ninesoft-release.jks
+storePassword=CHANGE_ME
+keyAlias=ninesoft
+keyPassword=CHANGE_ME

@@ -1,0 +1,60 @@
+name: nizami
+description: نظامي - نظام محاسبي تجاري Offline-First من Qodynex.
+publish_to: none
+version: 0.29.27+75
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  intl: ^0.20.2
+  file_selector: ^1.1.0
+  path: ^1.9.1
+  path_provider: ^2.1.6
+  pdf: ^3.13.1
+  printing: ^5.15.1
+  sqlite3: ^3.5.1
+  sqlite3_flutter_libs: ^0.6.0+eol
+  shared_preferences: ^2.5.3
+  crypto: ^3.0.7
+  uuid: ^4.5.3
+  barcode_widget: ^2.0.4
+  mobile_scanner: ^7.4.2
+  flutter_svg: ^2.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  fonts:
+    - family: GESS
+      fonts:
+        - asset: assets/fonts/GE_SS_Two_Bold.ttf
+          weight: 400
+        - asset: assets/fonts/GE_SS_Two_Bold.ttf
+          weight: 500
+        - asset: assets/fonts/GE_SS_Two_Bold.ttf
+          weight: 600
+        - asset: assets/fonts/GE_SS_Two_Bold.ttf
+          weight: 700
+    - family: ArialMTBlack
+      fonts:
+        - asset: assets/fonts/Arial_MT_Black.ttf
+          weight: 900
+    - family: NizamiArabic
+      fonts:
+        - asset: assets/fonts/NotoSansArabic-Regular.ttf
+  assets:
+    - assets/branding/ninesoft-official-logo.png
+    - assets/branding/ninesoft-hero-mark.png
+    - assets/atlas/illustrations/
+    - assets/fonts/NotoSansArabic-Regular.ttf
+    - assets/fonts/NotoSansArabic-OFL.txt
+    - assets/fonts/GE_SS_Two_Bold.ttf
+    - assets/fonts/Arial_MT_Black.ttf
