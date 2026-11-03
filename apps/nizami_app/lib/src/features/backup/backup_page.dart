@@ -188,7 +188,7 @@ class _BackupPageState extends State<BackupPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('المزامنة والنسخ الاحتياطية')),
+    appBar: AppBar(toolbarHeight: 0),
     floatingActionButton: FloatingActionButton.extended(
       onPressed: _creating ? null : _create,
       icon: _creating
