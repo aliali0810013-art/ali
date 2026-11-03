@@ -390,9 +390,9 @@ class _FinancialReportsPageState extends State<FinancialReportsPage> {
         child: ListView(
           children: [
             NineSoftPageHeader(
-              title: phone ? 'التقارير والتحليلات' : _reports[_report]!,
+              title: _reports[_report]!,
               subtitle: phone
-                  ? '${_reports[_report]} • بيانات NineSoft الفعلية'
+                  ? 'تقرير مالي من بيانات NineSoft الفعلية'
                   : 'التقارير المالية والتحليلات من بيانات NineSoft الفعلية',
               icon: Icons.bar_chart_rounded,
               color: NizamiColors.blue,
