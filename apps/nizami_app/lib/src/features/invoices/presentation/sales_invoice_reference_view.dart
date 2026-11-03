@@ -231,62 +231,80 @@ class _Header extends StatelessWidget {
                     ),
               ),
             ),
-            IconButton(
-              key: const Key('invoice-history-open-primary'),
-              tooltip: 'الفواتير السابقة',
-              onPressed: onHistory,
-              icon: const Icon(Icons.history_rounded),
-            ),
-            if (phone)
-              IconButton.filledTonal(
-                key: const Key('invoice-shortcut-new'),
-                tooltip: 'فاتورة مبيعات جديدة',
-                onPressed: onNewInvoice,
-                icon: const Icon(Icons.note_add_outlined),
-              )
-            else
-              PopupMenuButton<String>(
-                key: const Key('invoice-shortcut-new'),
-                tooltip: 'إجراءات الفاتورة',
-                onSelected: (value) {
-                  if (value == 'new') onNewInvoice?.call();
-                  if (value == 'history') onHistory?.call();
-                },
-                itemBuilder: (_) => const [
-                  PopupMenuItem(
-                    value: 'new',
-                    child: Text('فاتورة مبيعات جديدة'),
-                  ),
-                  PopupMenuItem(
-                    value: 'history',
-                    child: Text('الفواتير السابقة'),
+            Container(
+              height: phone ? 42 : 46,
+              constraints: BoxConstraints(
+                minWidth: phone ? 150 : 180,
+                maxWidth: phone ? 178 : 220,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: SalesInvoiceReferenceView.border,
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x0A0B3676),
+                    blurRadius: 8,
+                    offset: Offset(0, 3),
                   ),
                 ],
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFD),
-                    borderRadius: BorderRadius.circular(13),
-                    border: Border.all(
-                      color: SalesInvoiceReferenceView.border,
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      key: const Key('invoice-shortcut-new'),
+                      onTap: onNewInvoice,
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.note_add_outlined, size: 19),
+                            SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                'فاتورة مبيعات جديدة',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Color(0xFF071D47),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 11.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.note_add_outlined, size: 20),
-                      SizedBox(width: 7),
-                      Text(
-                        'فاتورة مبيعات جديدة',
-                        style: TextStyle(fontWeight: FontWeight.w800),
+                  Container(
+                    width: 36,
+                    decoration: const BoxDecoration(
+                      border: Border(
+                        right: BorderSide(
+                          color: SalesInvoiceReferenceView.border,
+                        ),
                       ),
-                      SizedBox(width: 4),
-                      Icon(Icons.keyboard_arrow_down_rounded),
-                    ],
+                    ),
+                    child: IconButton(
+                      key: const Key('invoice-history-open-primary'),
+                      tooltip: 'الفواتير السابقة',
+                      onPressed: onHistory,
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 21,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
+            ),
           ],
         ),
       );
