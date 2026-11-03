@@ -1464,7 +1464,7 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
                 children: [
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
                           'بنود الفاتورة',
                           style: TextStyle(
