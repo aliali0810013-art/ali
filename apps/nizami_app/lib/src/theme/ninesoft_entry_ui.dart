@@ -43,7 +43,7 @@ class NineSoftDocumentCommandBar extends StatelessWidget {
         .map(
           (action) => SizedBox(
             width: mobile ? 90 : 108,
-            height: mobile ? 84 : 88,
+            height: mobile ? 90 : 96,
             child: Material(
               key: action.key,
               color: action.onPressed == null
