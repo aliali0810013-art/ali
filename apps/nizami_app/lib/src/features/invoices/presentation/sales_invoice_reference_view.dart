@@ -462,8 +462,10 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final paid = document.paidAmount;
-    final due = document.dueAmount;
+    final paid = document.amountTendered > 0
+        ? document.amountTendered.clamp(0, document.total).toDouble()
+        : document.paidAmount;
+    final due = (document.total - paid).clamp(0, double.infinity).toDouble();
     return _Panel(
       child: Column(
         children: [
