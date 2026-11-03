@@ -18,6 +18,7 @@ class SalesInvoiceReferenceView extends StatelessWidget {
     required this.notesField,
     required this.settlementField,
     required this.deliveryBanner,
+    this.lockedControls,
     required this.onAddLine,
     required this.onScanBarcode,
     required this.onSave,
@@ -45,6 +46,7 @@ class SalesInvoiceReferenceView extends StatelessWidget {
   final Widget notesField;
   final Widget settlementField;
   final Widget deliveryBanner;
+  final Widget? lockedControls;
   final VoidCallback? onAddLine;
   final VoidCallback? onScanBarcode;
   final VoidCallback? onSave;
@@ -99,7 +101,10 @@ class SalesInvoiceReferenceView extends StatelessWidget {
             key: const Key('invoice-shortcut-f3'),
             child: productSearchField,
           ),
-          barcodeField: barcodeField,
+          barcodeField: KeyedSubtree(
+            key: const Key('invoice-shortcut-f4'),
+            child: barcodeField,
+          ),
           onScanBarcode: locked ? null : onScanBarcode,
         ),
         const SizedBox(height: 10),
@@ -127,7 +132,7 @@ class SalesInvoiceReferenceView extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: _SoftAction(
-                buttonKey: const Key('invoice-shortcut-f4'),
+                buttonKey: const Key('invoice-reference-scan'),
                 label: 'مسح باركود',
                 icon: Icons.qr_code_scanner_rounded,
                 color: const Color(0xFF5C35C8),
@@ -172,6 +177,10 @@ class SalesInvoiceReferenceView extends StatelessWidget {
             );
           },
         ),
+        if (lockedControls != null) ...[
+          const SizedBox(height: 12),
+          lockedControls!,
+        ],
         const SizedBox(height: 12),
         _FooterActions(
           busy: busy,
@@ -246,39 +255,56 @@ class _Header extends StatelessWidget {
               onPressed: onHistory,
               icon: const Icon(Icons.history_rounded),
             ),
-            PopupMenuButton<String>(
-              key: const Key('invoice-shortcut-new'),
-              tooltip: 'إجراءات الفاتورة',
-              onSelected: (value) {
-                if (value == 'new') onNewInvoice?.call();
-                if (value == 'history') onHistory?.call();
-              },
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'new', child: Text('فاتورة مبيعات جديدة')),
-                PopupMenuItem(value: 'history', child: Text('الفواتير السابقة')),
-              ],
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFD),
-                  borderRadius: BorderRadius.circular(13),
-                  border: Border.all(color: SalesInvoiceReferenceView.border),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.note_add_outlined, size: 20),
-                    SizedBox(width: 7),
-                    Text(
-                      'فاتورة مبيعات جديدة',
-                      style: TextStyle(fontWeight: FontWeight.w800),
+            if (phone)
+              IconButton.filledTonal(
+                key: const Key('invoice-shortcut-new'),
+                tooltip: 'فاتورة مبيعات جديدة',
+                onPressed: onNewInvoice,
+                icon: const Icon(Icons.note_add_outlined),
+              )
+            else
+              PopupMenuButton<String>(
+                key: const Key('invoice-shortcut-new'),
+                tooltip: 'إجراءات الفاتورة',
+                onSelected: (value) {
+                  if (value == 'new') onNewInvoice?.call();
+                  if (value == 'history') onHistory?.call();
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(
+                    value: 'new',
+                    child: Text('فاتورة مبيعات جديدة'),
+                  ),
+                  PopupMenuItem(
+                    value: 'history',
+                    child: Text('الفواتير السابقة'),
+                  ),
+                ],
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFD),
+                    borderRadius: BorderRadius.circular(13),
+                    border: Border.all(
+                      color: SalesInvoiceReferenceView.border,
                     ),
-                    SizedBox(width: 4),
-                    Icon(Icons.keyboard_arrow_down_rounded),
-                  ],
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.note_add_outlined, size: 20),
+                      SizedBox(width: 7),
+                      Text(
+                        'فاتورة مبيعات جديدة',
+                        style: TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.keyboard_arrow_down_rounded),
+                    ],
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       );
@@ -374,31 +400,52 @@ class _SearchStrip extends StatelessWidget {
   final VoidCallback? onScanBarcode;
 
   @override
-  Widget build(BuildContext context) => Row(
-        children: [
-          Expanded(flex: 3, child: productSearchField),
-          const SizedBox(width: 10),
-          Expanded(flex: 2, child: barcodeField),
-          const SizedBox(width: 8),
-          SizedBox(
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (context, constraints) {
+          final scan = SizedBox(
             height: 54,
             child: FilledButton.icon(
               onPressed: onScanBarcode,
               style: FilledButton.styleFrom(
                 backgroundColor: SalesInvoiceReferenceView.navy,
-                padding: const EdgeInsets.symmetric(horizontal: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              icon: const Icon(Icons.qr_code_scanner_rounded),
+              icon: const Icon(Icons.qr_code_scanner_rounded, size: 20),
               label: const Text(
                 'مسح باركود',
-                style: TextStyle(fontWeight: FontWeight.w800),
+                maxLines: 1,
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
               ),
             ),
-          ),
-        ],
+          );
+          if (constraints.maxWidth < 560) {
+            return Column(
+              children: [
+                productSearchField,
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: barcodeField),
+                    const SizedBox(width: 8),
+                    scan,
+                  ],
+                ),
+              ],
+            );
+          }
+          return Row(
+            children: [
+              Expanded(flex: 3, child: productSearchField),
+              const SizedBox(width: 10),
+              Expanded(flex: 2, child: barcodeField),
+              const SizedBox(width: 8),
+              scan,
+            ],
+          );
+        },
       );
 }
 
@@ -675,15 +722,19 @@ class _FooterButton extends StatelessWidget {
             foregroundColor: foreground,
             disabledBackgroundColor: color.withValues(alpha: .45),
             disabledForegroundColor: foreground.withValues(alpha: .55),
+            padding: const EdgeInsets.symmetric(horizontal: 6),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
             ),
           ),
-          icon: Icon(icon),
+          icon: Icon(icon, size: 20),
           label: Text(
             label,
             maxLines: 1,
-            style: const TextStyle(fontWeight: FontWeight.w900),
+            style: const TextStyle(
+              fontWeight: FontWeight.w900,
+              fontSize: 11,
+            ),
           ),
         ),
       );
