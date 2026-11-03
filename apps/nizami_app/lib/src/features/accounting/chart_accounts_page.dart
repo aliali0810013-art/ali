@@ -119,7 +119,9 @@ class _ChartAccountsPageState extends State<ChartAccountsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final desktop = MediaQuery.sizeOf(context).width >= 900;
+    final width = MediaQuery.sizeOf(context).width;
+    final desktop = width >= 900;
+    final phone = width < 700;
     final visibleItems = _visibleItems;
     final totals = chartRootTotals(_items);
     return Scaffold(
@@ -150,7 +152,7 @@ class _ChartAccountsPageState extends State<ChartAccountsPage> {
                 children: [
                   NineSoftPageHeader(
                     title: 'شجرة الحسابات',
-                    subtitle: 'كل حسابات المنشأة مرتبة من الرئيسي إلى الفرعي',
+                    subtitle: phone ? 'إدارة الحسابات والتصنيفات' : 'كل حسابات المنشأة مرتبة من الرئيسي إلى الفرعي',
                     icon: Icons.account_tree_rounded,
                     color: NizamiColors.blue,
                     actions: [
@@ -168,9 +170,11 @@ class _ChartAccountsPageState extends State<ChartAccountsPage> {
                         ),
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  _quickGuide(),
-                  const SizedBox(height: 12),
+                  SizedBox(height: phone ? 8 : 14),
+                  if (!phone) ...[
+                    _quickGuide(),
+                    const SizedBox(height: 12),
+                  ],
                   if (widget.branchIds.length > 1)
                     Padding(
                       padding: const EdgeInsets.all(12),
@@ -192,7 +196,7 @@ class _ChartAccountsPageState extends State<ChartAccountsPage> {
                         },
                       ),
                     ),
-                  Align(
+                  if (!phone) Align(
                     alignment: AlignmentDirectional.centerStart,
                     child: TextButton.icon(
                       onPressed: () =>
@@ -207,7 +211,7 @@ class _ChartAccountsPageState extends State<ChartAccountsPage> {
                       ),
                     ),
                   ),
-                  if (_showTotals)
+                  if (phone || _showTotals)
                     Wrap(
                       spacing: 6,
                       runSpacing: 6,
