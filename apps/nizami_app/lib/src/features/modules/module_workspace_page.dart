@@ -2670,7 +2670,7 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
       }
       await outbox.discard(entity, record.title);
       if (canonicalContact != null) {
-        return _adoptCanonicalContact(record, canonicalContact);
+        return await _adoptCanonicalContact(record, canonicalContact);
       }
     } catch (error) {
       // Do not claim that an offline operation will sync unless persisted.
