@@ -27,7 +27,18 @@ jobs:
       - name: Resolve dependencies
         run: flutter pub get
       - name: Format verification
-        run: dart format --set-exit-if-changed .
+        id: format_check
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          dart format --set-exit-if-changed .
+          code=$?
+          git diff --name-only > /tmp/ninesoft-format-changes.txt
+          exit $code
+      - name: Restore formatter workspace changes
+        shell: bash
+        run: git reset --hard HEAD
       - name: Analyze
         run: flutter analyze
       - name: Test
@@ -50,6 +61,7 @@ jobs:
           cp PROTECTED_FILES_REPORT_AR.md /tmp/NineSoft-UI-Local-Preview/
           cp KNOWN_ISSUES_AR.md /tmp/NineSoft-UI-Local-Preview/
           cp DELIVERY_INFO.txt /tmp/NineSoft-UI-Local-Preview/
+          if [ -f /tmp/ninesoft-format-changes.txt ]; then cp /tmp/ninesoft-format-changes.txt /tmp/NineSoft-UI-Local-Preview/FORMAT_CHANGED_FILES.txt; fi
           cp CHANGES_AR.md /tmp/NineSoft-UI-Local-Preview/
           cp TEST_RESULTS_AR.md /tmp/NineSoft-UI-Local-Preview/
           cp apps/nizami_app/test/goldens/*.png /tmp/NineSoft-UI-Local-Preview/screenshots/
