@@ -454,7 +454,7 @@ class _AdministrationPageState extends State<AdministrationPage> {
                       accent: NizamiColors.purple,
                       child: _permissionsEditor(permissions, update),
                     ),
-                    const SizedBox(height: 14),
+                    SizedBox(height: phone ? 8 : 14),
                     Row(
                       children: [
                         Expanded(
@@ -768,21 +768,23 @@ class _AdministrationPageState extends State<AdministrationPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) {
+    final phone = MediaQuery.sizeOf(context).width < 700;
+    return Scaffold(
     appBar: AppBar(toolbarHeight: 0),
     body: _loading
         ? const Center(child: CircularProgressIndicator())
         : RefreshIndicator(
             onRefresh: _load,
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(14, 14, 14, 100),
+              padding: EdgeInsets.fromLTRB(phone ? 10 : 14, phone ? 10 : 14, phone ? 10 : 14, 100),
               children: [
                 NineSoftEntryHeading(
                   title: widget.showUsers
-                      ? 'إدارة المستخدمين'
+                      ? 'المستخدمون والصلاحيات'
                       : 'إدارة نسخ العملاء',
                   subtitle: widget.showUsers
-                      ? 'الحسابات والصلاحيات ومدد الوصول في مكان واحد'
+                      ? (phone ? 'إدارة المستخدمين والأدوار والصلاحيات' : 'الحسابات والصلاحيات ومدد الوصول في مكان واحد')
                       : 'كل عميل في منشأة مستقلة ببيانات ومزامنة ونسخ احتياطية منفصلة',
                   status: widget.tenantName,
                   icon: widget.showUsers
@@ -868,10 +870,10 @@ class _AdministrationPageState extends State<AdministrationPage> {
                     },
                   ),
                 ],
-                const SizedBox(height: 14),
+                SizedBox(height: phone ? 8 : 14),
                 NineSoftEntrySection(
                   title: widget.showUsers
-                      ? 'حسابات المستخدمين'
+                      ? (phone ? 'تفاصيل المستخدمين' : 'حسابات المستخدمين')
                       : 'قائمة نسخ العملاء',
                   subtitle: widget.showUsers
                       ? '${_users.length} حساب مسجل'
@@ -891,6 +893,7 @@ class _AdministrationPageState extends State<AdministrationPage> {
             ),
           ),
   );
+  }
 
   Widget _userCard(Map<String, dynamic> user) => Card(
     margin: const EdgeInsets.only(bottom: 10),
