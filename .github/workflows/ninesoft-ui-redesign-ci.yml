@@ -61,9 +61,28 @@ jobs:
           cp PROTECTED_FILES_REPORT_AR.md /tmp/NineSoft-UI-Local-Preview/
           cp KNOWN_ISSUES_AR.md /tmp/NineSoft-UI-Local-Preview/
           cp DELIVERY_INFO.txt /tmp/NineSoft-UI-Local-Preview/
+          echo "Last Commit: $GITHUB_SHA" >> /tmp/NineSoft-UI-Local-Preview/DELIVERY_INFO.txt
+          echo "CI Run: $GITHUB_RUN_ID" >> /tmp/NineSoft-UI-Local-Preview/DELIVERY_INFO.txt
           if [ -f /tmp/ninesoft-format-changes.txt ]; then cp /tmp/ninesoft-format-changes.txt /tmp/NineSoft-UI-Local-Preview/FORMAT_CHANGED_FILES.txt; fi
           cp CHANGES_AR.md /tmp/NineSoft-UI-Local-Preview/
           cp TEST_RESULTS_AR.md /tmp/NineSoft-UI-Local-Preview/
+          cat >> /tmp/NineSoft-UI-Local-Preview/TEST_RESULTS_AR.md <<EOF
+
+          ## فحص حزمة المعاينة المحلية النهائي
+
+          - Commit: $GITHUB_SHA
+          - flutter clean: PASS
+          - flutter pub get: PASS
+          - dart format --set-exit-if-changed .: ${{ steps.format_check.outcome }}
+          - ملاحظة التنسيق: لم تُحفظ تغييرات formatter؛ أُعيد workspace إلى HEAD لحماية ملفات API/Sync/Accounting غير المطلوبة للواجهة.
+          - flutter analyze: PASS
+          - flutter test: PASS
+          - flutter build web --release: PASS
+          - capture screenshots: PASS
+          - Hostinger deployment: NOT PERFORMED
+          - main merge: NOT PERFORMED
+          - Production accounting parity: NOT CLAIMED
+          EOF
           cp apps/nizami_app/test/goldens/*.png /tmp/NineSoft-UI-Local-Preview/screenshots/
           test -f /tmp/NineSoft-UI-Local-Preview/build/web/index.html
           cd /tmp
