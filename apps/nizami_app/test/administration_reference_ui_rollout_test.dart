@@ -142,7 +142,14 @@ void main() {
     expect(find.byType(AlertDialog), findsNothing);
     expect(find.text('إضافة مستخدم'), findsOneWidget);
     expect(find.byType(NineSoftEntryHeading), findsOneWidget);
-    await tester.tap(find.text('إلغاء').last);
+    final cancel = find.byKey(const Key('administration-user-cancel'));
+    await tester.dragUntilVisible(
+      cancel,
+      find.byType(Scrollable).last,
+      const Offset(0, -320),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(cancel);
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
