@@ -481,6 +481,7 @@ class _FinancialReportsPageState extends State<FinancialReportsPage> {
             ),
             const SizedBox(height: 10),
             NineSoftFinancialSummaryStrip(
+              key: const Key('financial-report-kpi-grid'),
               items: [
                 for (var index = 0; index < _summary.length; index++)
                   NineSoftFinancialSummaryItem(
@@ -626,7 +627,11 @@ class _ReportSelector extends StatelessWidget {
       crossAxisCount: 4,
       crossAxisSpacing: 7,
       mainAxisSpacing: 7,
-      childAspectRatio: constraints.maxWidth < 600 ? 1.08 : 3.1,
+      childAspectRatio: constraints.maxWidth < 600
+          ? 1.08
+          : constraints.maxWidth < 900
+          ? 2.0
+          : 3.1,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: [
