@@ -2450,6 +2450,45 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
     );
   }
 
+  CatalogProduct? _referenceProduct(InvoiceLine line) {
+    for (final product in _products) {
+      if (product.id.isNotEmpty && product.id == line.productId) return product;
+    }
+    return null;
+  }
+
+  IconData _referenceProductIcon(InvoiceLine line) {
+    final name = line.name;
+    if (name.contains('لابتوب')) return Icons.laptop_mac_rounded;
+    if (name.contains('ماوس')) return Icons.mouse_outlined;
+    if (name.contains('مفاتيح')) return Icons.keyboard_alt_outlined;
+    if (name.contains('شاشة')) return Icons.desktop_windows_outlined;
+    return Icons.inventory_2_outlined;
+  }
+
+  Widget _referenceDiscountBadge(InvoiceLine line) {
+    final hasDiscount = line.lineDiscountMinor > 0 && line.grossMinor > 0;
+    final label = hasDiscount
+        ? '${((line.lineDiscountMinor * 100) / line.grossMinor).round()}%'
+        : '0%';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+      decoration: BoxDecoration(
+        color: hasDiscount ? const Color(0xFFFFE8EC) : const Color(0xFFF1F4F8),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        textDirection: TextDirection.ltr,
+        style: TextStyle(
+          color: hasDiscount ? const Color(0xFFE1394A) : const Color(0xFF5C6C7D),
+          fontWeight: FontWeight.w800,
+          fontSize: 10.5,
+        ),
+      ),
+    );
+  }
+
   Widget _referenceLines() => NineSoftEntryLineTable(
     forceTableOnMobile: true,
     showDiscount: true,
@@ -2462,25 +2501,42 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
             child: Row(
               children: [
                 Container(
-                  width: 28,
-                  height: 28,
-                  margin: const EdgeInsetsDirectional.only(end: 5),
+                  width: 32,
+                  height: 32,
+                  margin: const EdgeInsetsDirectional.only(end: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF1F6FD),
                     borderRadius: BorderRadius.circular(7),
                     border: Border.all(color: const Color(0xFFDCE6F2)),
                   ),
-                  child: const Icon(
-                    Icons.inventory_2_outlined,
-                    size: 17,
-                    color: Color(0xFF147BE0),
+                  child: Icon(
+                    _referenceProductIcon(_lines[index]),
+                    size: 18,
+                    color: const Color(0xFF147BE0),
                   ),
                 ),
                 Expanded(
-                  child: Text(
-                    _lines[index].name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _lines[index].name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      if ((_referenceProduct(_lines[index])?.sku ?? '').isNotEmpty)
+                        Text(
+                          _referenceProduct(_lines[index])!.sku,
+                          textDirection: TextDirection.ltr,
+                          style: const TextStyle(
+                            color: Color(0xFF65758A),
+                            fontSize: 9.5,
+                            height: 1.1,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 if (_lines[index].pendingCatalogSync)
@@ -2506,12 +2562,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
             _lines[index].displayUnitPrice,
             textDirection: TextDirection.ltr,
           ),
-          discount: Text(
-            _lines[index].lineDiscountMinor == 0 || _lines[index].grossMinor <= 0
-                ? '0%'
-                : '${((_lines[index].lineDiscountMinor * 100) / _lines[index].grossMinor).round()}%',
-            textDirection: TextDirection.ltr,
-          ),
+          discount: _referenceDiscountBadge(_lines[index]),
           total: Text(
             _lines[index].total.toStringAsFixed(2),
             textDirection: TextDirection.ltr,
