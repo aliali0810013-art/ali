@@ -5374,7 +5374,8 @@ NineSoftEntryHeading(
         ),
       ),
     );
-  }}
+  }
+}
 
 pw.Widget _pdfLatin(String value, pw.Font font, {bool bold = false}) =>
     pw.Directionality(
