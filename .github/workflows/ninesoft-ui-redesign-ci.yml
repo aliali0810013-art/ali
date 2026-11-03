@@ -45,8 +45,8 @@ jobs:
         run: flutter test
       - name: Build web
         run: flutter build web --release --dart-define=NINESOFT_API_BASE_URL=https://ninesoft.qodynex.tech/api/v1
-      - name: Capture reference screenshots
-        run: flutter test test/reference_screenshot_test.dart --dart-define=NINESOFT_CAPTURE_SCREENSHOTS=true --update-goldens
+      - name: Verify fixed reference screenshots
+        run: flutter test test/reference_screenshot_test.dart --dart-define=NINESOFT_CAPTURE_SCREENSHOTS=true
       - name: Build local preview package
         shell: bash
         run: |
@@ -78,7 +78,7 @@ jobs:
           - flutter analyze: PASS
           - flutter test: PASS
           - flutter build web --release: PASS
-          - capture screenshots: PASS
+          - fixed reference screenshot comparison: PASS
           - Hostinger deployment: NOT PERFORMED
           - main merge: NOT PERFORMED
           - Production accounting parity: NOT CLAIMED
