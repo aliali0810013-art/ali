@@ -122,7 +122,7 @@ class _ChartAccountsPageState extends State<ChartAccountsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('شجرة الحسابات'),
-        toolbarHeight: desktop ? 0 : null,
+        toolbarHeight: 0,
         actions: [
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh_rounded)),
         ],
