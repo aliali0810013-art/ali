@@ -618,7 +618,6 @@ class _FooterButton extends StatelessWidget {
     required this.onPressed,
   });
 
-  final Key? buttonKey;
   final String label;
   final IconData icon;
   final Color color;
@@ -658,6 +657,7 @@ class _SoftAction extends StatelessWidget {
     required this.onPressed,
   });
 
+  final Key? buttonKey;
   final String label;
   final IconData icon;
   final Color color;
