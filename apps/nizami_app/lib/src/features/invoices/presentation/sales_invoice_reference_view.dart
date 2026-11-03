@@ -77,13 +77,14 @@ class SalesInvoiceReferenceView extends StatelessWidget {
           onNewInvoice: onNewInvoice,
           onHistory: onHistory,
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         deliveryBanner,
+        const SizedBox(height: 6),
         const _SectionTitle(
           title: 'تحرير فاتورة مبيعات',
           icon: Icons.receipt_long_rounded,
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         KeyedSubtree(
           key: const Key('invoice-section-document'),
           child: _DocumentGrid(
@@ -95,7 +96,7 @@ class SalesInvoiceReferenceView extends StatelessWidget {
           paymentModeField: paymentModeField,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 9),
         _SearchStrip(
           productSearchField: KeyedSubtree(
             key: const Key('invoice-shortcut-f3'),
@@ -146,21 +147,6 @@ class SalesInvoiceReferenceView extends StatelessWidget {
         const SizedBox(height: 12),
         LayoutBuilder(
           builder: (context, constraints) {
-            if (constraints.maxWidth < 760) {
-              return Column(
-                children: [
-                  _SummaryCard(document: document),
-                  const SizedBox(height: 10),
-                  KeyedSubtree(
-                    key: const Key('invoice-section-notes'),
-                    child: _DetailsCard(
-                    notesField: notesField,
-                    settlementField: settlementField,
-                    ),
-                  ),
-                ],
-              );
-            }
             return Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -211,34 +197,28 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         padding: EdgeInsets.symmetric(
-          horizontal: phone ? 12 : 18,
-          vertical: phone ? 10 : 14,
+          horizontal: phone ? 2 : 6,
+          vertical: phone ? 4 : 8,
         ),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: SalesInvoiceReferenceView.border),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x120B3676),
-              blurRadius: 20,
-              offset: Offset(0, 8),
-            ),
-          ],
+          border: Border(
+            bottom: BorderSide(color: SalesInvoiceReferenceView.border),
+          ),
         ),
         child: Row(
           children: [
             Container(
-              width: phone ? 48 : 56,
-              height: phone ? 48 : 56,
+              width: phone ? 42 : 48,
+              height: phone ? 42 : 48,
               decoration: BoxDecoration(
                 color: SalesInvoiceReferenceView.paleBlue,
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
                 Icons.shopping_cart_checkout_rounded,
                 color: SalesInvoiceReferenceView.blue,
-                size: 29,
+                size: 25,
               ),
             ),
             const SizedBox(width: 12),
@@ -398,10 +378,7 @@ class _DocumentGrid extends StatelessWidget {
             for (final field in fields)
               SizedBox(
                 width: fieldWidth,
-                child: _Panel(
-                  padding: const EdgeInsets.all(8),
-                  child: field,
-                ),
+                child: field,
               ),
           ],
         );
@@ -425,14 +402,14 @@ class _SearchStrip extends StatelessWidget {
   Widget build(BuildContext context) => LayoutBuilder(
         builder: (context, constraints) {
           final scan = SizedBox(
-            height: 54,
+            height: 50,
             child: FilledButton.icon(
               onPressed: onScanBarcode,
               style: FilledButton.styleFrom(
                 backgroundColor: SalesInvoiceReferenceView.navy,
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
               icon: const Icon(Icons.qr_code_scanner_rounded, size: 20),
@@ -443,27 +420,14 @@ class _SearchStrip extends StatelessWidget {
               ),
             ),
           );
-          if (constraints.maxWidth < 560) {
-            return Column(
-              children: [
-                productSearchField,
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(child: barcodeField),
-                    const SizedBox(width: 8),
-                    scan,
-                  ],
-                ),
-              ],
-            );
-          }
           return Row(
             children: [
-              Expanded(flex: 3, child: productSearchField),
-              const SizedBox(width: 10),
-              Expanded(flex: 2, child: barcodeField),
+              Expanded(flex: 5, child: productSearchField),
               const SizedBox(width: 8),
+              if (constraints.maxWidth >= 620) ...[
+                Expanded(flex: 2, child: barcodeField),
+                const SizedBox(width: 8),
+              ],
               scan,
             ],
           );
@@ -815,13 +779,13 @@ class _Panel extends StatelessWidget {
         padding: padding,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(color: SalesInvoiceReferenceView.border),
           boxShadow: const [
             BoxShadow(
               color: Color(0x0B0B3676),
-              blurRadius: 14,
-              offset: Offset(0, 5),
+              blurRadius: 10,
+              offset: Offset(0, 4),
             ),
           ],
         ),
