@@ -13,6 +13,7 @@ class SalesInvoiceReferenceView extends StatelessWidget {
     required this.paymentModeField,
     required this.productSearchField,
     required this.barcodeField,
+    required this.lineEntryControls,
     required this.linesTable,
     required this.notesField,
     required this.settlementField,
@@ -39,6 +40,7 @@ class SalesInvoiceReferenceView extends StatelessWidget {
   final Widget paymentModeField;
   final Widget productSearchField;
   final Widget barcodeField;
+  final Widget lineEntryControls;
   final Widget linesTable;
   final Widget notesField;
   final Widget settlementField;
@@ -93,6 +95,8 @@ class SalesInvoiceReferenceView extends StatelessWidget {
           barcodeField: barcodeField,
           onScanBarcode: locked ? null : onScanBarcode,
         ),
+        const SizedBox(height: 10),
+        _Panel(child: lineEntryControls),
         const SizedBox(height: 10),
         _Panel(padding: EdgeInsets.zero, child: linesTable),
         const SizedBox(height: 10),
