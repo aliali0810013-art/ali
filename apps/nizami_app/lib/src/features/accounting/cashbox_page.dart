@@ -250,19 +250,8 @@ class _CashboxPageState extends State<CashboxPage> {
 
   @override
   Widget build(BuildContext context) {
-    final desktop = MediaQuery.sizeOf(context).width >= 900;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('الصندوق'),
-        toolbarHeight: desktop ? 0 : null,
-        actions: [
-          IconButton(
-            tooltip: 'تحديث حركة الصندوق',
-            onPressed: _refreshing ? null : _load,
-            icon: const Icon(Icons.refresh_rounded),
-          ),
-        ],
-      ),
+      appBar: AppBar(toolbarHeight: 0),
       body: SafeArea(
         child: NineSoftResponsiveBody(
           child: RefreshIndicator(
@@ -274,7 +263,7 @@ class _CashboxPageState extends State<CashboxPage> {
                   subtitle:
                       'الرصيد النقدي وحركات القبض والصرف من القيود المرحلة',
                   icon: Icons.point_of_sale_rounded,
-                  accent: NizamiColors.green,
+                  accent: NizamiColors.blue,
                   actions: [
                     OutlinedButton.icon(
                       key: const Key('cashbox-refresh-action'),
