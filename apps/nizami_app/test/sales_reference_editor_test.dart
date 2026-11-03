@@ -1140,7 +1140,7 @@ void main() {
       expect(find.descendant(of: row, matching: find.text('1')), findsOneWidget);
       expect(
         find.descendant(of: row, matching: find.text('5000.00')),
-        findsOneWidget,
+        findsNWidgets(2),
       );
     },
   );
