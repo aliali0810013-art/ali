@@ -234,7 +234,7 @@ void main() {
                   color: Colors.white,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 3.5,
+                      horizontal: 10,
                       vertical: 2,
                     ),
                     child: DecoratedBox(
@@ -247,7 +247,10 @@ void main() {
                         ),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(10.5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7.5,
+                          vertical: 10.5,
+                        ),
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             color: Colors.black,
@@ -255,7 +258,7 @@ void main() {
                           ),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 15,
+                              horizontal: 13.5,
                               vertical: 8,
                             ),
                             child: ClipRRect(
