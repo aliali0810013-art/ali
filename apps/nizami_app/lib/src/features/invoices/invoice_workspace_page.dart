@@ -2684,6 +2684,108 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
             },
     );
 
+    final lineEntryControls = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_selectedProduct != null && _saleOptions.isNotEmpty) ...[
+          DropdownButtonFormField<String>(
+            isExpanded: true,
+            key: ValueKey(_selectedSaleOption?.id ?? 'reference-sale-option'),
+            initialValue: _saleOptions.any(
+              (option) => option.id == _selectedSaleOption?.id,
+            )
+                ? _selectedSaleOption?.id
+                : null,
+            decoration: const InputDecoration(
+              labelText: 'وحدة / وزن البيع',
+              prefixIcon: Icon(Icons.scale_outlined),
+            ),
+            hint: const Text('اختر وحدة البيع'),
+            items: _saleOptions
+                .map(
+                  (option) => DropdownMenuItem(
+                    value: option.id,
+                    child: Text(
+                      option.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                )
+                .toList(),
+            onChanged: _documentLocked ? null : _selectSaleOptionId,
+          ),
+          const SizedBox(height: 8),
+        ],
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                key: const Key('invoice-quantity-input'),
+                controller: _quantity,
+                focusNode: _quantityFocus,
+                enabled: !_documentLocked,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: const [latinDigitFormatter],
+                textDirection: TextDirection.ltr,
+                decoration: const InputDecoration(
+                  labelText: 'الكمية *',
+                  prefixIcon: Icon(Icons.numbers_rounded),
+                ),
+                onChanged: (_) {
+                  _pendingLineDiscountMinor = 0;
+                  _pendingWeightGramsMilli = null;
+                },
+                onSubmitted: (_) => _priceFocus.requestFocus(),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextField(
+                key: const Key('invoice-price-input'),
+                controller: _price,
+                focusNode: _priceFocus,
+                enabled: !_documentLocked,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: const [latinDigitFormatter],
+                textDirection: TextDirection.ltr,
+                decoration: const InputDecoration(
+                  labelText: 'سعر البيع *',
+                  prefixIcon: Icon(Icons.sell_outlined),
+                ),
+                onChanged: (_) {
+                  _pendingLineDiscountMinor = 0;
+                  _pendingWeightGramsMilli = null;
+                  _markPriceManuallyOverridden();
+                },
+                onSubmitted: (_) => unawaited(_addLineFromKeyboard()),
+              ),
+            ),
+          ],
+        ),
+        if (_selectedProduct != null &&
+            WeightedSaleMath.isMassUnit(_selectedProduct!.unitName)) ...[
+          const SizedBox(height: 8),
+          TextField(
+            key: const Key('invoice-sale-amount-input'),
+            controller: _saleAmount,
+            enabled: !_documentLocked,
+            keyboardType:
+                const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: const [latinDigitFormatter],
+            textDirection: TextDirection.ltr,
+            decoration: const InputDecoration(
+              labelText: 'بيع بالمبلغ للصنف الموزون',
+              prefixIcon: Icon(Icons.scale_rounded),
+            ),
+            onSubmitted: (_) => unawaited(_addWeightedAmountLine()),
+          ),
+        ],
+      ],
+    );
+
     final settlementField = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -2796,6 +2898,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       paymentModeField: paymentModeField,
       productSearchField: productSearchField,
       barcodeField: barcodeField,
+      lineEntryControls: lineEntryControls,
       linesTable:
           _lines.isEmpty ? const _EmptyInvoiceLines() : _referenceLines(),
       notesField: TextField(
