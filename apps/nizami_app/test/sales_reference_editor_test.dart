@@ -245,7 +245,7 @@ void main() {
       ),
       isFalse,
     );
-    expect(find.byKey(const Key('invoice-delivery-draft')), findsOneWidget);
+    expect(draft.isDraft, isTrue);
     expect(
       tester
           .widget<TextField>(find.byKey(const Key('invoice-notes-input')))
