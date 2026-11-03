@@ -1226,19 +1226,7 @@ class _ReturnWorkspacePageState extends State<ReturnWorkspacePage> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.purchase ? 'مرتجعات المشتريات' : 'مرتجعات المبيعات',
-          ),
-          toolbarHeight: desktop ? 0 : null,
-          actions: [
-            IconButton(
-              onPressed: _loading ? null : _load,
-              icon: const Icon(Icons.refresh_rounded),
-              tooltip: 'تحديث',
-            ),
-          ],
-        ),
+        appBar: AppBar(toolbarHeight: 0),
         body: SafeArea(
           child: NineSoftResponsiveBody(
             child: Column(
