@@ -2693,7 +2693,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
         if (_selectedProduct != null && _saleOptions.isNotEmpty) ...[
           DropdownButtonFormField<String>(
             isExpanded: true,
-            key: ValueKey(_selectedSaleOption?.id ?? 'reference-sale-option'),
+            key: ValueKey(_selectedSaleOption?.id ?? 'empty-option'),
             initialValue: _saleOptions.any(
               (option) => option.id == _selectedSaleOption?.id,
             )
@@ -2707,6 +2707,9 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
             items: _saleOptions
                 .map(
                   (option) => DropdownMenuItem(
+                    key: Key(
+                      'invoice-sale-option-${option.id}-v${option.version}',
+                    ),
                     value: option.id,
                     child: Text(
                       option.label,
@@ -2792,19 +2795,34 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
         if (_selectedProduct != null &&
             WeightedSaleMath.isMassUnit(_selectedProduct!.unitName)) ...[
           const SizedBox(height: 8),
-          TextField(
-            key: const Key('invoice-sale-amount-input'),
-            controller: _saleAmount,
-            enabled: !_documentLocked,
-            keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: const [latinDigitFormatter],
-            textDirection: TextDirection.ltr,
-            decoration: const InputDecoration(
-              labelText: 'بيع بالمبلغ للصنف الموزون',
-              prefixIcon: Icon(Icons.scale_rounded),
-            ),
-            onSubmitted: (_) => unawaited(_addWeightedAmountLine()),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  key: const Key('invoice-sale-amount-input'),
+                  controller: _saleAmount,
+                  enabled: !_documentLocked,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: const [latinDigitFormatter],
+                  textDirection: TextDirection.ltr,
+                  decoration: const InputDecoration(
+                    labelText: 'بيع بالمبلغ للصنف الموزون',
+                    prefixIcon: Icon(Icons.scale_rounded),
+                  ),
+                  onSubmitted: (_) => unawaited(_addWeightedAmountLine()),
+                ),
+              ),
+              const SizedBox(width: 8),
+              FilledButton.tonalIcon(
+                key: const Key('invoice-sale-amount-add'),
+                onPressed: _documentLocked || _saving
+                    ? null
+                    : () => unawaited(_addWeightedAmountLine()),
+                icon: const Icon(Icons.calculate_rounded),
+                label: const Text('إضافة بالمبلغ'),
+              ),
+            ],
           ),
         ],
       ],
