@@ -2489,6 +2489,117 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
     );
   }
 
+  void _stepReferenceLineQuantity(int index, double delta) {
+    if (_documentLocked || index < 0 || index >= _lines.length) return;
+    final line = _lines[index];
+    final nextQuantity = line.quantity + delta;
+    if (nextQuantity <= 0) return;
+    final ratio = line.quantity == 0 ? 1.0 : nextQuantity / line.quantity;
+    final replacement = InvoiceLine(
+      name: line.name,
+      quantity: nextQuantity,
+      unitPrice: line.unitPrice,
+      productId: line.productId,
+      saleOptionId: line.saleOptionId,
+      optionUnitCode: line.optionUnitCode,
+      optionQuantity: line.optionQuantity,
+      optionMassG: line.optionMassG,
+      displayUnit: line.displayUnit,
+      exactQuantityMilli: line.exactQuantityMilli == null
+          ? null
+          : (line.exactQuantityMilli! * ratio).round(),
+      priceNumeratorMinor: line.priceNumeratorMinor,
+      priceDenominator: line.priceDenominator,
+      priceOverridden: line.priceOverridden,
+      lineDiscountMinor: line.lineDiscountMinor == 0
+          ? 0
+          : (line.lineDiscountMinor * ratio).round(),
+      weightGramsMilli: line.weightGramsMilli == null
+          ? null
+          : (line.weightGramsMilli! * ratio).round(),
+      pendingCatalogSync: line.pendingCatalogSync,
+    );
+    setState(() {
+      _lines[index] = replacement;
+      _invoice = _readInvoice(
+        number: _invoice.number,
+        createdAt: _invoice.createdAt,
+      );
+    });
+  }
+
+  Widget _referenceUnitControl(int index, InvoiceLine line) => InkWell(
+        onTap: _documentLocked ? null : () => _editLine(index),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFD6DFEB)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.keyboard_arrow_down_rounded, size: 14),
+              const SizedBox(width: 2),
+              Flexible(
+                child: Text(
+                  line.resolvedDisplayUnit.isEmpty
+                      ? 'وحدة'
+                      : line.resolvedDisplayUnit,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 10.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Widget _referenceQuantityControl(int index, InvoiceLine line) {
+    final value = line.displayQuantity.replaceFirst(RegExp(r'\s+\S+$'), '');
+    Widget stepButton(IconData icon, VoidCallback? onTap) => InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(6),
+          child: SizedBox(
+            width: 20,
+            height: 24,
+            child: Icon(icon, size: 14, color: const Color(0xFF176DE5)),
+          ),
+        );
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFD6DFEB)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          stepButton(
+            Icons.remove_rounded,
+            _documentLocked ? null : () => _stepReferenceLineQuantity(index, -1),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.center,
+              textDirection: TextDirection.ltr,
+              style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800),
+            ),
+          ),
+          stepButton(
+            Icons.add_rounded,
+            _documentLocked ? null : () => _stepReferenceLineQuantity(index, 1),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _referenceLines() => NineSoftEntryLineTable(
     forceTableOnMobile: true,
     showDiscount: true,
@@ -2549,15 +2660,8 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
               ],
             ),
           ),
-          unit: Text(
-            _lines[index].resolvedDisplayUnit.isEmpty
-                ? 'وحدة'
-                : _lines[index].resolvedDisplayUnit,
-          ),
-          quantity: Text(
-            _lines[index].displayQuantity.replaceFirst(RegExp(r'\s+\S+$'), ''),
-            textDirection: TextDirection.ltr,
-          ),
+          unit: _referenceUnitControl(index, _lines[index]),
+          quantity: _referenceQuantityControl(index, _lines[index]),
           price: Text(
             _lines[index].displayUnitPrice,
             textDirection: TextDirection.ltr,
