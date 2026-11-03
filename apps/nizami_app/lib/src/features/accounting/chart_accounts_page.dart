@@ -161,6 +161,7 @@ class _ChartAccountsPageState extends State<ChartAccountsPage> {
                       ),
                       if (widget.roleCode == 'owner' && _branchId != null)
                         FilledButton.icon(
+                          key: const Key('chart-account-add-action'),
                           onPressed: () => _edit(),
                           icon: const Icon(Icons.add_rounded),
                           label: const Text('إضافة حساب'),
