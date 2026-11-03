@@ -340,13 +340,13 @@ class NineSoftEntryHeading extends StatelessWidget {
           gradient: const LinearGradient(
             begin: AlignmentDirectional.topStart,
             end: AlignmentDirectional.bottomEnd,
-            colors: [Color(0xFF08294D), Color(0xFF07546B), Color(0xFF04A58F)],
+            colors: [NizamiColors.navy, NizamiColors.navyDark, NizamiColors.navyLight],
             stops: [0, .56, 1],
           ),
           borderRadius: BorderRadius.circular(mobile ? 18 : 22),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x24093962),
+              color: Color(0x240B356F),
               blurRadius: 27,
               offset: Offset(0, 13),
             ),
@@ -590,11 +590,11 @@ class _NineSoftEntryStep extends StatelessWidget {
     decoration: BoxDecoration(
       color: active ? null : Colors.white,
       gradient: active
-          ? const LinearGradient(colors: [Color(0xFFEDFFFA), Color(0xFFFFFFFF)])
+          ? const LinearGradient(colors: [Color(0xFFEAF3FF), Color(0xFFFFFFFF)])
           : null,
       borderRadius: BorderRadius.circular(mobile ? 12 : 15),
       border: Border.all(
-        color: active ? const Color(0xFFA4E8D6) : const Color(0xFFE3EDF5),
+        color: active ? const Color(0xFFBBD5FA) : const Color(0xFFE3EAF3),
       ),
       boxShadow: const [
         BoxShadow(
@@ -611,7 +611,7 @@ class _NineSoftEntryStep extends StatelessWidget {
           width: mobile ? 25 : 29,
           height: mobile ? 25 : 29,
           decoration: BoxDecoration(
-            color: active ? const Color(0xFF04A98F) : const Color(0xFFE7F4FB),
+            color: active ? NizamiColors.blue : const Color(0xFFE7F0FC),
             borderRadius: BorderRadius.circular(mobile ? 8 : 10),
           ),
           alignment: Alignment.center,
@@ -1180,7 +1180,7 @@ class NineSoftScannerStrip extends StatelessWidget {
                 key: const Key('ninesoft-scanner-shortcut'),
                 maxLines: 1,
                 style: const TextStyle(
-                  color: Color(0xFF0B8A82),
+                  color: NizamiColors.blue,
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                 ),
