@@ -1783,7 +1783,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
         child: Scaffold(
           appBar: AppBar(
             title: const Text('المبيعات'),
-            toolbarHeight: desktop ? 0 : null,
+            toolbarHeight: 0,
             actions: [
               IconButton(
                 onPressed: _showReturns,
