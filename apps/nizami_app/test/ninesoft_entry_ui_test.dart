@@ -76,7 +76,7 @@ void main() {
       );
       expect(
         inputDecorator.decoration.contentPadding,
-        const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+        const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       );
       expect(tester.takeException(), isNull);
     }
@@ -190,7 +190,7 @@ void main() {
     );
     expect(
       decorationOf(tester, 'ninesoft-entry-step-number-0').color,
-      const Color(0xFFE7F4FB),
+      const Color(0xFFE7F0FC),
     );
     expect(
       decorationOf(tester, 'ninesoft-entry-step-number-1').color,
