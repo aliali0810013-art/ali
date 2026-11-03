@@ -1401,8 +1401,8 @@ class _EntryTableRow extends StatelessWidget {
     return DefaultTextStyle.merge(
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        color: Color(0xFF4C7893),
+      style: TextStyle(
+        color: const Color(0xFF4C7893),
         fontSize: compact ? 9.5 : 10.5,
         fontWeight: FontWeight.w900,
       ),
