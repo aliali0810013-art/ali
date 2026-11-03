@@ -219,7 +219,7 @@ class _Header extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
-                Icons.shopping_cart_checkout_rounded,
+                Icons.shopping_cart_outlined,
                 color: SalesInvoiceReferenceView.blue,
                 size: 25,
               ),
@@ -724,7 +724,7 @@ class _FooterActions extends StatelessWidget {
           Expanded(
             flex: 2,
             child: _FooterButton(
-              label: 'واتساب',
+              label: 'مشاركة واتساب',
               icon: Icons.chat_outlined,
               color: const Color(0xFFEAF9EC),
               foreground: const Color(0xFF168A35),
