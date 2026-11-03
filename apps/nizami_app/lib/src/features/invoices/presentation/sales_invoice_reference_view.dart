@@ -711,7 +711,7 @@ class _FooterActions extends StatelessWidget {
   Widget build(BuildContext context) => Row(
         children: [
           Expanded(
-            flex: 3,
+            flex: 5,
             child: _FooterButton(
               buttonKey: const Key('ninesoft-summary-primary'),
               label: busy ? 'جارٍ الحفظ...' : 'حفظ',
@@ -723,7 +723,7 @@ class _FooterActions extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Expanded(
-            flex: 2,
+            flex: 4,
             child: _FooterButton(
               label: 'طباعة',
               icon: Icons.print_outlined,
@@ -734,7 +734,7 @@ class _FooterActions extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Expanded(
-            flex: 2,
+            flex: 4,
             child: _FooterButton(
               label: 'PDF',
               icon: Icons.picture_as_pdf_outlined,
@@ -745,7 +745,7 @@ class _FooterActions extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Expanded(
-            flex: 2,
+            flex: 5,
             child: _FooterButton(
               label: 'مشاركة واتساب',
               icon: Icons.chat_outlined,
@@ -797,9 +797,10 @@ class _FooterButton extends StatelessWidget {
           label: Text(
             label,
             maxLines: 1,
-            style: const TextStyle(
+            style: TextStyle(
+              fontFamily: label == 'PDF' ? 'ArialMTBlack' : null,
               fontWeight: FontWeight.w900,
-              fontSize: 11,
+              fontSize: label == 'PDF' ? 12 : 11,
             ),
           ),
         ),
