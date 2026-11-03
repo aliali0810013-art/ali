@@ -381,15 +381,19 @@ class _FinancialReportsPageState extends State<FinancialReportsPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) {
+    final phone = MediaQuery.sizeOf(context).width < 700;
+    return Scaffold(
     appBar: AppBar(toolbarHeight: 0),
     body: SafeArea(
       child: NineSoftResponsiveBody(
         child: ListView(
           children: [
             NineSoftPageHeader(
-              title: _reports[_report]!,
-              subtitle: 'التقارير المالية والتحليلات من بيانات NineSoft الفعلية',
+              title: phone ? 'التقارير والتحليلات' : _reports[_report]!,
+              subtitle: phone
+                  ? '${_reports[_report]} • بيانات NineSoft الفعلية'
+                  : 'التقارير المالية والتحليلات من بيانات NineSoft الفعلية',
               icon: Icons.bar_chart_rounded,
               color: NizamiColors.blue,
               actions: [
@@ -412,16 +416,16 @@ class _FinancialReportsPageState extends State<FinancialReportsPage> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: phone ? 8 : 12),
             _ReportSelector(
               current: _report,
               reports: _reports,
               onSelected: _selectReport,
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: phone ? 7 : 10),
             Container(
               key: const Key('financial-report-filter-strip'),
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(phone ? 7 : 10),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
@@ -479,7 +483,7 @@ class _FinancialReportsPageState extends State<FinancialReportsPage> {
                 ],
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: phone ? 7 : 10),
             NineSoftFinancialSummaryStrip(
               key: const Key('financial-report-kpi-grid'),
               items: [
@@ -492,9 +496,9 @@ class _FinancialReportsPageState extends State<FinancialReportsPage> {
                   ),
               ],
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: phone ? 7 : 10),
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(phone ? 8 : 10),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
@@ -528,6 +532,7 @@ class _FinancialReportsPageState extends State<FinancialReportsPage> {
       ),
     ),
   );
+  }
 
   Widget _reportResults() {
     if (_loading) {
