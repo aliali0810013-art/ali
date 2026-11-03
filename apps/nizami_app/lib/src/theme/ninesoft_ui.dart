@@ -590,19 +590,19 @@ class NineSoftMobileDock extends StatelessWidget {
               ),
             ),
             SizedBox(
-              width: 74,
+              width: 66,
               child: Center(
                 child: Material(
                   color: NizamiColors.navy,
                   shape: const CircleBorder(),
-                  elevation: 6,
+                  elevation: 2,
                   child: InkWell(
                     customBorder: const CircleBorder(),
                     onTap: centerAction,
                     child: const SizedBox(
-                      width: 58,
-                      height: 58,
-                      child: Icon(Icons.add_rounded, color: Colors.white, size: 34),
+                      width: 48,
+                      height: 48,
+                      child: Icon(Icons.add_rounded, color: Colors.white, size: 29),
                     ),
                   ),
                 ),
