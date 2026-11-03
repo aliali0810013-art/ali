@@ -1577,9 +1577,10 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
       await _addSupplierPayment();
       return;
     }
-    var record = await showDialog<_ModuleRecord>(
-      context: context,
-      builder: (context) => _AddRecordDialog(module: widget.module),
+    var record = await Navigator.of(context).push<_ModuleRecord>(
+      MaterialPageRoute(
+        builder: (_) => _AddRecordDialog(module: widget.module),
+      ),
     );
     if (record == null || !mounted) {
       return;
@@ -2352,10 +2353,13 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
       );
       return;
     }
-    final updated = await showDialog<_ModuleRecord>(
-      context: context,
-      builder: (context) =>
-          _AddRecordDialog(module: widget.module, initial: record),
+    final updated = await Navigator.of(context).push<_ModuleRecord>(
+      MaterialPageRoute(
+        builder: (_) => _AddRecordDialog(
+          module: widget.module,
+          initial: record,
+        ),
+      ),
     );
     if (updated == null || !mounted) return;
     if (widget.module.key == 'products' && record.serverId.isNotEmpty) {
@@ -4889,48 +4893,20 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final mobile = MediaQuery.sizeOf(context).width < 600;
-    return AlertDialog(
-      scrollable: false,
-      insetPadding: mobile
-          ? EdgeInsets.zero
-          : const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      shape: mobile
-          ? const RoundedRectangleBorder(borderRadius: BorderRadius.zero)
-          : null,
-      title: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: widget.module.color.withValues(alpha: .12),
-            foregroundColor: widget.module.color,
-            child: Icon(widget.module.icon),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              widget.initial == null
-                  ? '${widget.module.actionLabel} جديد'
-                  : 'تحرير ${widget.module.entityLabel}',
-            ),
-          ),
-          if (mobile)
-            IconButton(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.close_rounded),
-            ),
-        ],
-      ),
-      content: SizedBox(
-        width: mobile ? double.maxFinite : 420,
-        height: (MediaQuery.sizeOf(context).height * (mobile ? .72 : .68))
-            .clamp(360.0, 680.0),
-        child: SingleChildScrollView(
+    final desktop = MediaQuery.sizeOf(context).width >= 900;
+    return Scaffold(
+      appBar: AppBar(toolbarHeight: 0),
+      body: SafeArea(
+        child: NineSoftResponsiveBody(
           child: Form(
             key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+            child: ListView(
+              padding: EdgeInsets.symmetric(
+                horizontal: desktop ? 28 : 4,
+                vertical: 12,
+              ),
               children: [
-                NineSoftEntryHeading(
+NineSoftEntryHeading(
                   title: widget.initial == null
                       ? 'إضافة ${widget.module.entityLabel}'
                       : 'تعديل ${widget.module.entityLabel}',
@@ -5323,25 +5299,36 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
                     ),
                   ),
                 ],
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close_rounded),
+                        label: const Text('إلغاء'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 2,
+                      child: FilledButton.icon(
+                        key: const ValueKey('save-record'),
+                        onPressed: _submit,
+                        icon: const Icon(Icons.save_outlined),
+                        label: const Text('حفظ'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
               ],
             ),
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('إلغاء'),
-        ),
-        FilledButton(
-          key: const ValueKey('save-record'),
-          onPressed: _submit,
-          child: const Text('حفظ'),
-        ),
-      ],
     );
-  }
-}
+  }}
 
 pw.Widget _pdfLatin(String value, pw.Font font, {bool bold = false}) =>
     pw.Directionality(
