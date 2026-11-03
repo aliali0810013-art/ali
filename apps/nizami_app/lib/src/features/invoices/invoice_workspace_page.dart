@@ -65,6 +65,8 @@ class InvoiceWorkspacePage extends StatefulWidget {
     this.synchronizeNow,
     this.restoreGenerationReader,
     this.restoreEpochReader,
+    this.nowProvider,
+    this.invoiceNumberFactory,
     super.key,
   });
   final List<String> branchIds;
@@ -86,6 +88,8 @@ class InvoiceWorkspacePage extends StatefulWidget {
   final Future<void> Function()? synchronizeNow;
   final int Function()? restoreGenerationReader;
   final DateTime? Function()? restoreEpochReader;
+  final DateTime Function()? nowProvider;
+  final String Function(DateTime now)? invoiceNumberFactory;
   @override
   State<InvoiceWorkspacePage> createState() => _InvoiceWorkspacePageState();
 }
@@ -178,6 +182,10 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
   DateTime? get _currentRestoreEpoch =>
       widget.restoreEpochReader?.call() ??
       RealtimeSyncCoordinator.instance.restoreEpoch;
+  DateTime get _now => widget.nowProvider?.call() ?? DateTime.now();
+  String _nextInvoiceNumber(DateTime now) =>
+      widget.invoiceNumberFactory?.call(now) ??
+      'INV-${now.microsecondsSinceEpoch}';
   bool get _documentLocked => switch (_deliveryState) {
     _InvoiceDeliveryState.queued ||
     _InvoiceDeliveryState.needsReview ||
@@ -507,7 +515,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
         ? net
         : enteredTendered;
     final viewModel = SalesInvoiceViewModel(
-      number: number ?? 'INV-${DateTime.now().microsecondsSinceEpoch}',
+      number: number ?? _nextInvoiceNumber(_now),
       customerName: _customer.text.trim().isEmpty
           ? 'عميل نقدي'
           : _customer.text.trim(),
@@ -519,7 +527,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       currency: 'YER',
       employeeName: widget.employeeName,
       branchLabel: 'الفرع ${_branches.indexOf(_branchId) + 1}',
-      createdAt: createdAt ?? DateTime.now(),
+      createdAt: createdAt ?? _now,
       paymentMode: _paymentMode,
       paidAmount: _paymentMode == 'credit'
           ? enteredTendered.clamp(0, net).toDouble()
