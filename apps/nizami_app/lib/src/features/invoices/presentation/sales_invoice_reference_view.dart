@@ -150,6 +150,7 @@ class SalesInvoiceReferenceView extends StatelessWidget {
         LayoutBuilder(
           builder: (context, constraints) {
             return Row(
+              textDirection: TextDirection.ltr,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(child: _SummaryCard(document: document)),
