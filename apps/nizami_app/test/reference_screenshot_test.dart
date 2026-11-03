@@ -206,6 +206,11 @@ void main() {
     await addProduct('لوحة مفاتيح', '5');
     await addProduct('شاشة 24 بوصة', '6');
 
+    final productField = find.byKey(const Key('invoice-product-input'));
+    await tester.enterText(productField, '');
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+
     final editorScroll = find.byKey(const ValueKey('invoice-document-editor'));
     if (editorScroll.evaluate().isNotEmpty) {
       for (var i = 0; i < 4; i++) {
