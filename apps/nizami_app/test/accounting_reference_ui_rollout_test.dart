@@ -21,7 +21,6 @@ const _workspacePages = <String>[
   'lib/src/features/accounting/account_transfer_page.dart',
   'lib/src/features/accounting/accounting_periods_page.dart',
   'lib/src/features/accounting/cashbox_page.dart',
-  'lib/src/features/accounting/financial_reports_page.dart',
   'lib/src/features/accounting/opening_balances_page.dart',
   'lib/src/features/accounting/product_inquiry_page.dart',
   'lib/src/features/inventory/stock_operations_page.dart',
@@ -91,6 +90,15 @@ void main() {
       }
     },
   );
+
+  test('financial reports use page header plus shared financial surfaces', () {
+    final source = File(
+      'lib/src/features/accounting/financial_reports_page.dart',
+    ).readAsStringSync();
+    expect(source, contains('NineSoftPageHeader('));
+    expect(source, contains('NineSoftFinancialSummaryStrip('));
+    expect(source, contains('NineSoftResponsiveFinancialTable('));
+  });
 
   test('account statement supports document-aware Ctrl+P printing', () {
     final source = File(
@@ -304,8 +312,13 @@ void main() {
         );
         await tester.pump();
 
-        expect(find.byType(NineSoftEntryHeading), findsOneWidget);
-        expect(find.byType(NineSoftEntrySection), findsWidgets);
+        if (page is FinancialReportsPage) {
+          expect(find.byType(NineSoftEntryHeading), findsNothing);
+          expect(find.byType(NineSoftEntrySection), findsNothing);
+        } else {
+          expect(find.byType(NineSoftEntryHeading), findsOneWidget);
+          expect(find.byType(NineSoftEntrySection), findsWidgets);
+        }
         expect(
           tester.takeException(),
           isNull,
