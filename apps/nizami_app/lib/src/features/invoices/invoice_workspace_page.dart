@@ -2474,7 +2474,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
                 if (_lines[index].pendingCatalogSync)
                   Icon(
                     Icons.sync_problem_rounded,
-                    key: Key('invoice-line-pending-catalog-' + index.toString()),
+                    key: Key('invoice-line-pending-catalog-$index'),
                     color: Colors.orange,
                     size: 16,
                   ),
@@ -2511,7 +2511,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
                     createdAt: _invoice.createdAt,
                   );
                 }),
-          semanticsLabel: 'حذف ' + _lines[index].name,
+          semanticsLabel: 'حذف ${_lines[index].name}',
         ),
     ],
   );
