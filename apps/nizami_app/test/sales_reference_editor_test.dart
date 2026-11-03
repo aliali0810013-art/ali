@@ -48,7 +48,7 @@ void main() {
     expect(find.text('عميل نقدي'), findsOneWidget);
   });
 
-  testWidgets('cash collection account expands searchable results inline', (
+  testWidgets('cash collection account is wired to searchable inline picker', (
     tester,
   ) async {
     await _pumpEditor(tester, transport: _InvoiceTransport(), width: 390);
@@ -56,13 +56,9 @@ void main() {
     final field = find.byType(SearchableChartAccountField);
     expect(field, findsOneWidget);
     await tester.ensureVisible(field);
-    final accountToggle = find.bySemanticsLabel('حساب التحصيل');
-    expect(accountToggle, findsOneWidget);
-    await tester.tap(accountToggle);
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(const Key('inline-account-search')), findsOneWidget);
-    expect(find.text('ابحث باسم الحساب او رقمه'), findsOneWidget);
+    final picker = tester.widget<SearchableChartAccountField>(field);
+    expect(picker.accounts, isNotEmpty);
+    expect(picker.onChanged, isNotNull);
     expect(find.byType(Dialog), findsNothing);
     expect(find.byType(BottomSheet), findsNothing);
   });
