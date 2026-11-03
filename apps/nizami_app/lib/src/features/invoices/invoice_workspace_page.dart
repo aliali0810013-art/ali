@@ -3039,10 +3039,9 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
         ),
       ),
       settlementField: settlementField,
-      deliveryBanner:
-          _deliveryState == _InvoiceDeliveryState.editingDraft && !_explicitDraft
-              ? const SizedBox.shrink()
-              : _deliveryBanner(),
+      deliveryBanner: _deliveryState == _InvoiceDeliveryState.editingDraft
+          ? const SizedBox.shrink()
+          : _deliveryBanner(),
       lockedControls: lockedControls,
       onAddLine: _handleF2,
       onScanBarcode: _scanProductBarcode,
