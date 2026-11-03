@@ -661,11 +661,6 @@ class _DetailsCard extends StatelessWidget {
           SizedBox(height: gap),
           const Divider(height: 1),
           SizedBox(height: gap),
-          const _MiniHeading(
-            icon: Icons.payments_outlined,
-            label: 'التسوية والدفع',
-          ),
-          SizedBox(height: gap),
           settlementField,
         ],
       ),
