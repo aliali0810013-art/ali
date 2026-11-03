@@ -1109,6 +1109,43 @@ void main() {
   );
 
   testWidgets(
+    'reference quantity stepper mutates the real line and recalculates total',
+    (tester) async {
+      await _pumpEditor(tester, transport: _InvoiceTransport(), width: 980);
+      await _addBaseLine(tester);
+
+      final row = find.byKey(const Key('ninesoft-entry-line-row-0'));
+      expect(row, findsOneWidget);
+      final plus = find.descendant(
+        of: row,
+        matching: find.byIcon(Icons.add_rounded),
+      );
+      final minus = find.descendant(
+        of: row,
+        matching: find.byIcon(Icons.remove_rounded),
+      );
+      expect(plus, findsOneWidget);
+      expect(minus, findsOneWidget);
+
+      await tester.tap(plus);
+      await tester.pumpAndSettle();
+      expect(find.descendant(of: row, matching: find.text('2')), findsOneWidget);
+      expect(
+        find.descendant(of: row, matching: find.text('10000.00')),
+        findsOneWidget,
+      );
+
+      await tester.tap(minus);
+      await tester.pumpAndSettle();
+      expect(find.descendant(of: row, matching: find.text('1')), findsOneWidget);
+      expect(
+        find.descendant(of: row, matching: find.text('5000.00')),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
     'server history edit and option refresh preserve manual price intent',
     (tester) async {
       await _seedVariablePieceOption(24);
