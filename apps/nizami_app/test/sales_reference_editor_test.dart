@@ -871,7 +871,7 @@ void main() {
 
         final row = find.byKey(const Key('ninesoft-entry-line-row-0'));
         expect(
-          find.descendant(of: row, matching: find.text('10000.01 YER')),
+          find.descendant(of: row, matching: find.text('10000.01')),
           findsOneWidget,
         );
         await tester.ensureVisible(
