@@ -664,13 +664,7 @@ class _AdministrationPageState extends State<AdministrationPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: Text(
-        widget.showUsers
-            ? 'المستخدمون وكلمات المرور'
-            : 'نسخ العملاء والاشتراكات',
-      ),
-    ),
+    appBar: AppBar(toolbarHeight: 0),
     body: _loading
         ? const Center(child: CircularProgressIndicator())
         : RefreshIndicator(
