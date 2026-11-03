@@ -1675,6 +1675,7 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
           builder: (dialogContext) => StatefulBuilder(
             builder: (context, update) {
               final availableContacts = candidates();
+              final phone = MediaQuery.sizeOf(context).width < 700;
               return Scaffold(
                 key: const ValueKey('voucher-document-shell'),
                 appBar: AppBar(toolbarHeight: 0),
@@ -1683,12 +1684,16 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
                     child: ListView(
                       children: [
                         NineSoftEntryHeading(
-                          title: receipt
-                              ? 'سند قبض لأي شخص أو جهة'
-                              : 'سند صرف لأي شخص أو جهة',
-                          subtitle: receipt
-                              ? 'استلام مبلغ وترحيله إلى الحساب الفعلي'
-                              : 'صرف مبلغ وترحيله من الحساب الفعلي',
+                          title: phone
+                              ? 'سندات القبض والصرف'
+                              : (receipt
+                                    ? 'سند قبض لأي شخص أو جهة'
+                                    : 'سند صرف لأي شخص أو جهة'),
+                          subtitle: phone
+                              ? (receipt ? 'إنشاء سند قبض' : 'إنشاء سند صرف')
+                              : (receipt
+                                    ? 'استلام مبلغ وترحيله إلى الحساب الفعلي'
+                                    : 'صرف مبلغ وترحيله من الحساب الفعلي'),
                           icon: receipt
                               ? Icons.wallet_rounded
                               : Icons.outbox_rounded,
@@ -1697,7 +1702,7 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
                               ? NizamiColors.green
                               : NizamiColors.red,
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: phone ? 8 : 12),
                         NineSoftDocumentTypeSwitch(
                           value: receipt ? 'receipt' : 'payment',
                           onChanged: (value) {
@@ -1707,12 +1712,12 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
                             Navigator.pop(dialogContext, value);
                           },
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: phone ? 8 : 12),
                         NineSoftEntrySection(
                           title: 'بيانات السند',
-                          subtitle: 'الطرف والحسابات والمبلغ والبيان',
+                          subtitle: phone ? 'الطرف والمبلغ والحساب' : 'الطرف والحسابات والمبلغ والبيان',
                           icon: Icons.receipt_long_outlined,
-                          step: '01',
+                          step: phone ? null : '01',
                           accent: NizamiColors.blue,
                           child: Column(
                             children: [
@@ -1873,7 +1878,7 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
                               const SizedBox(height: 10),
                               TextField(
                                 controller: notes,
-                                maxLines: 2,
+                                maxLines: phone ? 1 : 2,
                                 decoration: const InputDecoration(
                                   labelText: 'البيان / الملاحظة',
                                 ),
@@ -1881,7 +1886,7 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 14),
+                        SizedBox(height: phone ? 8 : 14),
                         Row(
                           children: [
                             Expanded(
