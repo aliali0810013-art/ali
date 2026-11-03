@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import '../../core/formatters/latin_digit_formatter.dart';
 import '../../theme/ninesoft_confirm_shortcuts.dart';
 import '../../theme/ninesoft_entry_ui.dart';
+import '../../theme/ninesoft_ui.dart';
+import '../../theme/nizami_theme.dart';
 
 import 'administration_api.dart';
 
@@ -802,6 +804,69 @@ class _AdministrationPageState extends State<AdministrationPage> {
                         ]
                       : const [],
                 ),
+                if (widget.showUsers) ...[
+                  const SizedBox(height: 14),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final width = constraints.maxWidth;
+                      final columns = width >= 900 ? 4 : 2;
+                      final gap = 10.0;
+                      final cardWidth =
+                          (width - gap * (columns - 1)) / columns;
+                      final roles = _users
+                          .map(
+                            (user) =>
+                                user['role_code']?.toString() ??
+                                user['role']?.toString() ??
+                                '',
+                          )
+                          .where((role) => role.isNotEmpty)
+                          .toSet();
+                      return Wrap(
+                        spacing: gap,
+                        runSpacing: gap,
+                        children: [
+                          SizedBox(
+                            width: cardWidth,
+                            child: NineSoftMetricCard(
+                              label: 'عدد المستخدمين',
+                              value: '${_users.length}',
+                              icon: Icons.people_alt_outlined,
+                              color: NizamiColors.blue,
+                            ),
+                          ),
+                          SizedBox(
+                            width: cardWidth,
+                            child: NineSoftMetricCard(
+                              label: 'الفروع المتاحة',
+                              value: '${_branches.length}',
+                              icon: Icons.store_mall_directory_outlined,
+                              color: NizamiColors.green,
+                            ),
+                          ),
+                          SizedBox(
+                            width: cardWidth,
+                            child: NineSoftMetricCard(
+                              label: 'الأدوار المستخدمة',
+                              value: '${roles.length}',
+                              icon: Icons.admin_panel_settings_outlined,
+                              color: NizamiColors.purple,
+                            ),
+                          ),
+                          SizedBox(
+                            width: cardWidth,
+                            child: NineSoftMetricCard(
+                              label: 'الصلاحيات المتاحة',
+                              value: '${_permissionLabels.length}',
+                              icon: Icons.layers_outlined,
+                              color: NizamiColors.amber,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
                 const SizedBox(height: 14),
                 NineSoftEntrySection(
                   title: widget.showUsers
