@@ -1,0 +1,24 @@
+NineSoft UI Local Preview
+========================
+
+Repository: aliali0810013-art/ali
+Branch: ui-redesign
+Development Baseline: 7b745e564081677fe7eb4df3738a78821a593f70
+Application Version: 0.29.27+75
+Baseline Status: PROVISIONAL - production source commit not yet verified
+
+Purpose:
+Local UI preview only. This delivery does NOT claim final accounting parity with the live Hostinger production release.
+
+Preview:
+1) Extract the ZIP.
+2) Run START_PREVIEW.ps1 with PowerShell.
+3) Open http://127.0.0.1:8797
+
+Restrictions:
+- Not merged to main.
+- Not deployed to Hostinger.
+- No DNS/database production changes.
+- Do not use production customer data for write testing.
+
+Final production baseline and accounting/API parity must be verified by Codex before deployment.
