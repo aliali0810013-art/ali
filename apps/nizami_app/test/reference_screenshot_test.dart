@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nizami/src/features/invoices/invoice_workspace_page.dart';
+import 'package:nizami/src/features/navigation/ninesoft_workspace_shell.dart';
+import 'package:nizami/src/theme/ninesoft_ui.dart';
 import 'package:nizami/src/features/accounting/simple_journal_page.dart';
 import 'package:nizami/src/theme/nizami_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -94,21 +96,45 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    final invoice = const Directionality(
+      textDirection: TextDirection.rtl,
+      child: InvoiceWorkspacePage(
+        branchIds: ['branch-preview'],
+        tenantName: 'NineSoft',
+        employeeName: 'المستخدم',
+        token: '',
+        roleCode: 'owner',
+        permissions: [],
+      ),
+    );
     await tester.pumpWidget(
       MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: NizamiTheme.light,
-        home: const Directionality(
-          textDirection: TextDirection.rtl,
-          child: InvoiceWorkspacePage(
-            branchIds: ['branch-preview'],
-            tenantName: 'NineSoft',
-            employeeName: 'المستخدم',
-            token: '',
-            roleCode: 'owner',
-            permissions: [],
-          ),
-        ),
+        home: size.width < 700
+            ? Directionality(
+                textDirection: TextDirection.rtl,
+                child: Scaffold(
+                  body: Column(
+                    children: [
+                      NineSoftReferenceMobileHeader(
+                        title: 'المبيعات',
+                        onMenu: () {},
+                        onProfile: () {},
+                      ),
+                      const Expanded(child: invoice),
+                    ],
+                  ),
+                  bottomNavigationBar: NineSoftMobileDock(
+                    currentIndex: 0,
+                    contextLabel: 'العمليات',
+                    contextIcon: Icons.layers_outlined,
+                    centerAction: () {},
+                    onSelected: (_) {},
+                  ),
+                ),
+              )
+            : invoice,
       ),
     );
     await tester.pumpAndSettle(const Duration(milliseconds: 700));
@@ -143,6 +169,14 @@ void main() {
     await addProduct('لابتوب 15 بوصة', '2');
     await addProduct('ماوس لاسلكي', '3');
     await addProduct('لوحة مفاتيح', '1');
+
+    final editorScroll = find.byKey(const ValueKey('invoice-document-editor'));
+    if (editorScroll.evaluate().isNotEmpty) {
+      for (var i = 0; i < 4; i++) {
+        await tester.drag(editorScroll, const Offset(0, 1200));
+        await tester.pumpAndSettle();
+      }
+    }
 
     await expectLater(
       find.byType(Scaffold).first,
