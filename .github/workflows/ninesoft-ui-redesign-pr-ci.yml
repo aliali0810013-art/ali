@@ -8,6 +8,10 @@ on:
       - ".github/workflows/ninesoft-ui-redesign-pr-ci.yml"
   workflow_dispatch:
 
+concurrency:
+  group: ninesoft-ui-redesign-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
