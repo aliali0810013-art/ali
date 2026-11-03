@@ -109,16 +109,12 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 300));
     final tile = find.text('الموظفون والرواتب').first;
-    await tester.ensureVisible(tile);
+    await tester.dragUntilVisible(
+      tile,
+      find.byType(Scrollable).first,
+      const Offset(0, -260),
+    );
     await tester.pumpAndSettle();
-    if (!tester.hitTestable().evaluate().contains(tile.evaluate().first)) {
-      await tester.scrollUntilVisible(
-        tile,
-        260,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.pumpAndSettle();
-    }
     await tester.tap(tile);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('payroll-open-run')));
