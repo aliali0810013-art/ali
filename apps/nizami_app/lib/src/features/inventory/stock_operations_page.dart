@@ -248,7 +248,7 @@ class _StockOperationsPageState extends State<StockOperationsPage> {
         title: Text(
           widget.isTransfer
               ? 'تحويل المخزون بين الفروع'
-              : 'الجرد والتسويات المحاسبية',
+              : 'الجرد وتسوية المخزون',
         ),
       ),
       body: SafeArea(
@@ -259,7 +259,9 @@ class _StockOperationsPageState extends State<StockOperationsPage> {
                 title: widget.isTransfer
                     ? 'تحويل المخزون بين الفروع'
                     : 'الجرد والتسويات المحاسبية',
-                subtitle: caption,
+                subtitle: phone
+                    ? (widget.isTransfer ? 'تحويل رصيد بين الفروع' : 'مطابقة الرصيد الفعلي وترحيل الفرق')
+                    : caption,
                 icon: widget.isTransfer
                     ? Icons.swap_horiz_rounded
                     : Icons.inventory_outlined,
