@@ -1782,20 +1782,6 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
 
   @override
   Widget build(BuildContext context) {
-    final mobileReference =
-        MediaQuery.sizeOf(context).width < NineSoftBreakpoints.entryMobile;
-    final editorBody = NineSoftResponsiveBody(
-      padding: EdgeInsetsDirectional.fromSTEB(
-        MediaQuery.sizeOf(context).width < NineSoftBreakpoints.compact ? 12 : 20,
-        16,
-        MediaQuery.sizeOf(context).width < NineSoftBreakpoints.compact ? 12 : 20,
-        0,
-      ),
-      child: ListView(
-        key: const ValueKey('invoice-document-editor'),
-        children: [_editor()],
-      ),
-    );
     return CallbackShortcuts(
       bindings: <ShortcutActivator, VoidCallback>{
         const SingleActivator(LogicalKeyboardKey.keyS, control: true): () {
@@ -1817,8 +1803,6 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       child: Focus(
         autofocus: true,
         child: Scaffold(
-          backgroundColor:
-              mobileReference ? NizamiColors.navy : null,
           appBar: AppBar(
             title: const Text('المبيعات'),
             toolbarHeight: 0,
@@ -1842,17 +1826,22 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
             ],
           ),
           body: SafeArea(
-            child: mobileReference
-                ? ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(28),
-                    ),
-                    child: ColoredBox(
-                      color: NizamiColors.canvas,
-                      child: editorBody,
-                    ),
-                  )
-                : editorBody,
+            child: NineSoftResponsiveBody(
+              padding: EdgeInsetsDirectional.fromSTEB(
+                MediaQuery.sizeOf(context).width < NineSoftBreakpoints.compact
+                    ? 12
+                    : 20,
+                16,
+                MediaQuery.sizeOf(context).width < NineSoftBreakpoints.compact
+                    ? 12
+                    : 20,
+                0,
+              ),
+              child: ListView(
+                key: const ValueKey('invoice-document-editor'),
+                children: [_editor()],
+              ),
+            ),
           ),
         ),
       ),
