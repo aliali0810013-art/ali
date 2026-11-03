@@ -1670,207 +1670,251 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
           '';
       var channel = _channelForAccount(cashAccountCode);
 
-      final decision = await showDialog<String>(
-        context: context,
-        builder: (dialogContext) => StatefulBuilder(
-          builder: (context, update) {
-            final availableContacts = candidates();
-            return AlertDialog(
-              key: const ValueKey('voucher-document-shell'),
-              titlePadding: const EdgeInsets.fromLTRB(22, 20, 22, 8),
-              title: Row(
-                children: [
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8F0FF),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(
-                      receipt ? Icons.wallet_rounded : Icons.outbox_rounded,
-                      color: const Color(0xFF1554B8),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      receipt
-                          ? 'سند قبض لأي شخص أو جهة'
-                          : 'سند صرف لأي شخص أو جهة',
-                    ),
-                  ),
-                ],
-              ),
-              content: SizedBox(
-                width: 520,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      NineSoftDocumentTypeSwitch(
-                        value: receipt ? 'receipt' : 'payment',
-                        onChanged: (value) {
-                          if (value == (receipt ? 'receipt' : 'payment')) {
-                            return;
-                          }
-                          Navigator.pop(dialogContext, value);
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        initialValue: partyKind,
-                        decoration: const InputDecoration(
-                          labelText: 'نوع الطرف',
+      final decision = await Navigator.of(context).push<String>(
+        MaterialPageRoute(
+          builder: (dialogContext) => StatefulBuilder(
+            builder: (context, update) {
+              final availableContacts = candidates();
+              return Scaffold(
+                appBar: AppBar(toolbarHeight: 0),
+                body: SafeArea(
+                  child: NineSoftResponsiveBody(
+                    child: ListView(
+                      children: [
+                        NineSoftEntryHeading(
+                          title: receipt
+                              ? 'سند قبض لأي شخص أو جهة'
+                              : 'سند صرف لأي شخص أو جهة',
+                          subtitle: receipt
+                              ? 'استلام مبلغ وترحيله إلى الحساب الفعلي'
+                              : 'صرف مبلغ وترحيله من الحساب الفعلي',
+                          icon: receipt
+                              ? Icons.wallet_rounded
+                              : Icons.outbox_rounded,
+                          status: receipt ? 'قبض' : 'صرف',
+                          accent: receipt
+                              ? NizamiColors.green
+                              : NizamiColors.red,
                         ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'customer',
-                            child: Text('عميل'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'supplier',
-                            child: Text('مورد'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'other',
-                            child: Text('موظف / عامل / شخص أو جهة أخرى'),
-                          ),
-                        ],
-                        onChanged: (value) => update(() {
-                          partyKind = value ?? 'other';
-                          final matches = candidates();
-                          selectedContact = matches.firstOrNull;
-                          final preferred = partyKind == 'customer'
-                              ? '1200-AR'
-                              : partyKind == 'supplier'
-                              ? '2100-AP'
-                              : (receipt ? '4100-SALES' : '5200-EXPENSES');
-                          counterAccountCode =
-                              counterAccounts
-                                  .where((item) => item.code == preferred)
-                                  .firstOrNull
-                                  ?.code ??
-                              counterAccountCode;
-                        }),
-                      ),
-                      const SizedBox(height: 10),
-                      if (partyKind != 'other')
-                        DropdownButtonFormField<Map<String, dynamic>>(
-                          initialValue:
-                              availableContacts.contains(selectedContact)
-                              ? selectedContact
-                              : null,
-                          decoration: const InputDecoration(
-                            labelText: 'اسم الطرف',
-                          ),
-                          items: availableContacts
-                              .map(
-                                (item) => DropdownMenuItem(
-                                  value: item,
-                                  child: Text(item['name']?.toString() ?? ''),
+                        const SizedBox(height: 12),
+                        NineSoftDocumentTypeSwitch(
+                          value: receipt ? 'receipt' : 'payment',
+                          onChanged: (value) {
+                            if (value == (receipt ? 'receipt' : 'payment')) {
+                              return;
+                            }
+                            Navigator.pop(dialogContext, value);
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        NineSoftEntrySection(
+                          title: 'بيانات السند',
+                          subtitle: 'الطرف والحسابات والمبلغ والبيان',
+                          icon: Icons.receipt_long_outlined,
+                          step: '01',
+                          accent: NizamiColors.blue,
+                          child: Column(
+                            children: [
+                              DropdownButtonFormField<String>(
+                                initialValue: partyKind,
+                                decoration: const InputDecoration(
+                                  labelText: 'نوع الطرف',
                                 ),
-                              )
-                              .toList(),
-                          onChanged: (value) =>
-                              update(() => selectedContact = value),
-                        )
-                      else ...[
-                        TextField(
-                          controller: partyName,
-                          decoration: const InputDecoration(
-                            labelText: 'اسم الشخص أو الجهة',
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'customer',
+                                    child: Text('عميل'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'supplier',
+                                    child: Text('مورد'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'other',
+                                    child: Text('موظف / عامل / شخص أو جهة أخرى'),
+                                  ),
+                                ],
+                                onChanged: (value) => update(() {
+                                  partyKind = value ?? 'other';
+                                  final matches = candidates();
+                                  selectedContact = matches.firstOrNull;
+                                  final preferred = partyKind == 'customer'
+                                      ? '1200-AR'
+                                      : partyKind == 'supplier'
+                                      ? '2100-AP'
+                                      : (receipt
+                                            ? '4100-SALES'
+                                            : '5200-EXPENSES');
+                                  counterAccountCode =
+                                      counterAccounts
+                                          .where(
+                                            (item) => item.code == preferred,
+                                          )
+                                          .firstOrNull
+                                          ?.code ??
+                                      counterAccountCode;
+                                }),
+                              ),
+                              const SizedBox(height: 10),
+                              if (partyKind != 'other')
+                                DropdownButtonFormField<Map<String, dynamic>>(
+                                  initialValue:
+                                      availableContacts.contains(selectedContact)
+                                      ? selectedContact
+                                      : null,
+                                  decoration: const InputDecoration(
+                                    labelText: 'اسم الطرف',
+                                  ),
+                                  items: availableContacts
+                                      .map(
+                                        (item) => DropdownMenuItem(
+                                          value: item,
+                                          child: Text(
+                                            item['name']?.toString() ?? '',
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: (value) =>
+                                      update(() => selectedContact = value),
+                                )
+                              else
+                                NineSoftEntryFieldGrid(
+                                  minFieldWidth: 220,
+                                  maxColumns: 2,
+                                  children: [
+                                    TextField(
+                                      controller: partyName,
+                                      decoration: const InputDecoration(
+                                        labelText: 'اسم الشخص أو الجهة',
+                                      ),
+                                    ),
+                                    TextField(
+                                      controller: partyPhone,
+                                      decoration: const InputDecoration(
+                                        labelText: 'رقم الهاتف (اختياري)',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              const SizedBox(height: 10),
+                              NineSoftEntryFieldGrid(
+                                minFieldWidth: 220,
+                                maxColumns: 2,
+                                children: [
+                                  TextField(
+                                    controller: amount,
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
+                                    inputFormatters: const [
+                                      latinDigitFormatter,
+                                    ],
+                                    textDirection: TextDirection.ltr,
+                                    decoration: InputDecoration(
+                                      labelText: receipt
+                                          ? 'المبلغ المقبوض'
+                                          : 'المبلغ المصروف',
+                                      suffixText: 'YER',
+                                    ),
+                                  ),
+                                  DropdownButtonFormField<String>(
+                                    initialValue: cashAccountCode.isEmpty
+                                        ? null
+                                        : cashAccountCode,
+                                    decoration: InputDecoration(
+                                      labelText: receipt
+                                          ? 'حساب استلام المبلغ'
+                                          : 'حساب دفع المبلغ',
+                                    ),
+                                    items: cashAccounts
+                                        .map(
+                                          (item) => DropdownMenuItem(
+                                            value: item.code,
+                                            child: Text(
+                                              '${item.code} — ${item.nameAr}',
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                    onChanged: (value) => update(() {
+                                      cashAccountCode = value ?? '';
+                                      channel = _channelForAccount(
+                                        cashAccountCode,
+                                      );
+                                    }),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              DropdownButtonFormField<String>(
+                                initialValue: counterAccountCode.isEmpty
+                                    ? null
+                                    : counterAccountCode,
+                                decoration: const InputDecoration(
+                                  labelText: 'الحساب المقابل',
+                                ),
+                                items: counterAccounts
+                                    .map(
+                                      (item) => DropdownMenuItem(
+                                        value: item.code,
+                                        child: Text(
+                                          '${item.code} — ${item.nameAr}',
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (value) => update(
+                                  () => counterAccountCode = value ?? '',
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              TextField(
+                                controller: notes,
+                                maxLines: 2,
+                                decoration: const InputDecoration(
+                                  labelText: 'البيان / الملاحظة',
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        TextField(
-                          controller: partyPhone,
-                          decoration: const InputDecoration(
-                            labelText: 'رقم الهاتف (اختياري)',
-                          ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () =>
+                                    Navigator.pop(dialogContext, 'cancel'),
+                                icon: const Icon(Icons.close_rounded),
+                                label: const Text('إلغاء'),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              flex: 2,
+                              child: FilledButton.icon(
+                                key: const ValueKey('voucher-save'),
+                                onPressed: () =>
+                                    Navigator.pop(dialogContext, 'save'),
+                                icon: const Icon(Icons.save_outlined),
+                                label: Text(
+                                  receipt
+                                      ? 'اعتماد سند القبض'
+                                      : 'اعتماد سند الصرف',
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: amount,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        inputFormatters: const [latinDigitFormatter],
-                        decoration: InputDecoration(
-                          labelText: receipt
-                              ? 'المبلغ المقبوض'
-                              : 'المبلغ المصروف',
-                          suffixText: 'YER',
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      DropdownButtonFormField<String>(
-                        initialValue: cashAccountCode.isEmpty
-                            ? null
-                            : cashAccountCode,
-                        decoration: InputDecoration(
-                          labelText: receipt
-                              ? 'حساب استلام المبلغ'
-                              : 'حساب دفع المبلغ',
-                        ),
-                        items: cashAccounts
-                            .map(
-                              (item) => DropdownMenuItem(
-                                value: item.code,
-                                child: Text('${item.code} — ${item.nameAr}'),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (value) => update(() {
-                          cashAccountCode = value ?? '';
-                          channel = _channelForAccount(cashAccountCode);
-                        }),
-                      ),
-                      const SizedBox(height: 10),
-                      DropdownButtonFormField<String>(
-                        initialValue: counterAccountCode.isEmpty
-                            ? null
-                            : counterAccountCode,
-                        decoration: const InputDecoration(
-                          labelText: 'الحساب المقابل',
-                        ),
-                        items: counterAccounts
-                            .map(
-                              (item) => DropdownMenuItem(
-                                value: item.code,
-                                child: Text('${item.code} — ${item.nameAr}'),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (value) =>
-                            update(() => counterAccountCode = value ?? ''),
-                      ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: notes,
-                        decoration: const InputDecoration(
-                          labelText: 'البيان / الملاحظة',
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, 'cancel'),
-                  child: const Text('إلغاء'),
-                ),
-                FilledButton(
-                  onPressed: () => Navigator.pop(context, 'save'),
-                  child: Text(
-                    receipt ? 'اعتماد سند القبض' : 'اعتماد سند الصرف',
-                  ),
-                ),
-              ],
-            );
-          },
+              );
+            },
+          ),
         ),
       );
       if (!mounted) return;
