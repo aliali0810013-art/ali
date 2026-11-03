@@ -1,0 +1,64 @@
+name: Install NineSoft workspace
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".handoff/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check payload
+        id: payload
+        shell: bash
+        run: |
+          if compgen -G ".handoff/part-*.b64" > /dev/null; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Rebuild and verify archive
+        if: steps.payload.outputs.present == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .handoff/part-*.b64 | tr -d '\n\r' | base64 -d > /tmp/ninesoft.zip
+          echo "47a691e3988249a3d51785280f9543f64c24e36073766bf524ee05d190fa29c2  /tmp/ninesoft.zip" | sha256sum -c -
+
+      - name: Install workspace
+        if: steps.payload.outputs.present == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/ninesoft-workspace
+          mkdir -p /tmp/ninesoft-workspace
+          unzip -q /tmp/ninesoft.zip -d /tmp/ninesoft-workspace
+          find . -mindepth 1 -maxdepth 1 ! -name .git ! -name .github ! -name .handoff -exec rm -rf {} +
+          cp -a /tmp/ninesoft-workspace/. .
+          rm -rf .handoff
+
+      - name: Commit complete workspace
+        if: steps.payload.outputs.present == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Install complete NineSoft Start workspace"
+          git push origin HEAD:main
