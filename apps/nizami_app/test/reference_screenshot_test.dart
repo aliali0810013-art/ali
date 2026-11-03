@@ -1,4 +1,5 @@
-// Sales visual acceptance: fixed 941x1672 physical capture, DPR 1.5.\nimport 'dart:convert';
+// Sales visual acceptance: fixed 941x1672 physical capture, DPR 1.5.
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
