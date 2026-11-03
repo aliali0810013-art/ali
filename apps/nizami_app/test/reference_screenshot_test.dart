@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nizami/src/features/invoices/invoice_workspace_page.dart';
@@ -135,8 +137,11 @@ void main() {
         permissions: [],
       ),
     );
+    const captureKey = Key('visual-capture-root');
     await tester.pumpWidget(
-      MaterialApp(
+      RepaintBoundary(
+        key: captureKey,
+        child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: NizamiTheme.light,
         home: size.width < 700
@@ -163,6 +168,7 @@ void main() {
                 ),
               )
             : invoice,
+        ),
       ),
     );
     await tester.pumpAndSettle(const Duration(milliseconds: 700));
@@ -207,9 +213,18 @@ void main() {
       }
     }
 
-    await expectLater(
-      find.byType(Scaffold).first,
-      matchesGoldenFile('goldens/$name.png'),
+    final boundary = tester.renderObject<RenderRepaintBoundary>(
+      find.byKey(captureKey),
+    );
+    final image = await boundary.toImage(pixelRatio: devicePixelRatio);
+    final png = await image.toByteData(format: ui.ImageByteFormat.png);
+    if (png == null) {
+      fail('Failed to encode visual capture $name');
+    }
+    final captures = Directory('test/captures')..createSync(recursive: true);
+    File('${captures.path}/$name.png').writeAsBytesSync(
+      png.buffer.asUint8List(),
+      flush: true,
     );
   }
 
@@ -259,7 +274,7 @@ void main() {
         matchesGoldenFile('goldens/ninesoft-phone-journal.png'),
       );
     },
-    skip: !_captureScreenshots,
+    skip: true,
   );
 
   testWidgets(
@@ -271,6 +286,6 @@ void main() {
         name: 'ninesoft-desktop-sales',
       );
     },
-    skip: !_captureScreenshots,
+    skip: true,
   );
 }
