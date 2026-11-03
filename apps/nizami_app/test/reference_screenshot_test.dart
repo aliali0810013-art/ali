@@ -4,6 +4,10 @@ import 'package:nizami/src/features/invoices/invoice_workspace_page.dart';
 import 'package:nizami/src/theme/nizami_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+const _captureScreenshots = bool.fromEnvironment(
+  'NINESOFT_CAPTURE_SCREENSHOTS',
+);
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -45,19 +49,27 @@ void main() {
     );
   }
 
-  testWidgets('capture phone sales editor', (tester) async {
-    await capture(
-      tester,
-      size: const Size(390, 844),
-      name: 'ninesoft-phone-sales',
-    );
-  });
+  testWidgets(
+    'capture phone sales editor',
+    (tester) async {
+      await capture(
+        tester,
+        size: const Size(390, 844),
+        name: 'ninesoft-phone-sales',
+      );
+    },
+    skip: !_captureScreenshots,
+  );
 
-  testWidgets('capture desktop sales editor', (tester) async {
-    await capture(
-      tester,
-      size: const Size(1440, 900),
-      name: 'ninesoft-desktop-sales',
-    );
-  });
+  testWidgets(
+    'capture desktop sales editor',
+    (tester) async {
+      await capture(
+        tester,
+        size: const Size(1440, 900),
+        name: 'ninesoft-desktop-sales',
+      );
+    },
+    skip: !_captureScreenshots,
+  );
 }
