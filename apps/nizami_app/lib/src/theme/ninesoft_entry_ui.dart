@@ -1283,6 +1283,7 @@ class NineSoftEntryLineTable extends StatelessWidget {
                 delete: const SizedBox.shrink(),
                 showDiscount: showDiscount,
                 compact: compactTable,
+                hideNumber: denseReference,
               ),
             ),
             const SizedBox(height: 9),
@@ -1337,6 +1338,7 @@ class NineSoftEntryLineTable extends StatelessWidget {
                     ),
                     showDiscount: showDiscount,
                     compact: compactTable,
+                    hideNumber: denseReference,
                   ),
                 ),
               ),
@@ -1360,6 +1362,7 @@ class _EntryTableRow extends StatelessWidget {
     this.showDiscount = false,
     this.header = false,
     this.compact = false,
+    this.hideNumber = false,
   });
 
   final Widget number;
@@ -1373,6 +1376,7 @@ class _EntryTableRow extends StatelessWidget {
   final bool showDiscount;
   final bool header;
   final bool compact;
+  final bool hideNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -1387,7 +1391,8 @@ class _EntryTableRow extends StatelessWidget {
     final row = Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        SizedBox(width: compact ? 24 : 28, child: Center(child: number)),
+        if (!hideNumber)
+          SizedBox(width: compact ? 24 : 28, child: Center(child: number)),
         cell(product, showDiscount ? 30 : 35),
         cell(unit, showDiscount ? 11 : 13),
         cell(quantity, showDiscount ? 12 : 11),
