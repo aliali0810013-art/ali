@@ -390,35 +390,41 @@ class _SummaryCard extends StatelessWidget {
           _MoneyRow(
             label: 'إجمالي الأصناف',
             value: document.subtotal,
+            currency: document.currency,
             icon: Icons.layers_outlined,
           ),
           _MoneyRow(
             label: 'إجمالي الخصم',
             value: -document.discountAmount,
+            currency: document.currency,
             icon: Icons.local_offer_outlined,
             valueColor: const Color(0xFFD92E3D),
           ),
-          const _MoneyRow(
+          _MoneyRow(
             label: 'الضريبة',
             value: 0,
+            currency: document.currency,
             icon: Icons.percent_rounded,
             muted: true,
           ),
           _MoneyRow(
             label: 'الإجمالي النهائي',
             value: document.total,
+            currency: document.currency,
             icon: Icons.calculate_outlined,
             emphasized: true,
           ),
           _MoneyRow(
             label: 'المبلغ المدفوع',
             value: paid,
+            currency: document.currency,
             icon: Icons.account_balance_wallet_outlined,
             valueColor: const Color(0xFF138A2E),
           ),
           _MoneyRow(
             label: 'المبلغ المتبقي',
             value: due,
+            currency: document.currency,
             icon: Icons.schedule_rounded,
             valueColor: const Color(0xFFA55300),
           ),
@@ -433,6 +439,7 @@ class _MoneyRow extends StatelessWidget {
     required this.label,
     required this.value,
     required this.icon,
+    required this.currency,
     this.valueColor,
     this.emphasized = false,
     this.muted = false,
@@ -441,6 +448,7 @@ class _MoneyRow extends StatelessWidget {
   final String label;
   final double value;
   final IconData icon;
+  final String currency;
   final Color? valueColor;
   final bool emphasized;
   final bool muted;
@@ -476,7 +484,7 @@ class _MoneyRow extends StatelessWidget {
             ),
           ),
           Text(
-            '${value.toStringAsFixed(2)} ر.س',
+            '${value.toStringAsFixed(2)} ${currency == 'YER' ? 'ر.ي' : currency}',
             textDirection: TextDirection.ltr,
             style: TextStyle(
               color: muted ? Colors.blueGrey : color,
