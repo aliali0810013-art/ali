@@ -189,7 +189,7 @@ void main() {
     (tester) async {
       await capture(
         tester,
-        size: const Size(390, 844),
+        size: const Size(430, 932),
         name: 'ninesoft-phone-sales',
       );
     },
