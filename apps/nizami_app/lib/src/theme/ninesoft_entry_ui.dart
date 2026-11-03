@@ -818,15 +818,19 @@ class _NineSoftEntryInputScope extends StatelessWidget {
 }
 
 class _NineSoftCompactEntryCell extends StatelessWidget {
-  const _NineSoftCompactEntryCell({required this.child});
+  const _NineSoftCompactEntryCell({
+    required this.child,
+    this.dense = false,
+  });
 
   final Widget child;
+  final bool dense;
 
   @override
   Widget build(BuildContext context) => _NineSoftEntryInputScope(
-    height: 43,
-    radius: 10,
-    horizontalPadding: 9,
+    height: dense ? 36 : 43,
+    radius: dense ? 8 : 10,
+    horizontalPadding: dense ? 5 : 9,
     child: child,
   );
 }
@@ -1311,15 +1315,24 @@ class NineSoftEntryLineTable extends StatelessWidget {
                   child: _EntryTableRow(
                     number: _LineNumber(index: index, mobile: false),
                     product: _NineSoftCompactEntryCell(
+                      dense: denseReference,
                       child: lines[index].product,
                     ),
-                    unit: _NineSoftCompactEntryCell(child: lines[index].unit),
+                    unit: _NineSoftCompactEntryCell(
+                      dense: denseReference,
+                      child: lines[index].unit,
+                    ),
                     quantity: _NineSoftCompactEntryCell(
+                      dense: denseReference,
                       child: lines[index].quantity,
                     ),
-                    price: _NineSoftCompactEntryCell(child: lines[index].price),
+                    price: _NineSoftCompactEntryCell(
+                      dense: denseReference,
+                      child: lines[index].price,
+                    ),
                     discount: showDiscount
                         ? _NineSoftCompactEntryCell(
+                            dense: denseReference,
                             child: lines[index].discount ?? const Text('0%'),
                           )
                         : null,
