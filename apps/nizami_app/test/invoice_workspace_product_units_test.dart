@@ -176,6 +176,7 @@ void main() {
       find.byKey(const Key('invoice-product-input')),
       'Offline stock',
     );
+    await tester.pump();
     await tester.enterText(
       find.byKey(const Key('invoice-quantity-input')),
       '1',
