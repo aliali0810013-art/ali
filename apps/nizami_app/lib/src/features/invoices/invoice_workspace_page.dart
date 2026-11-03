@@ -2989,7 +2989,10 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       paymentModeField: paymentModeField,
       productSearchField: productSearchField,
       barcodeField: barcodeField,
-      lineEntryControls: lineEntryControls,
+      lineEntryControls:
+          (_selectedProduct == null && _item.text.trim().isEmpty)
+              ? null
+              : lineEntryControls,
       linesTable:
           _lines.isEmpty ? const _EmptyInvoiceLines() : _referenceLines(),
       notesField: TextField(
