@@ -421,8 +421,9 @@ class _SearchStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
         builder: (context, constraints) {
+          final mobile = MediaQuery.sizeOf(context).width < 700;
           final scan = SizedBox(
-            height: 50,
+            height: mobile ? 40 : 50,
             child: FilledButton.icon(
               onPressed: onScanBarcode,
               style: FilledButton.styleFrom(
@@ -543,7 +544,8 @@ class _MoneyRow extends StatelessWidget {
             : const Color(0xFF17233D));
     return LayoutBuilder(
       builder: (context, constraints) {
-        final compact = constraints.maxWidth < 170;
+        final compact =
+            MediaQuery.sizeOf(context).width < 700 || constraints.maxWidth < 170;
         final title = Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -624,28 +626,33 @@ class _DetailsCard extends StatelessWidget {
   final Widget settlementField;
 
   @override
-  Widget build(BuildContext context) => _Panel(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const _MiniHeading(
-              icon: Icons.edit_note_rounded,
-              label: 'ملاحظات',
-            ),
-            const SizedBox(height: 8),
-            notesField,
-            const SizedBox(height: 8),
-            const Divider(height: 1),
-            const SizedBox(height: 8),
-            const _MiniHeading(
-              icon: Icons.payments_outlined,
-              label: 'التسوية والدفع',
-            ),
-            const SizedBox(height: 8),
-            settlementField,
-          ],
-        ),
-      );
+  Widget build(BuildContext context) {
+    final mobile = MediaQuery.sizeOf(context).width < 700;
+    final gap = mobile ? 4.0 : 8.0;
+    return _Panel(
+      padding: EdgeInsets.all(mobile ? 8 : 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _MiniHeading(
+            icon: Icons.edit_note_rounded,
+            label: 'ملاحظات',
+          ),
+          SizedBox(height: gap),
+          notesField,
+          SizedBox(height: gap),
+          const Divider(height: 1),
+          SizedBox(height: gap),
+          const _MiniHeading(
+            icon: Icons.payments_outlined,
+            label: 'التسوية والدفع',
+          ),
+          SizedBox(height: gap),
+          settlementField,
+        ],
+      ),
+    );
+  }
 }
 
 class _MiniHeading extends StatelessWidget {
@@ -756,8 +763,10 @@ class _FooterButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-        height: 54,
+  Widget build(BuildContext context) {
+    final mobile = MediaQuery.sizeOf(context).width < 700;
+    return SizedBox(
+        height: mobile ? 42 : 54,
         child: FilledButton.icon(
           key: buttonKey,
           onPressed: onPressed,
@@ -782,6 +791,7 @@ class _FooterButton extends StatelessWidget {
           ),
         ),
       );
+  }
 }
 
 class _SoftAction extends StatelessWidget {
@@ -800,8 +810,10 @@ class _SoftAction extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-        height: 52,
+  Widget build(BuildContext context) {
+    final mobile = MediaQuery.sizeOf(context).width < 700;
+    return SizedBox(
+        height: mobile ? 40 : 52,
         child: FilledButton.icon(
           key: buttonKey,
           onPressed: onPressed,
@@ -821,6 +833,7 @@ class _SoftAction extends StatelessWidget {
           ),
         ),
       );
+  }
 }
 
 class _Panel extends StatelessWidget {
