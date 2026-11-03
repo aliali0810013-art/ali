@@ -390,7 +390,7 @@ class _NineSoftWorkspaceShellState extends State<NineSoftWorkspaceShell> {
               body: Column(
                 children: [
                   if (_activeModuleKey != null)
-                    _NineSoftReferenceMobileHeader(
+                    NineSoftReferenceMobileHeader(
                       title: activeModule?.title ?? 'NineSoft',
                       onMenu: _showAppLauncher,
                       onProfile: () => _openByKey('settings'),
@@ -486,8 +486,8 @@ class _NineSoftWorkspaceShellState extends State<NineSoftWorkspaceShell> {
 }
 
 
-class _NineSoftReferenceMobileHeader extends StatelessWidget {
-  const _NineSoftReferenceMobileHeader({
+class NineSoftReferenceMobileHeader extends StatelessWidget {
+  const NineSoftReferenceMobileHeader({
     required this.title,
     required this.onMenu,
     required this.onProfile,
