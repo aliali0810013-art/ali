@@ -187,8 +187,11 @@ class _BackupPageState extends State<BackupPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('المزامنة والنسخ الاحتياطية')),
+  Widget build(BuildContext context) {
+    final phone = MediaQuery.sizeOf(context).width < 700;
+    final totalBytes = _items.fold<int>(0, (sum, item) => sum + item.size);
+    return Scaffold(
+    appBar: AppBar(toolbarHeight: 0),
     floatingActionButton: FloatingActionButton.extended(
       onPressed: _creating ? null : _create,
       icon: _creating
@@ -203,11 +206,13 @@ class _BackupPageState extends State<BackupPage> {
       onRefresh: _load,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+        padding: EdgeInsets.fromLTRB(phone ? 10 : 16, phone ? 10 : 16, phone ? 10 : 16, 100),
         children: [
           NineSoftEntryHeading(
-            title: 'المزامنة والنسخ الاحتياطية',
-            subtitle: 'نسخ مؤسسية معزولة واستعادة محمية بسجل واضح',
+            title: 'المزامنة والنسخ الاحتياطي',
+            subtitle: phone
+                ? 'حماية البيانات والمزامنة بين النسخ'
+                : 'نسخ مؤسسية معزولة واستعادة محمية بسجل واضح',
             status: RealtimeSyncCoordinator.instance.connectionHealthMessage,
             icon: Icons.cloud_sync_outlined,
             actions: [
@@ -218,10 +223,74 @@ class _BackupPageState extends State<BackupPage> {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: phone ? 8 : 14),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final latest = _items.isEmpty
+                  ? 'لا توجد'
+                  : DateFormat('MM/dd HH:mm').format(_items.first.createdAt.toLocal());
+              final values = [
+                ('حالة المزامنة', _synchronizing ? 'تعمل الآن' : 'جاهزة', Icons.sync_rounded, const Color(0xFF20A56B)),
+                ('آخر نسخة', latest, Icons.schedule_rounded, const Color(0xFF1689F8)),
+                ('المساحة', '${(totalBytes / (1024 * 1024)).toStringAsFixed(2)} MB', Icons.storage_rounded, const Color(0xFF7652D6)),
+                ('عدد النسخ', '${_items.length}', Icons.inventory_2_outlined, const Color(0xFFF09A20)),
+              ];
+              final gap = phone ? 6.0 : 10.0;
+              final width = (constraints.maxWidth - gap * 3) / 4;
+              return Wrap(
+                spacing: gap,
+                runSpacing: gap,
+                children: [
+                  for (final item in values)
+                    SizedBox(
+                      width: width,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: phone ? 4 : 9,
+                          vertical: phone ? 8 : 11,
+                        ),
+                        decoration: BoxDecoration(
+                          color: item.$4.withValues(alpha: .08),
+                          borderRadius: BorderRadius.circular(phone ? 10 : 14),
+                          border: Border.all(color: item.$4.withValues(alpha: .13)),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(item.$3, color: item.$4, size: phone ? 18 : 22),
+                            SizedBox(height: phone ? 4 : 6),
+                            Text(
+                              item.$2,
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: item.$4,
+                                fontSize: phone ? 9.5 : 12,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              item.$1,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              style: TextStyle(
+                                fontSize: phone ? 8 : 10.5,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+          SizedBox(height: phone ? 8 : 14),
           NineSoftEntrySection(
-            title: 'حماية بيانات المنشأة',
-            subtitle: 'المزامنة والنسخ اليومية تعملان ضمن المؤسسة الحالية',
+            title: phone ? 'جدولة المزامنة والنسخ' : 'حماية بيانات المنشأة',
+            subtitle: phone ? 'المزامنة والنسخة اليومية' : 'المزامنة والنسخ اليومية تعملان ضمن المؤسسة الحالية',
             icon: Icons.verified_user_outlined,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,9 +343,9 @@ class _BackupPageState extends State<BackupPage> {
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: phone ? 8 : 12),
           NineSoftEntrySection(
-            title: 'النسخ المحفوظة',
+            title: 'النسخ الاحتياطية',
             subtitle: '${_items.length} نسخة متاحة على الخادم',
             icon: Icons.inventory_2_outlined,
             child: Column(
@@ -343,4 +412,5 @@ class _BackupPageState extends State<BackupPage> {
       ),
     ),
   );
+  }
 }

@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'chart_accounts_api.dart';
 
-class SearchableChartAccountField extends StatelessWidget {
+/// Searchable account selector that expands inside the current page.
+///
+/// Keeping the picker inline avoids modal/bottom-sheet editors and makes long
+/// accounting lists usable with keyboard, mouse and touch on the same surface.
+class SearchableChartAccountField extends StatefulWidget {
   const SearchableChartAccountField({
     super.key,
     required this.accounts,
@@ -20,118 +24,30 @@ class SearchableChartAccountField extends StatelessWidget {
   final String? helperText;
   final ValueChanged<String?>? onChanged;
 
-  ChartAccount? get _selected {
-    for (final account in accounts) {
-      if (account.code == value) return account;
-    }
-    return null;
-  }
-
-  Future<void> _openPicker(BuildContext context) async {
-    final mobile = MediaQuery.sizeOf(context).width < 600;
-    final picker = _ChartAccountSearchPanel(
-      accounts: accounts,
-      selectedCode: value,
-    );
-    final selected = mobile
-        ? await showModalBottomSheet<String>(
-            context: context,
-            isScrollControlled: true,
-            useSafeArea: true,
-            showDragHandle: true,
-            builder: (context) =>
-                FractionallySizedBox(heightFactor: .88, child: picker),
-          )
-        : await showDialog<String>(
-            context: context,
-            builder: (context) => Dialog(
-              insetPadding: const EdgeInsets.all(24),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 680,
-                  maxHeight: 720,
-                ),
-                child: picker,
-              ),
-            ),
-          );
-    if (selected != null && context.mounted) onChanged?.call(selected);
-  }
-
   @override
-  Widget build(BuildContext context) {
-    final selected = _selected;
-    return Semantics(
-      button: onChanged != null,
-      label: label,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onChanged == null ? null : () => _openPicker(context),
-        child: InputDecorator(
-          isEmpty: selected == null,
-          decoration: InputDecoration(
-            labelText: label,
-            helperText: helperText,
-            enabled: onChanged != null,
-            prefixIcon: const Icon(Icons.search_rounded),
-            suffixIcon: selected == null || onChanged == null
-                ? null
-                : IconButton(
-                    tooltip: 'مسح الاختيار',
-                    onPressed: () => onChanged?.call(null),
-                    icon: const Icon(Icons.close_rounded),
-                  ),
-          ),
-          child: selected == null
-              ? Text(hint, maxLines: 1, overflow: TextOverflow.ellipsis)
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      selected.nameAr,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      selected.code,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textDirection: TextDirection.ltr,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-        ),
-      ),
-    );
-  }
+  State<SearchableChartAccountField> createState() =>
+      _SearchableChartAccountFieldState();
 }
 
-class _ChartAccountSearchPanel extends StatefulWidget {
-  const _ChartAccountSearchPanel({
-    required this.accounts,
-    required this.selectedCode,
-  });
-
-  final List<ChartAccount> accounts;
-  final String? selectedCode;
-
-  @override
-  State<_ChartAccountSearchPanel> createState() =>
-      _ChartAccountSearchPanelState();
-}
-
-class _ChartAccountSearchPanelState extends State<_ChartAccountSearchPanel> {
+class _SearchableChartAccountFieldState
+    extends State<SearchableChartAccountField> {
   final _search = TextEditingController();
+  final _focusNode = FocusNode();
+  bool _expanded = false;
   String _query = '';
 
   @override
   void dispose() {
     _search.dispose();
+    _focusNode.dispose();
     super.dispose();
+  }
+
+  ChartAccount? get _selected {
+    for (final account in widget.accounts) {
+      if (account.code == widget.value) return account;
+    }
+    return null;
   }
 
   List<ChartAccount> get _filtered {
@@ -147,85 +63,189 @@ class _ChartAccountSearchPanelState extends State<_ChartAccountSearchPanel> {
         .toList(growable: false);
   }
 
+  void _toggle() {
+    if (widget.onChanged == null) return;
+    setState(() => _expanded = !_expanded);
+    if (_expanded) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _focusNode.requestFocus();
+      });
+    }
+  }
+
+  void _select(ChartAccount account) {
+    widget.onChanged?.call(account.code);
+    setState(() {
+      _expanded = false;
+      _query = '';
+      _search.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final selected = _selected;
     final accounts = _filtered;
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    'اختيار الحساب',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-                  ),
-                ),
-                IconButton(
-                  tooltip: 'اغلاق',
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close_rounded),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _search,
-              autofocus: true,
-              onChanged: (value) => setState(() => _query = value),
-              decoration: const InputDecoration(
-                labelText: 'ابحث باسم الحساب او رقمه',
-                hintText: 'مثال الصندوق الرئيسي او 1060',
-                prefixIcon: Icon(Icons.search_rounded),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Semantics(
+          button: widget.onChanged != null,
+          label: widget.label,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: _toggle,
+            child: InputDecorator(
+              isEmpty: selected == null,
+              decoration: InputDecoration(
+                labelText: widget.label,
+                helperText: widget.helperText,
+                enabled: widget.onChanged != null,
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: widget.onChanged == null
+                    ? null
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (selected != null)
+                            IconButton(
+                              tooltip: 'مسح الاختيار',
+                              onPressed: () {
+                                widget.onChanged?.call(null);
+                                setState(() {});
+                              },
+                              icon: const Icon(Icons.close_rounded),
+                            ),
+                          Icon(
+                            _expanded
+                                ? Icons.keyboard_arrow_up_rounded
+                                : Icons.keyboard_arrow_down_rounded,
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                      ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: accounts.isEmpty
-                  ? const Center(child: Text('لا توجد حسابات مطابقة'))
-                  : ListView.separated(
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
-                      itemCount: accounts.length,
-                      separatorBuilder: (_, _) => const Divider(height: 1),
-                      itemBuilder: (context, index) {
-                        final account = accounts[index];
-                        final selected = account.code == widget.selectedCode;
-                        return ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          selected: selected,
-                          leading: Icon(
-                            selected
-                                ? Icons.check_circle_rounded
-                                : Icons.account_balance_wallet_outlined,
-                          ),
-                          title: Text(
-                            account.nameAr,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                          subtitle: Text(
-                            account.code,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textDirection: TextDirection.ltr,
-                          ),
-                          onTap: () => Navigator.pop(context, account.code),
-                        );
-                      },
+              child: selected == null
+                  ? Text(
+                      widget.hint,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          selected.nameAr,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          selected.code,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textDirection: TextDirection.ltr,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
                     ),
             ),
-          ],
+          ),
         ),
-      ),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 160),
+          child: !_expanded
+              ? const SizedBox.shrink()
+              : Container(
+                  key: const Key('inline-account-search'),
+                  margin: const EdgeInsets.only(top: 7),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: Theme.of(context).dividerColor,
+                    ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0D0B356F),
+                        blurRadius: 14,
+                        offset: Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TextField(
+                        controller: _search,
+                        focusNode: _focusNode,
+                        onChanged: (value) => setState(() => _query = value),
+                        decoration: const InputDecoration(
+                          labelText: 'ابحث باسم الحساب او رقمه',
+                          hintText: 'مثال: الصندوق الرئيسي أو 1060',
+                          prefixIcon: Icon(Icons.search_rounded),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 280),
+                        child: accounts.isEmpty
+                            ? const Padding(
+                                padding: EdgeInsets.all(18),
+                                child: Center(
+                                  child: Text('لا توجد حسابات مطابقة'),
+                                ),
+                              )
+                            : ListView.separated(
+                                shrinkWrap: true,
+                                keyboardDismissBehavior:
+                                    ScrollViewKeyboardDismissBehavior.onDrag,
+                                itemCount: accounts.length,
+                                separatorBuilder: (_, _) =>
+                                    const Divider(height: 1),
+                                itemBuilder: (context, index) {
+                                  final account = accounts[index];
+                                  final active =
+                                      account.code == widget.value;
+                                  return Material(
+                                    color: Colors.transparent,
+                                    type: MaterialType.transparency,
+                                    child: ListTile(
+                                      dense: true,
+                                      selected: active,
+                                      leading: Icon(
+                                        active
+                                            ? Icons.check_circle_rounded
+                                            : Icons.account_balance_wallet_outlined,
+                                      ),
+                                      title: Text(
+                                        account.nameAr,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        account.code,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textDirection: TextDirection.ltr,
+                                      ),
+                                      onTap: () => _select(account),
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
+        ),
+      ],
     );
   }
 }

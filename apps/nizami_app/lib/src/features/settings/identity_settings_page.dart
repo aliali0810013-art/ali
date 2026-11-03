@@ -181,12 +181,16 @@ class _IdentitySettingsPageState extends State<IdentitySettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final phone = MediaQuery.sizeOf(context).width < 700;
     return Scaffold(
-      appBar: AppBar(title: const Text('هوية النشاط والفواتير')),
+      appBar: AppBar(
+        toolbarHeight: phone ? 0 : null,
+        title: const Text('الإعدادات والتحكم'),
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(phone ? 10 : 20),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 760),
               child: Form(
@@ -194,11 +198,13 @@ class _IdentitySettingsPageState extends State<IdentitySettingsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const NineSoftEntryHeading(
-                      title: 'هوية النشاط والفواتير',
-                      subtitle: 'الشعار وبيانات التواصل الظاهرة في المستندات',
-                      status: 'إعدادات الفرع',
-                      icon: Icons.storefront_outlined,
+                    NineSoftEntryHeading(
+                      title: 'الإعدادات والتحكم',
+                      subtitle: phone
+                          ? 'هوية الفرع والطباعة وبيانات التواصل'
+                          : 'الشعار وبيانات التواصل الظاهرة في المستندات',
+                      status: 'هوية النشاط والفواتير',
+                      icon: Icons.settings_rounded,
                     ),
                     const SizedBox(height: 14),
                     NineSoftEntrySection(
@@ -224,7 +230,7 @@ class _IdentitySettingsPageState extends State<IdentitySettingsPage> {
                         child: Column(
                           children: [
                             CircleAvatar(
-                              radius: 52,
+                              radius: phone ? 38 : 52,
                               backgroundColor: Color(
                                 _color,
                               ).withValues(alpha: .10),
@@ -234,7 +240,7 @@ class _IdentitySettingsPageState extends State<IdentitySettingsPage> {
                               child: _logo == null
                                   ? Icon(
                                       Icons.storefront_rounded,
-                                      size: 48,
+                                      size: phone ? 34 : 48,
                                       color: Color(_color),
                                     )
                                   : null,

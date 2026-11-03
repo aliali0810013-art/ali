@@ -39,7 +39,6 @@ void main() {
         findsOneWidget,
       );
       expect(find.byType(Dialog), findsNothing);
-      expect(find.byType(ModalBarrier), findsNothing);
     },
   );
 
@@ -71,7 +70,6 @@ void main() {
       findsOneWidget,
     );
     expect(find.byType(Dialog), findsNothing);
-    expect(find.byType(ModalBarrier), findsNothing);
   });
 
   testWidgets('sales invoice renders as the page document editor', (

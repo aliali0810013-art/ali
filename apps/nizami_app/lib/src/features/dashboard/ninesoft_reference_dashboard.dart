@@ -619,7 +619,7 @@ class _OverviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final compact = MediaQuery.sizeOf(context).width < 600;
+    final compact = MediaQuery.sizeOf(context).width < 900;
     return Material(
       color: color.withValues(alpha: .10),
       borderRadius: BorderRadius.circular(compact ? 17 : 20),

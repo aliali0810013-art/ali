@@ -137,21 +137,24 @@ class _WhatsappPageState extends State<WhatsappPage> {
   Widget build(BuildContext context) {
     final qr = _qrBytes();
     final connected = _status?.connected ?? false;
+    final phone = MediaQuery.sizeOf(context).width < 700;
     return Scaffold(
-      appBar: AppBar(title: const Text('ربط واتساب بالفروع')),
+      appBar: AppBar(toolbarHeight: 0),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(phone ? 10 : 20),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 720),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   NineSoftEntryHeading(
-                    title: 'ربط واتساب',
-                    subtitle: 'جلسة مستقلة وآمنة لكل فرع من فروع المنشأة',
-                    status: 'قنوات التواصل',
+                    title: 'واتساب',
+                    subtitle: phone
+                        ? 'ربط وإدارة واتساب للفرع'
+                        : 'جلسة مستقلة وآمنة لكل فرع من فروع المنشأة',
+                    status: connected ? 'متصل' : 'غير مرتبط',
                     icon: Icons.chat_outlined,
                     actions: _loading
                         ? const [
@@ -186,7 +189,86 @@ class _WhatsappPageState extends State<WhatsappPage> {
                               ),
                           ],
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: phone ? 8 : 14),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final values = [
+                        (
+                          'حالة الاتصال',
+                          connected ? 'متصل' : 'غير متصل',
+                          connected ? Icons.verified_rounded : Icons.link_off_rounded,
+                          connected ? const Color(0xFF20A56B) : const Color(0xFFD14B5A),
+                        ),
+                        (
+                          'الفروع',
+                          '${_branches.length}',
+                          Icons.store_mall_directory_outlined,
+                          const Color(0xFF1689F8),
+                        ),
+                        (
+                          'جلسة الربط',
+                          qr != null && !connected ? 'QR جاهز' : (connected ? 'نشطة' : 'بانتظار الربط'),
+                          Icons.qr_code_2_rounded,
+                          const Color(0xFF7652D6),
+                        ),
+                      ];
+                      final gap = phone ? 6.0 : 10.0;
+                      final width =
+                          (constraints.maxWidth - gap * (values.length - 1)) /
+                          values.length;
+                      return Wrap(
+                        spacing: gap,
+                        runSpacing: gap,
+                        children: [
+                          for (final item in values)
+                            SizedBox(
+                              width: width,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: phone ? 5 : 10,
+                                  vertical: phone ? 8 : 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: item.$4.withValues(alpha: .08),
+                                  borderRadius: BorderRadius.circular(phone ? 11 : 15),
+                                  border: Border.all(
+                                    color: item.$4.withValues(alpha: .13),
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(item.$3, color: item.$4, size: phone ? 18 : 22),
+                                    SizedBox(height: phone ? 4 : 6),
+                                    Text(
+                                      item.$2,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: item.$4,
+                                        fontSize: phone ? 10 : 13,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      item.$1,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: phone ? 8.5 : 11,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                  SizedBox(height: phone ? 8 : 14),
                   NineSoftEntrySection(
                     title: 'اختيار الفرع',
                     subtitle: 'يُطبق الربط على الفرع المحدد فقط',
@@ -215,9 +297,9 @@ class _WhatsappPageState extends State<WhatsappPage> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: phone ? 8 : 14),
                   NineSoftEntrySection(
-                    title: connected ? 'حالة الاتصال' : 'إنشاء جلسة الربط',
+                    title: connected ? 'حالة الاتصال' : 'الاتصال بواتساب',
                     subtitle: connected
                         ? 'الجلسة جاهزة لإرسال المستندات'
                         : 'امسح رمز QR من واتساب على الهاتف',
@@ -230,7 +312,7 @@ class _WhatsappPageState extends State<WhatsappPage> {
                           connected
                               ? Icons.verified_rounded
                               : Icons.qr_code_2_rounded,
-                          size: 54,
+                          size: phone ? 42 : 54,
                           color: connected
                               ? const Color(0xFF22B968)
                               : Theme.of(context).colorScheme.primary,
@@ -255,7 +337,7 @@ class _WhatsappPageState extends State<WhatsappPage> {
                           Container(
                             color: Colors.white,
                             padding: const EdgeInsets.all(12),
-                            child: Image.memory(qr, width: 260, height: 260),
+                            child: Image.memory(qr, width: phone ? 220 : 260, height: phone ? 220 : 260),
                           ),
                           const SizedBox(height: 10),
                           const Text('يتجدد الرمز تلقائيًا عند طلبه من جديد.'),

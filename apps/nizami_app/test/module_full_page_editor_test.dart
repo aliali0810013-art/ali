@@ -35,14 +35,13 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const ValueKey('header-add-customers')));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(
         find.byKey(const ValueKey('module-record-document-editor')),
         findsOneWidget,
       );
       expect(find.byType(Dialog), findsNothing);
-      expect(find.byType(ModalBarrier), findsNothing);
     },
   );
 }

@@ -463,61 +463,97 @@ class _PurchaseWorkspacePageState extends State<PurchaseWorkspacePage> {
     final reason = TextEditingController(text: 'دفعة للمورد');
     var channel = 'cash';
     var accountCode = _paymentAccounts.firstOrNull?.code ?? '';
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, update) => AlertDialog(
-          title: const Text('سند صرف للمورد'),
-          content: SizedBox(
-            width: 430,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '${invoice['supplier_name'] ?? ''} • ${compactDocumentNumber(invoice['number']?.toString() ?? '')}',
+    final confirmed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => StatefulBuilder(
+          builder: (pageContext, update) => Scaffold(
+            key: const ValueKey('purchase-supplier-payment-shell'),
+            appBar: AppBar(toolbarHeight: 0),
+            body: SafeArea(
+              child: NineSoftResponsiveBody(
+                child: ListView(
+                  children: [
+                    NineSoftEntryHeading(
+                      title: 'سند صرف للمورد',
+                      subtitle:
+                          '${invoice['supplier_name'] ?? ''} • ${compactDocumentNumber(invoice['number']?.toString() ?? '')}',
+                      icon: Icons.outbox_rounded,
+                      status: 'صرف',
+                      accent: NizamiColors.red,
+                    ),
+                    const SizedBox(height: 12),
+                    NineSoftEntrySection(
+                      title: 'بيانات السند',
+                      subtitle: 'المبلغ وحساب الصرف والبيان',
+                      icon: Icons.receipt_long_outlined,
+                      step: '01',
+                      accent: NizamiColors.blue,
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: amount,
+                            textDirection: TextDirection.ltr,
+                            keyboardType:
+                                const TextInputType.numberWithOptions(
+                                  decimal: true,
+                                ),
+                            inputFormatters: const [latinDigitFormatter],
+                            decoration: const InputDecoration(
+                              labelText: 'المبلغ',
+                              suffixText: 'YER',
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SearchableChartAccountField(
+                            accounts: _paymentAccounts,
+                            value: accountCode.isEmpty ? null : accountCode,
+                            label: 'حساب الصرف الفعلي',
+                            hint: 'ابحث عن الصندوق أو البنك أو المحفظة',
+                            onChanged: (value) => update(() {
+                              accountCode = value ?? '';
+                              channel = _channelForAccount(accountCode);
+                            }),
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: reason,
+                            maxLines: 2,
+                            decoration: const InputDecoration(
+                              labelText: 'البيان',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () =>
+                                Navigator.pop(pageContext, false),
+                            icon: const Icon(Icons.close_rounded),
+                            label: const Text('إلغاء'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          flex: 2,
+                          child: FilledButton.icon(
+                            onPressed: () =>
+                                Navigator.pop(pageContext, true),
+                            icon: const Icon(Icons.save_outlined),
+                            label: const Text('اعتماد السند'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: amount,
-                  textDirection: TextDirection.ltr,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  inputFormatters: const [latinDigitFormatter],
-                  decoration: const InputDecoration(
-                    labelText: 'المبلغ',
-                    suffixText: 'YER',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SearchableChartAccountField(
-                  accounts: _paymentAccounts,
-                  value: accountCode.isEmpty ? null : accountCode,
-                  label: 'حساب الصرف الفعلي',
-                  hint: 'ابحث عن الصندوق أو البنك أو المحفظة',
-                  onChanged: (value) => update(() {
-                    accountCode = value ?? '';
-                    channel = _channelForAccount(accountCode);
-                  }),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: reason,
-                  decoration: const InputDecoration(labelText: 'البيان'),
-                ),
-              ],
+              ),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('إلغاء'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('اعتماد السند'),
-            ),
-          ],
         ),
       ),
     );
@@ -968,7 +1004,7 @@ class _PurchaseWorkspacePageState extends State<PurchaseWorkspacePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('سجل المشتريات'),
-        toolbarHeight: desktop ? 0 : null,
+        toolbarHeight: 0,
         actions: [
           IconButton(
             onPressed: _load,
@@ -1233,6 +1269,7 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
     final mobile = MediaQuery.sizeOf(context).width < 600;
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: mobile ? 0 : null,
         title: Text(
           widget.initialInvoice == null
               ? 'فاتورة شراء جديدة'
@@ -1254,20 +1291,21 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
         key: _formKey,
         child: ListView(
           padding: EdgeInsets.symmetric(
-            horizontal: mobile ? 16 : 40,
-            vertical: 18,
+            horizontal: mobile ? 10 : 40,
+            vertical: mobile ? 8 : 18,
           ),
           children: [
-            const NineSoftEntryHeading(
-              title: 'فاتورة مشتريات جديدة',
-              subtitle:
-                  'حدد المورد، أدخل الأصناف والتكلفة، ثم راجع الإجمالي قبل الترحيل',
-              icon: Icons.shopping_cart_checkout_rounded,
-              status: 'توريد / مشتريات',
+            NineSoftEntryHeading(
+              title: 'المشتريات',
+              subtitle: mobile
+                  ? 'فاتورة شراء'
+                  : 'حدد المورد، أدخل الأصناف والتكلفة، ثم راجع الإجمالي قبل الترحيل',
+              icon: Icons.shopping_cart_rounded,
+              status: mobile ? 'فاتورة شراء' : 'توريد / مشتريات',
               accent: NizamiColors.blue,
             ),
-            const SizedBox(height: 14),
-            NineSoftDocumentCommandBar(
+            SizedBox(height: mobile ? 8 : 14),
+            if (!mobile) NineSoftDocumentCommandBar(
               title: 'اختصارات فاتورة الشراء',
               actions: [
                 NineSoftDocumentCommandAction(
@@ -1310,11 +1348,11 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: mobile ? 8 : 14),
             NineSoftEntrySection(
-              title: 'بيانات المورد والتسوية',
-              subtitle: 'بيانات الطرف وطريقة دفع الفاتورة',
-              step: '01',
+              title: mobile ? 'بيانات الفاتورة' : 'بيانات المورد والتسوية',
+              subtitle: mobile ? 'المورد وطريقة الدفع' : 'بيانات الطرف وطريقة دفع الفاتورة',
+              step: mobile ? null : '01',
               icon: Icons.local_shipping_outlined,
               accent: NizamiColors.blue,
               child: Column(
@@ -1414,11 +1452,11 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
                 ],
               ),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: mobile ? 8 : 14),
             NineSoftEntrySection(
-              title: 'بنود وتكاليف المشتريات',
-              subtitle: 'الكمية ووحدات الشراء وسعر التكلفة وسعر البيع',
-              step: '02',
+              title: mobile ? 'الأصناف' : 'بنود وتكاليف المشتريات',
+              subtitle: mobile ? 'الصنف والكمية والتكلفة' : 'الكمية ووحدات الشراء وسعر التكلفة وسعر البيع',
+              step: mobile ? null : '02',
               icon: Icons.inventory_2_outlined,
               accent: NizamiColors.amber,
               child: Column(
@@ -1426,11 +1464,11 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
                 children: [
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
                           'بنود الفاتورة',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: mobile ? 15 : 20,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -1486,22 +1524,22 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
                 ],
               ),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: mobile ? 8 : 14),
             NineSoftEntrySection(
-              title: 'بيان إضافي',
+              title: mobile ? 'ملاحظات' : 'بيان إضافي',
               icon: Icons.sticky_note_2_outlined,
-              step: '03',
+              step: mobile ? null : '03',
               child: TextFormField(
                 controller: _notes,
-                minLines: 2,
-                maxLines: 4,
+                minLines: mobile ? 1 : 2,
+                maxLines: mobile ? 2 : 4,
                 decoration: const InputDecoration(
                   labelText: 'ملاحظات',
                   prefixIcon: Icon(Icons.notes_outlined),
                 ),
               ),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: mobile ? 8 : 14),
             NineSoftEntryFooter(
               onSave: _save,
               label: 'حفظ وترحيل فاتورة الشراء',

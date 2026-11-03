@@ -250,19 +250,9 @@ class _CashboxPageState extends State<CashboxPage> {
 
   @override
   Widget build(BuildContext context) {
-    final desktop = MediaQuery.sizeOf(context).width >= 900;
+    final phone = MediaQuery.sizeOf(context).width < 700;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('الصندوق'),
-        toolbarHeight: desktop ? 0 : null,
-        actions: [
-          IconButton(
-            tooltip: 'تحديث حركة الصندوق',
-            onPressed: _refreshing ? null : _load,
-            icon: const Icon(Icons.refresh_rounded),
-          ),
-        ],
-      ),
+      appBar: AppBar(toolbarHeight: 0),
       body: SafeArea(
         child: NineSoftResponsiveBody(
           child: RefreshIndicator(
@@ -270,11 +260,12 @@ class _CashboxPageState extends State<CashboxPage> {
             child: ListView(
               children: [
                 NineSoftEntryHeading(
-                  title: 'الصندوق',
-                  subtitle:
-                      'الرصيد النقدي وحركات القبض والصرف من القيود المرحلة',
+                  title: phone ? 'الصندوق والحسابات البنكية' : 'الصندوق',
+                  subtitle: phone
+                      ? 'الأرصدة والحركات والتحويلات'
+                      : 'الرصيد النقدي وحركات القبض والصرف من القيود المرحلة',
                   icon: Icons.point_of_sale_rounded,
-                  accent: NizamiColors.green,
+                  accent: NizamiColors.blue,
                   actions: [
                     OutlinedButton.icon(
                       key: const Key('cashbox-refresh-action'),
@@ -282,19 +273,19 @@ class _CashboxPageState extends State<CashboxPage> {
                       icon: const Icon(Icons.refresh_rounded),
                       label: const Text('تحديث'),
                     ),
-                    if (_canCreateReceipt)
+                    if (!phone && _canCreateReceipt)
                       FilledButton.icon(
                         onPressed: () => _openDocumentModule(receipt: true),
                         icon: const Icon(Icons.south_west_rounded),
                         label: const Text('سند قبض'),
                       ),
-                    if (_canCreatePayment)
+                    if (!phone && _canCreatePayment)
                       FilledButton.tonalIcon(
                         onPressed: () => _openDocumentModule(receipt: false),
                         icon: const Icon(Icons.north_east_rounded),
                         label: const Text('سند صرف'),
                       ),
-                    OutlinedButton.icon(
+                    if (!phone) OutlinedButton.icon(
                       onPressed: () => Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (_) => AccountTransferPage(
@@ -311,10 +302,10 @@ class _CashboxPageState extends State<CashboxPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: phone ? 8 : 14),
                 NineSoftEntrySection(
-                  title: 'نطاق الصندوق',
-                  subtitle: 'حدد الفرع والفترة والحساب النقدي',
+                  title: phone ? 'الفلترة' : 'نطاق الصندوق',
+                  subtitle: phone ? 'الفترة والحساب' : 'حدد الفرع والفترة والحساب النقدي',
                   icon: Icons.tune_rounded,
                   child: NineSoftEntryFieldGrid(
                     maxColumns: 3,
@@ -396,7 +387,7 @@ class _CashboxPageState extends State<CashboxPage> {
                         ? 4
                         : constraints.maxWidth >= 580
                         ? 2
-                        : 1;
+                        : 2;
                     final width =
                         (constraints.maxWidth - ((columns - 1) * 10)) / columns;
                     return Wrap(
@@ -453,7 +444,7 @@ class _CashboxPageState extends State<CashboxPage> {
                 NineSoftEntrySection(
                   key: const Key('cashbox-movements-section'),
                   title: 'حركة الصندوق',
-                  subtitle: 'القبض والصرف كما رُحّلا في القيود المحاسبية',
+                  subtitle: phone ? 'آخر الحركات' : 'القبض والصرف كما رُحّلا في القيود المحاسبية',
                   icon: Icons.receipt_long_outlined,
                   padding: const EdgeInsets.all(12),
                   child: _body(),

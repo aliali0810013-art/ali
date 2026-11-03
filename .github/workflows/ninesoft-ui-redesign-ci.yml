@@ -1,0 +1,128 @@
+name: NineSoft UI Redesign CI
+
+on:
+  push:
+    branches: [ui-redesign]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  flutter:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/nizami_app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+          cache: true
+      - name: Flutter version
+        run: flutter --version
+      - name: Clean
+        run: flutter clean
+      - name: Resolve dependencies
+        run: flutter pub get
+      - name: Format verification
+        id: format_check
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          dart format --set-exit-if-changed .
+          code=$?
+          git diff --name-only > /tmp/ninesoft-format-changes.txt
+          exit $code
+      - name: Restore formatter workspace changes
+        shell: bash
+        run: git reset --hard HEAD
+      - name: Analyze
+        run: flutter analyze
+      - name: Test
+        run: flutter test
+      - name: Build web
+        run: flutter build web --release --dart-define=NINESOFT_API_BASE_URL=https://ninesoft.qodynex.tech/api/v1
+      - name: Capture deterministic sales actual
+        run: timeout 120s flutter test test/reference_screenshot_test.dart --dart-define=NINESOFT_CAPTURE_SCREENSHOTS=true
+      - name: Upload visual comparison evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ninesoft-visual-comparison-evidence
+          if-no-files-found: warn
+          path: |
+            apps/nizami_app/test/captures/*.png
+            apps/nizami_app/test/failures/**
+      - name: Build local preview package
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd ../..
+          rm -rf /tmp/NineSoft-UI-Local-Preview
+          mkdir -p /tmp/NineSoft-UI-Local-Preview/build
+          mkdir -p /tmp/NineSoft-UI-Local-Preview/screenshots
+          cp -a apps/nizami_app/build/web /tmp/NineSoft-UI-Local-Preview/build/web
+          cp START_PREVIEW.ps1 /tmp/NineSoft-UI-Local-Preview/
+          cp PRODUCTION_BASELINE_AR.md /tmp/NineSoft-UI-Local-Preview/
+          cp PROTECTED_FILES_REPORT_AR.md /tmp/NineSoft-UI-Local-Preview/
+          cp KNOWN_ISSUES_AR.md /tmp/NineSoft-UI-Local-Preview/
+          cp DELIVERY_INFO.txt /tmp/NineSoft-UI-Local-Preview/
+          echo "Last Commit: $GITHUB_SHA" >> /tmp/NineSoft-UI-Local-Preview/DELIVERY_INFO.txt
+          echo "CI Run: $GITHUB_RUN_ID" >> /tmp/NineSoft-UI-Local-Preview/DELIVERY_INFO.txt
+          if [ -f /tmp/ninesoft-format-changes.txt ]; then cp /tmp/ninesoft-format-changes.txt /tmp/NineSoft-UI-Local-Preview/FORMAT_CHANGED_FILES.txt; fi
+          cp CHANGES_AR.md /tmp/NineSoft-UI-Local-Preview/
+          cp TEST_RESULTS_AR.md /tmp/NineSoft-UI-Local-Preview/
+          cat >> /tmp/NineSoft-UI-Local-Preview/TEST_RESULTS_AR.md <<EOF
+
+          ## فحص حزمة المعاينة المحلية النهائي
+
+          - Commit: $GITHUB_SHA
+          - flutter clean: PASS
+          - flutter pub get: PASS
+          - dart format --set-exit-if-changed .: ${{ steps.format_check.outcome }}
+          - ملاحظة التنسيق: لم تُحفظ تغييرات formatter؛ أُعيد workspace إلى HEAD لحماية ملفات API/Sync/Accounting غير المطلوبة للواجهة.
+          - flutter analyze: PASS
+          - flutter test: PASS
+          - flutter build web --release: PASS
+          - deterministic sales screenshot capture: PASS
+          - original-reference pixel comparison: NOT YET CLAIMED
+          - Hostinger deployment: NOT PERFORMED
+          - main merge: NOT PERFORMED
+          - Production accounting parity: NOT CLAIMED
+          EOF
+          cp apps/nizami_app/test/goldens/*.png /tmp/NineSoft-UI-Local-Preview/screenshots/
+          test -f /tmp/NineSoft-UI-Local-Preview/build/web/index.html
+          cd /tmp
+          zip -qr NineSoft-UI-Local-Preview.zip NineSoft-UI-Local-Preview
+          sha256sum NineSoft-UI-Local-Preview.zip > NineSoft-UI-Local-Preview.sha256
+      - name: Archive current source
+        shell: bash
+        run: |
+          cd ../..
+          git archive --format=zip -o /tmp/NineSoft-ui-redesign-source.zip HEAD
+      - name: Upload local preview package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ninesoft-ui-local-preview
+          path: |
+            /tmp/NineSoft-UI-Local-Preview.zip
+            /tmp/NineSoft-UI-Local-Preview.sha256
+      - name: Upload source package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ninesoft-ui-redesign-source
+          path: /tmp/NineSoft-ui-redesign-source.zip
+      - name: Upload web preview build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ninesoft-ui-redesign-web
+          path: apps/nizami_app/build/web
+      - name: Upload reference screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: ninesoft-reference-screenshots
+          path: apps/nizami_app/test/goldens/*.png

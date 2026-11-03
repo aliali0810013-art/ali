@@ -679,18 +679,22 @@ class _ReturnWorkspacePageState extends State<ReturnWorkspacePage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         NineSoftEntryHeading(
-          title: widget.purchase ? 'مرتجع مشتريات مباشر' : 'مرتجع مبيعات مباشر',
-          subtitle: 'حدد الأصناف والكميات وطريقة التسوية، ثم اعتمد المستند',
+          title: widget.purchase ? 'مرتجع مشتريات' : 'مرتجع مبيعات',
+          subtitle: desktop
+              ? 'حدد الأصناف والكميات وطريقة التسوية، ثم اعتمد المستند'
+              : 'إنشاء مرتجع جديد',
           icon: Icons.assignment_return_rounded,
-          status: 'إنشاء مرتجع',
+          status: desktop ? 'إنشاء مرتجع' : 'مرتجع جديد',
           accent: widget.purchase ? NizamiColors.amber : NizamiColors.red,
         ),
-        const SizedBox(height: 14),
+        SizedBox(height: desktop ? 14 : 8),
         NineSoftEntrySection(
           title: 'الأصناف المرتجعة',
-          subtitle: 'تدرج الحقول على الهاتف، وجدول مختصر على الكمبيوتر',
+          subtitle: desktop
+              ? 'تدرج الحقول على الهاتف، وجدول مختصر على الكمبيوتر'
+              : 'الصنف والكمية والسعر',
           icon: Icons.widgets_outlined,
-          step: '01',
+          step: desktop ? '01' : null,
           accent: NizamiColors.blue,
           action: IconButton(
             tooltip: 'إضافة سطر',
@@ -751,12 +755,12 @@ class _ReturnWorkspacePageState extends State<ReturnWorkspacePage> {
             ],
           ),
         ),
-        const SizedBox(height: 14),
+        SizedBox(height: desktop ? 14 : 8),
         NineSoftEntrySection(
-          title: 'تسوية المرتجع',
-          subtitle: 'اختر نقدًا أو آجلًا، واكتب سبب الإرجاع',
+          title: 'التسوية',
+          subtitle: desktop ? 'اختر نقدًا أو آجلًا، واكتب سبب الإرجاع' : 'طريقة التسوية وسبب المرتجع',
           icon: Icons.account_balance_wallet_outlined,
-          step: '02',
+          step: desktop ? '02' : null,
           accent: NizamiColors.green,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -811,8 +815,8 @@ class _ReturnWorkspacePageState extends State<ReturnWorkspacePage> {
               TextField(
                 controller: _reason,
                 enabled: !_posting,
-                minLines: 2,
-                maxLines: 3,
+                minLines: desktop ? 2 : 1,
+                maxLines: desktop ? 3 : 2,
                 maxLength: 500,
                 decoration: const InputDecoration(
                   labelText: 'سبب المرتجع',
@@ -844,7 +848,7 @@ class _ReturnWorkspacePageState extends State<ReturnWorkspacePage> {
             ],
           ),
         ),
-        const SizedBox(height: 13),
+        SizedBox(height: desktop ? 13 : 8),
         NineSoftEntryFooter(
           onSave: _posting || _preparing || _initializing || !_canPost
               ? null
@@ -1226,19 +1230,7 @@ class _ReturnWorkspacePageState extends State<ReturnWorkspacePage> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.purchase ? 'مرتجعات المشتريات' : 'مرتجعات المبيعات',
-          ),
-          toolbarHeight: desktop ? 0 : null,
-          actions: [
-            IconButton(
-              onPressed: _loading ? null : _load,
-              icon: const Icon(Icons.refresh_rounded),
-              tooltip: 'تحديث',
-            ),
-          ],
-        ),
+        appBar: AppBar(toolbarHeight: 0),
         body: SafeArea(
           child: NineSoftResponsiveBody(
             child: Column(

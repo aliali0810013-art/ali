@@ -62,18 +62,20 @@ void main() {
     final overviewDelegate =
         overviewGrid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
     expect(overviewDelegate.crossAxisCount, 2);
-    final productsShortcut = find.descendant(
+    final operationsShortcut = find.descendant(
       of: find.byType(NineSoftMobileDock),
-      matching: find.text('المخزون'),
+      matching: find.text('العمليات'),
     );
-    expect(productsShortcut, findsOneWidget);
-    await tester.tap(productsShortcut);
+    expect(operationsShortcut, findsOneWidget);
+    await tester.tap(operationsShortcut);
+    await tester.pumpAndSettle();
+    expect(find.byType(NineSoftAppLauncher), findsOneWidget);
+    final productsApp = find.byKey(const Key('launcher-app-products'));
+    expect(productsApp, findsOneWidget);
+    await tester.tap(productsApp);
     await tester.pumpAndSettle();
     expect(find.byType(NineSoftMobileDock), findsOneWidget);
-    expect(
-      find.text('إدارة صنف والبحث والتصفية من شاشة واحدة'),
-      findsOneWidget,
-    );
+    expect(find.text('الأصناف'), findsWidgets);
   });
 
   testWidgets('dashboard child shortcut opens the existing receipt editor', (
@@ -153,7 +155,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('ابدأ'));
+    await tester.tap(find.text('العمليات'));
     await tester.pumpAndSettle();
     expect(find.byType(NineSoftAppLauncher), findsOneWidget);
     expect(find.byKey(const Key('ninesoft-left-app-drawer')), findsOneWidget);

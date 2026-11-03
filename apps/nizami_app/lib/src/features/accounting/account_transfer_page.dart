@@ -143,7 +143,7 @@ class _AccountTransferPageState extends State<AccountTransferPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('التحويل بين الخزائن والحسابات')),
+    appBar: AppBar(toolbarHeight: 0),
     body: SafeArea(
       child: NineSoftResponsiveBody(
         child: ListView(

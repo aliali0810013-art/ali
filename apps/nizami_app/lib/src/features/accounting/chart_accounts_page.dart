@@ -16,16 +16,19 @@ class ChartAccountsPage extends StatefulWidget {
     required this.token,
     required this.branchIds,
     required this.roleCode,
+    this.chartAccountsApi,
   });
   final String token;
   final List<String> branchIds;
   final String roleCode;
+  final ChartAccountsApi? chartAccountsApi;
   @override
   State<ChartAccountsPage> createState() => _ChartAccountsPageState();
 }
 
 class _ChartAccountsPageState extends State<ChartAccountsPage> {
-  late final ChartAccountsApi _api = ChartAccountsApi(widget.token);
+  late final ChartAccountsApi _api =
+      widget.chartAccountsApi ?? ChartAccountsApi(widget.token);
   List<ChartAccount> _items = [];
   String? _branchId;
   bool _loading = true;
@@ -116,13 +119,15 @@ class _ChartAccountsPageState extends State<ChartAccountsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final desktop = MediaQuery.sizeOf(context).width >= 900;
+    final width = MediaQuery.sizeOf(context).width;
+    final desktop = width >= 900;
+    final phone = width < 700;
     final visibleItems = _visibleItems;
     final totals = chartRootTotals(_items);
     return Scaffold(
       appBar: AppBar(
         title: const Text('شجرة الحسابات'),
-        toolbarHeight: desktop ? 0 : null,
+        toolbarHeight: 0,
         actions: [
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh_rounded)),
         ],
@@ -147,7 +152,7 @@ class _ChartAccountsPageState extends State<ChartAccountsPage> {
                 children: [
                   NineSoftPageHeader(
                     title: 'شجرة الحسابات',
-                    subtitle: 'كل حسابات المنشأة مرتبة من الرئيسي إلى الفرعي',
+                    subtitle: phone ? 'إدارة الحسابات والتصنيفات' : 'كل حسابات المنشأة مرتبة من الرئيسي إلى الفرعي',
                     icon: Icons.account_tree_rounded,
                     color: NizamiColors.blue,
                     actions: [
@@ -158,15 +163,18 @@ class _ChartAccountsPageState extends State<ChartAccountsPage> {
                       ),
                       if (widget.roleCode == 'owner' && _branchId != null)
                         FilledButton.icon(
+                          key: const Key('chart-account-add-action'),
                           onPressed: () => _edit(),
                           icon: const Icon(Icons.add_rounded),
                           label: const Text('إضافة حساب'),
                         ),
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  _quickGuide(),
-                  const SizedBox(height: 12),
+                  SizedBox(height: phone ? 8 : 14),
+                  if (!phone) ...[
+                    _quickGuide(),
+                    const SizedBox(height: 12),
+                  ],
                   if (widget.branchIds.length > 1)
                     Padding(
                       padding: const EdgeInsets.all(12),
@@ -188,7 +196,7 @@ class _ChartAccountsPageState extends State<ChartAccountsPage> {
                         },
                       ),
                     ),
-                  Align(
+                  if (!phone) Align(
                     alignment: AlignmentDirectional.centerStart,
                     child: TextButton.icon(
                       onPressed: () =>
@@ -203,7 +211,7 @@ class _ChartAccountsPageState extends State<ChartAccountsPage> {
                       ),
                     ),
                   ),
-                  if (_showTotals)
+                  if (phone || _showTotals)
                     Wrap(
                       spacing: 6,
                       runSpacing: 6,
@@ -700,19 +708,18 @@ class _ChartAccountsPageState extends State<ChartAccountsPage> {
     String? parentId = account?.parentId ?? parent?.id;
     var posting = account?.allowPosting ?? true;
     var active = account?.active ?? true;
-    final save = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (_, localSet) => AlertDialog(
-          title: Text(account == null ? 'إضافة حساب' : 'تعديل الحساب'),
-          content: SizedBox(
-            width: 560,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  NineSoftEntryHeading(
+    final save = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => StatefulBuilder(
+          builder: (pageContext, localSet) => Scaffold(
+            key: const ValueKey('chart-account-inline-editor'),
+            appBar: AppBar(toolbarHeight: 0),
+            body: SafeArea(
+              child: NineSoftResponsiveBody(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  children: [
+NineSoftEntryHeading(
                     title: account == null
                         ? 'إضافة حساب محاسبي'
                         : 'تحرير حساب محاسبي',
@@ -904,28 +911,49 @@ class _ChartAccountsPageState extends State<ChartAccountsPage> {
                       ],
                     ),
                   ),
-                ],
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        if (account != null && !account.isSystem) ...[
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () async {
+                                Navigator.pop(pageContext, false);
+                                await _remove(account);
+                              },
+                              icon: const Icon(Icons.delete_outline),
+                              label: const Text('حذف'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: NizamiColors.red,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                        ],
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => Navigator.pop(pageContext, false),
+                            icon: const Icon(Icons.close_rounded),
+                            label: const Text('إلغاء'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          flex: 2,
+                          child: FilledButton.icon(
+                            onPressed: () => Navigator.pop(pageContext, true),
+                            icon: const Icon(Icons.save_outlined),
+                            label: const Text('حفظ الحساب'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                  ],
+                ),
               ),
             ),
           ),
-          actions: [
-            if (account != null && !account.isSystem)
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(dialogContext, false);
-                  _remove(account);
-                },
-                child: const Text('حذف', style: TextStyle(color: Colors.red)),
-              ),
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('إلغاء'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('حفظ'),
-            ),
-          ],
         ),
       ),
     );

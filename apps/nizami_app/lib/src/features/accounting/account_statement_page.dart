@@ -331,18 +331,25 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
   @override
   Widget build(BuildContext context) {
     final selectedIsContact = _selected?['kind'] == 'contact';
+    final phone = MediaQuery.sizeOf(context).width < 700;
     return Scaffold(
-      appBar: AppBar(title: const Text('كشف الحساب الموحد')),
+      appBar: AppBar(toolbarHeight: 0),
       body: SafeArea(
         child: NineSoftResponsiveBody(
           child: ListView(
             children: [
               NineSoftEntryHeading(
-                title: 'كشف الحساب الموحد',
+                title: widget.lockContact
+                    ? 'كشف الحساب'
+                    : (phone ? 'دفتر الأستاذ' : 'كشف الحساب الموحد'),
                 subtitle: widget.lockContact
                     ? '${widget.initialContactName ?? 'الطرف'} — حركة ورصيد ومستندات مفصلة'
-                    : 'أي حساب أو عميل أو مورد — حركة ورصيد افتتاحي وختامي',
-                icon: Icons.manage_search_rounded,
+                    : (phone
+                          ? 'حركة الحساب والمدين والدائن والرصيد'
+                          : 'أي حساب أو عميل أو مورد — حركة ورصيد افتتاحي وختامي'),
+                icon: widget.lockContact
+                    ? Icons.manage_search_rounded
+                    : Icons.menu_book_rounded,
                 accent: NizamiColors.purple,
                 actions: [
                   OutlinedButton.icon(
@@ -364,11 +371,11 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: phone ? 8 : 12),
               if (!widget.lockContact)
                 NineSoftEntrySection(
-                  title: 'معايير كشف الحساب',
-                  subtitle: 'اختر الحساب والفترة لعرض الحركة والرصيد الفعلي',
+                  title: phone ? 'الحساب والفترة' : 'معايير كشف الحساب',
+                  subtitle: phone ? 'اختر الحساب ثم الفترة' : 'اختر الحساب والفترة لعرض الحركة والرصيد الفعلي',
                   icon: Icons.tune_rounded,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -469,9 +476,10 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
               if (_statement.isNotEmpty) _statementSummary(),
               const SizedBox(height: 10),
               NineSoftEntrySection(
-                title: 'تفاصيل كشف الحساب',
-                subtitle:
-                    'بيان كل مستند مدين أو دائن مع الرصيد وإمكانية فتح المستند الأصلي',
+                title: widget.lockContact ? 'تفاصيل كشف الحساب' : (phone ? 'حركة الحساب' : 'تفاصيل كشف الحساب'),
+                subtitle: phone
+                    ? 'التاريخ والبيان والمدين والدائن والرصيد'
+                    : 'بيان كل مستند مدين أو دائن مع الرصيد وإمكانية فتح المستند الأصلي',
                 icon: Icons.table_rows_outlined,
                 child: _statementResults(),
               ),

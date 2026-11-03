@@ -99,8 +99,12 @@ void main() {
 
     expect(find.byType(PopupMenuButton<String>), findsNothing);
     expect(find.byKey(const Key('dashboard-profile-action')), findsOneWidget);
-    expect(find.byKey(const Key('dashboard-theme-action')), findsOneWidget);
-    expect(find.byKey(const Key('dashboard-logout-action')), findsOneWidget);
+    expect(
+      find.byKey(const Key('dashboard-notifications-action')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('dashboard-theme-action')), findsNothing);
+    expect(find.byKey(const Key('dashboard-logout-action')), findsNothing);
     expect(tester.takeException(), isNull);
 
     await tester.pumpWidget(const SizedBox.shrink());
