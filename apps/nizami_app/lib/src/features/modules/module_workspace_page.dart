@@ -3527,7 +3527,7 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
       appBar: AppBar(
         title: Text(widget.module.title),
         centerTitle: false,
-        toolbarHeight: desktop ? 0 : null,
+        toolbarHeight: 0,
         actions: [
           if (_exporting)
             const Padding(
