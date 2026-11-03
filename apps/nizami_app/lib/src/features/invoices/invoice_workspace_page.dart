@@ -2539,6 +2539,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
             border: Border.all(color: const Color(0xFFD6DFEB)),
           ),
           child: Row(
+            textDirection: TextDirection.ltr,
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.keyboard_arrow_down_rounded, size: 14),
@@ -2577,6 +2578,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
         border: Border.all(color: const Color(0xFFD6DFEB)),
       ),
       child: Row(
+        textDirection: TextDirection.ltr,
         mainAxisSize: MainAxisSize.min,
         children: [
           stepButton(
