@@ -2562,15 +2562,15 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
     final value = line.displayQuantity.replaceFirst(RegExp(r'\s+\S+$'), '');
     Widget stepButton(IconData icon, VoidCallback? onTap) => InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(5),
           child: SizedBox(
-            width: 20,
-            height: 24,
-            child: Icon(icon, size: 14, color: const Color(0xFF176DE5)),
+            width: 10,
+            height: 22,
+            child: Icon(icon, size: 10, color: const Color(0xFF176DE5)),
           ),
         );
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 1),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -2588,7 +2588,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
               value,
               textAlign: TextAlign.center,
               textDirection: TextDirection.ltr,
-              style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800),
+              style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800),
             ),
           ),
           stepButton(
