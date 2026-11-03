@@ -535,11 +535,15 @@ class NineSoftMobileDock extends StatelessWidget {
     required this.currentIndex,
     required this.onSelected,
     this.centerAction,
+    this.contextLabel = 'العمليات',
+    this.contextIcon = Icons.layers_outlined,
   });
 
   final int currentIndex;
   final ValueChanged<int> onSelected;
   final VoidCallback? centerAction;
+  final String contextLabel;
+  final IconData contextIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -579,8 +583,8 @@ class NineSoftMobileDock extends StatelessWidget {
             ),
             Expanded(
               child: _DockButton(
-                icon: Icons.layers_outlined,
-                label: 'العمليات',
+                icon: contextIcon,
+                label: contextLabel,
                 selected: currentIndex == 1,
                 onTap: () => onSelected(1),
               ),
