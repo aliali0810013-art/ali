@@ -13,7 +13,7 @@ class SalesInvoiceReferenceView extends StatelessWidget {
     required this.paymentModeField,
     required this.productSearchField,
     required this.barcodeField,
-    required this.lineEntryControls,
+    this.lineEntryControls,
     required this.linesTable,
     required this.notesField,
     required this.settlementField,
@@ -41,7 +41,7 @@ class SalesInvoiceReferenceView extends StatelessWidget {
   final Widget paymentModeField;
   final Widget productSearchField;
   final Widget barcodeField;
-  final Widget lineEntryControls;
+  final Widget? lineEntryControls;
   final Widget linesTable;
   final Widget notesField;
   final Widget settlementField;
@@ -108,12 +108,14 @@ class SalesInvoiceReferenceView extends StatelessWidget {
           onScanBarcode: locked ? null : onScanBarcode,
         ),
         const SizedBox(height: 10),
+        if (lineEntryControls != null) ...[
+          _Panel(child: lineEntryControls!),
+          const SizedBox(height: 10),
+        ],
         KeyedSubtree(
           key: const Key('invoice-section-lines'),
-          child: _Panel(child: lineEntryControls),
+          child: _Panel(padding: EdgeInsets.zero, child: linesTable),
         ),
-        const SizedBox(height: 10),
-        _Panel(padding: EdgeInsets.zero, child: linesTable),
         const SizedBox(height: 10),
         Row(
           children: [
@@ -316,22 +318,42 @@ class _SectionTitle extends StatelessWidget {
   final IconData icon;
 
   @override
-  Widget build(BuildContext context) => Row(
-        children: [
-          Expanded(child: Divider(color: Colors.blueGrey.shade100)),
-          const SizedBox(width: 12),
-          Icon(icon, color: SalesInvoiceReferenceView.navy, size: 24),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: const Color(0xFF071D47),
-                  fontWeight: FontWeight.w900,
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (context, constraints) {
+          final label = Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: SalesInvoiceReferenceView.navy, size: 22),
+              const SizedBox(width: 7),
+              Flexible(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: const Color(0xFF071D47),
+                        fontWeight: FontWeight.w900,
+                      ),
                 ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(child: Divider(color: Colors.blueGrey.shade100)),
-        ],
+              ),
+            ],
+          );
+          if (constraints.maxWidth < 520) {
+            return Align(
+              alignment: AlignmentDirectional.center,
+              child: label,
+            );
+          }
+          return Row(
+            children: [
+              Expanded(child: Divider(color: Colors.blueGrey.shade100)),
+              const SizedBox(width: 12),
+              Flexible(flex: 3, child: label),
+              const SizedBox(width: 12),
+              Expanded(child: Divider(color: Colors.blueGrey.shade100)),
+            ],
+          );
+        },
       );
 }
 
