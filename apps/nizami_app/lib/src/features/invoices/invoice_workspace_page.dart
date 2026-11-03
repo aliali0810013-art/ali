@@ -1827,6 +1827,16 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
           ),
           body: SafeArea(
             child: NineSoftResponsiveBody(
+              padding: EdgeInsetsDirectional.fromSTEB(
+                MediaQuery.sizeOf(context).width < NineSoftBreakpoints.compact
+                    ? 12
+                    : 20,
+                16,
+                MediaQuery.sizeOf(context).width < NineSoftBreakpoints.compact
+                    ? 12
+                    : 20,
+                0,
+              ),
               child: ListView(
                 key: const ValueKey('invoice-document-editor'),
                 children: [_editor()],
