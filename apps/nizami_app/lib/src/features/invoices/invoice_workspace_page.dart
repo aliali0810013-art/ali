@@ -2439,6 +2439,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
   }
 
   Widget _referenceLines() => NineSoftEntryLineTable(
+    forceTableOnMobile: true,
     lines: [
       for (var index = 0; index < _lines.length; index++)
         NineSoftEntryLineCells(
