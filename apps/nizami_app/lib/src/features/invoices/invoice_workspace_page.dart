@@ -53,6 +53,7 @@ class InvoiceWorkspacePage extends StatefulWidget {
     required this.tenantName,
     this.tenantId,
     required this.employeeName,
+    this.branchDisplayName,
     required this.token,
     required this.roleCode,
     required this.permissions,
@@ -73,6 +74,7 @@ class InvoiceWorkspacePage extends StatefulWidget {
   final String tenantName;
   final String? tenantId;
   final String employeeName;
+  final String? branchDisplayName;
   final String token;
   final String roleCode;
   final List<String> permissions;
@@ -470,7 +472,8 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       currency: 'YER',
       employeeName:
           value['creator_display_name']?.toString() ?? widget.employeeName,
-      branchLabel: 'الفرع ${_branches.indexOf(_branchId) + 1}',
+      branchLabel:
+          widget.branchDisplayName ?? 'الفرع ${_branches.indexOf(_branchId) + 1}',
       createdAt:
           DateTime.tryParse(value['occurred_at']?.toString() ?? '') ??
           DateTime.now(),
@@ -526,7 +529,8 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
           .toList(growable: false),
       currency: 'YER',
       employeeName: widget.employeeName,
-      branchLabel: 'الفرع ${_branches.indexOf(_branchId) + 1}',
+      branchLabel:
+          widget.branchDisplayName ?? 'الفرع ${_branches.indexOf(_branchId) + 1}',
       createdAt: createdAt ?? _now,
       paymentMode: _paymentMode,
       paidAmount: _paymentMode == 'credit'
