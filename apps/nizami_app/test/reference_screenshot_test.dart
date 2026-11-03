@@ -277,8 +277,8 @@ void main() {
                                         ),
                                         const PositionedDirectional(
                                           top: 9,
-                                          start: 18,
-                                          end: 18,
+                                          start: 46,
+                                          end: 46,
                                           child: Directionality(
                                             textDirection: TextDirection.ltr,
                                             child: Row(
@@ -334,6 +334,33 @@ void main() {
                                                   ),
                                                 ),
                                               ],
+                                            ),
+                                          ),
+                                        ),
+                                        Align(
+                                          alignment: Alignment.topCenter,
+                                          child: Container(
+                                            width: 120,
+                                            height: 28,
+                                            margin: const EdgeInsets.only(top: 7),
+                                            decoration: BoxDecoration(
+                                              color: Colors.black,
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            alignment:
+                                                AlignmentDirectional.centerEnd,
+                                            padding:
+                                                const EdgeInsetsDirectional.only(
+                                              end: 10,
+                                            ),
+                                            child: Container(
+                                              width: 7,
+                                              height: 7,
+                                              decoration: const BoxDecoration(
+                                                color: Color(0xFF07192F),
+                                                shape: BoxShape.circle,
+                                              ),
                                             ),
                                           ),
                                         ),
