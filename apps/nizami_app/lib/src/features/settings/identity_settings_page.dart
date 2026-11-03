@@ -186,7 +186,7 @@ class _IdentitySettingsPageState extends State<IdentitySettingsPage> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(phone ? 10 : 20),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 760),
               child: Form(
@@ -234,7 +234,7 @@ class _IdentitySettingsPageState extends State<IdentitySettingsPage> {
                               child: _logo == null
                                   ? Icon(
                                       Icons.storefront_rounded,
-                                      size: 48,
+                                      size: phone ? 34 : 48,
                                       color: Color(_color),
                                     )
                                   : null,
