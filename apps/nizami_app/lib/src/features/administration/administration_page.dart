@@ -454,7 +454,7 @@ class _AdministrationPageState extends State<AdministrationPage> {
                       accent: NizamiColors.purple,
                       child: _permissionsEditor(permissions, update),
                     ),
-                    SizedBox(height: phone ? 8 : 14),
+                    const SizedBox(height: 14),
                     Row(
                       children: [
                         Expanded(
