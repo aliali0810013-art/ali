@@ -463,61 +463,97 @@ class _PurchaseWorkspacePageState extends State<PurchaseWorkspacePage> {
     final reason = TextEditingController(text: 'دفعة للمورد');
     var channel = 'cash';
     var accountCode = _paymentAccounts.firstOrNull?.code ?? '';
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, update) => AlertDialog(
-          title: const Text('سند صرف للمورد'),
-          content: SizedBox(
-            width: 430,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '${invoice['supplier_name'] ?? ''} • ${compactDocumentNumber(invoice['number']?.toString() ?? '')}',
+    final confirmed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => StatefulBuilder(
+          builder: (pageContext, update) => Scaffold(
+            key: const ValueKey('purchase-supplier-payment-shell'),
+            appBar: AppBar(toolbarHeight: 0),
+            body: SafeArea(
+              child: NineSoftResponsiveBody(
+                child: ListView(
+                  children: [
+                    NineSoftEntryHeading(
+                      title: 'سند صرف للمورد',
+                      subtitle:
+                          '${invoice['supplier_name'] ?? ''} • ${compactDocumentNumber(invoice['number']?.toString() ?? '')}',
+                      icon: Icons.outbox_rounded,
+                      status: 'صرف',
+                      accent: NizamiColors.red,
+                    ),
+                    const SizedBox(height: 12),
+                    NineSoftEntrySection(
+                      title: 'بيانات السند',
+                      subtitle: 'المبلغ وحساب الصرف والبيان',
+                      icon: Icons.receipt_long_outlined,
+                      step: '01',
+                      accent: NizamiColors.blue,
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: amount,
+                            textDirection: TextDirection.ltr,
+                            keyboardType:
+                                const TextInputType.numberWithOptions(
+                                  decimal: true,
+                                ),
+                            inputFormatters: const [latinDigitFormatter],
+                            decoration: const InputDecoration(
+                              labelText: 'المبلغ',
+                              suffixText: 'YER',
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SearchableChartAccountField(
+                            accounts: _paymentAccounts,
+                            value: accountCode.isEmpty ? null : accountCode,
+                            label: 'حساب الصرف الفعلي',
+                            hint: 'ابحث عن الصندوق أو البنك أو المحفظة',
+                            onChanged: (value) => update(() {
+                              accountCode = value ?? '';
+                              channel = _channelForAccount(accountCode);
+                            }),
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: reason,
+                            maxLines: 2,
+                            decoration: const InputDecoration(
+                              labelText: 'البيان',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () =>
+                                Navigator.pop(pageContext, false),
+                            icon: const Icon(Icons.close_rounded),
+                            label: const Text('إلغاء'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          flex: 2,
+                          child: FilledButton.icon(
+                            onPressed: () =>
+                                Navigator.pop(pageContext, true),
+                            icon: const Icon(Icons.save_outlined),
+                            label: const Text('اعتماد السند'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: amount,
-                  textDirection: TextDirection.ltr,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  inputFormatters: const [latinDigitFormatter],
-                  decoration: const InputDecoration(
-                    labelText: 'المبلغ',
-                    suffixText: 'YER',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SearchableChartAccountField(
-                  accounts: _paymentAccounts,
-                  value: accountCode.isEmpty ? null : accountCode,
-                  label: 'حساب الصرف الفعلي',
-                  hint: 'ابحث عن الصندوق أو البنك أو المحفظة',
-                  onChanged: (value) => update(() {
-                    accountCode = value ?? '';
-                    channel = _channelForAccount(accountCode);
-                  }),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: reason,
-                  decoration: const InputDecoration(labelText: 'البيان'),
-                ),
-              ],
+              ),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('إلغاء'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('اعتماد السند'),
-            ),
-          ],
         ),
       ),
     );
