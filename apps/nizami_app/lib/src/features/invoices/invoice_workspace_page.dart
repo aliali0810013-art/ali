@@ -3004,7 +3004,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       customerField: customerField(),
       invoiceNumberField: readOnlyField(
         label: 'رقم الفاتورة *',
-        value: compactDocumentNumber(preview.displayNumber),
+        value: preview.displayNumber,
         icon: Icons.description_outlined,
         direction: TextDirection.ltr,
       ),
