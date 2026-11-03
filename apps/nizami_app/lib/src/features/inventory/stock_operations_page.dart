@@ -238,6 +238,7 @@ class _StockOperationsPageState extends State<StockOperationsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final phone = MediaQuery.sizeOf(context).width < 700;
     final selected = _selected;
     final current = (selected?['stock_quantity_milli'] as num?)?.toInt();
     final caption = widget.isTransfer
@@ -258,7 +259,7 @@ class _StockOperationsPageState extends State<StockOperationsPage> {
               NineSoftEntryHeading(
                 title: widget.isTransfer
                     ? 'تحويل المخزون بين الفروع'
-                    : 'الجرد والتسويات المحاسبية',
+                    : 'الجرد وتسوية المخزون',
                 subtitle: phone
                     ? (widget.isTransfer ? 'تحويل رصيد بين الفروع' : 'مطابقة الرصيد الفعلي وترحيل الفرق')
                     : caption,
@@ -269,8 +270,10 @@ class _StockOperationsPageState extends State<StockOperationsPage> {
               ),
               SizedBox(height: phone ? 8 : 12),
               NineSoftEntrySection(
-                title: 'بيانات الحركة',
-                subtitle: 'حدد المصدر والصنف والكمية ثم راجع سبب الحركة',
+                title: phone ? 'بيانات الجرد' : 'بيانات الحركة',
+                subtitle: phone
+                    ? 'الصنف والرصيد الفعلي والسبب'
+                    : 'حدد المصدر والصنف والكمية ثم راجع سبب الحركة',
                 icon: Icons.edit_note_outlined,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
