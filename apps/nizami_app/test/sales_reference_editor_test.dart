@@ -1190,6 +1190,54 @@ void main() {
       expect(line['price_overridden'], isTrue);
       expect(line['price_numerator_minor'], 41667);
       expect(line['price_denominator'], 1);
+
+      // Re-open the saved edit through the real history UI and verify that the
+      // same persisted values are loaded back into the editor.
+      await _pumpEditor(tester, transport: transport, width: 1440);
+      await tester.tap(find.byKey(const Key('invoice-history-open-primary')));
+      await tester.pumpAndSettle();
+      final reopenedRow = find.byKey(
+        Key('invoice-history-row-${edited.localOperationId}'),
+      );
+      expect(reopenedRow, findsOneWidget);
+      await tester.tap(
+        find.descendant(
+          of: reopenedRow,
+          matching: find.byIcon(Icons.edit_outlined),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final confirmation = find.byType(AlertDialog);
+      if (confirmation.evaluate().isNotEmpty) {
+        await tester.tap(
+          find.descendant(
+            of: confirmation,
+            matching: find.byType(FilledButton),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+      final modal = find.byKey(const Key('invoice-history-modal-content'));
+      if (modal.evaluate().isNotEmpty) {
+        Navigator.of(tester.element(modal)).pop();
+        await tester.pumpAndSettle();
+      }
+      expect(find.byKey(const Key('ninesoft-entry-line-row-0')), findsOneWidget);
+      final reopenedLine = find
+          .descendant(
+            of: find.byKey(const Key('ninesoft-entry-line-row-0')),
+            matching: find.byType(InkWell),
+          )
+          .first;
+      await tester.tap(reopenedLine);
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<TextField>(find.byKey(const Key('invoice-price-input')))
+            .controller
+            ?.text,
+        '416.67',
+      );
     },
   );
 }
