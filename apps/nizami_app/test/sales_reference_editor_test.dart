@@ -72,7 +72,7 @@ void main() {
     await _pumpEditor(tester, transport: transport, width: 1440);
     await _addBaseLine(tester);
 
-    await tester.tap(find.text('نقدًا').first);
+    await tester.tap(find.text('نقدي').first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('آجل').last);
     await tester.pumpAndSettle();
@@ -334,7 +334,7 @@ void main() {
     );
     await _addBaseLine(tester);
 
-    final primary = tester.widget<TextButton>(
+    final primary = tester.widget<FilledButton>(
       find.byKey(const Key('ninesoft-summary-primary')),
     );
     expect(primary.onPressed, isNull);
@@ -630,7 +630,7 @@ void main() {
     expect(find.byIcon(Icons.delete_outline), findsOneWidget);
     expect(
       tester
-          .widget<TextButton>(find.byKey(const Key('ninesoft-summary-primary')))
+          .widget<FilledButton>(find.byKey(const Key('ninesoft-summary-primary')))
           .onPressed,
       isNull,
     );
