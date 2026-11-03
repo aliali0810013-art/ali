@@ -2507,7 +2507,9 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
             textDirection: TextDirection.ltr,
           ),
           discount: Text(
-            _lines[index].lineDiscountMinor == 0 ? '0%' : 'خصم',
+            _lines[index].lineDiscountMinor == 0 || _lines[index].grossMinor <= 0
+                ? '0%'
+                : '${((_lines[index].lineDiscountMinor * 100) / _lines[index].grossMinor).round()}%',
             textDirection: TextDirection.ltr,
           ),
           total: Text(
