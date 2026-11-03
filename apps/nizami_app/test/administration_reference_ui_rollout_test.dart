@@ -139,7 +139,9 @@ void main() {
     await tester.tap(action);
     await tester.pumpAndSettle();
 
-    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('إضافة مستخدم'), findsOneWidget);
+    expect(find.byType(NineSoftEntryHeading), findsOneWidget);
     await tester.tap(find.text('إلغاء').last);
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
@@ -206,7 +208,7 @@ void main() {
     );
     await tester.enterText(find.widgetWithText(TextField, 'كلمة المرور'), '1');
 
-    await tester.tap(find.text('إنشاء'));
+    await tester.tap(find.text('إنشاء المستخدم'));
     await tester.pumpAndSettle();
 
     expect(transport.lastUserRequest?['password'], '1');
