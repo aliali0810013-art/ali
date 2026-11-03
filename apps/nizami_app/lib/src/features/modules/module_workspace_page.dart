@@ -4939,6 +4939,7 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
   Widget build(BuildContext context) {
     final desktop = MediaQuery.sizeOf(context).width >= 900;
     return Scaffold(
+      key: const ValueKey('module-record-document-editor'),
       appBar: AppBar(toolbarHeight: 0),
       body: SafeArea(
         child: NineSoftResponsiveBody(
