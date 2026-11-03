@@ -544,8 +544,7 @@ class _MoneyRow extends StatelessWidget {
             : const Color(0xFF17233D));
     return LayoutBuilder(
       builder: (context, constraints) {
-        final compact =
-            MediaQuery.sizeOf(context).width < 700 || constraints.maxWidth < 170;
+        final compact = constraints.maxWidth < 170;
         final title = Row(
           mainAxisSize: MainAxisSize.min,
           children: [
