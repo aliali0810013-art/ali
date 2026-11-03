@@ -3671,6 +3671,22 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
                       horizontalPadding,
                       12,
                       horizontalPadding,
+                      10,
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: NineSoftSearchField(
+                        key: ValueKey('search-${widget.module.key}'),
+                        controller: _searchController,
+                        hintText: 'بحث في ${widget.module.title} بالاسم أو الرقم أو البيان...',
+                        onChanged: (value) => setState(() => _query = value),
+                      ),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
+                      horizontalPadding,
+                      12,
+                      horizontalPadding,
                       12,
                     ),
                     sliver: SliverToBoxAdapter(
@@ -3746,35 +3762,6 @@ class _ModuleWorkspacePageState extends State<ModuleWorkspacePage> {
                               icon: const Icon(Icons.close_rounded),
                             ),
                         ],
-                      ),
-                    ),
-                  ),
-                  SliverPadding(
-                    padding: EdgeInsets.fromLTRB(
-                      horizontalPadding,
-                      4,
-                      horizontalPadding,
-                      12,
-                    ),
-                    sliver: SliverToBoxAdapter(
-                      child: TextField(
-                        key: ValueKey('search-${widget.module.key}'),
-                        controller: _searchController,
-                        onChanged: (value) => setState(() => _query = value),
-                        decoration: InputDecoration(
-                          hintText: 'ابحث في ${widget.module.title}',
-                          prefixIcon: const Icon(Icons.search_rounded),
-                          suffixIcon: _query.isEmpty
-                              ? null
-                              : IconButton(
-                                  tooltip: 'مسح البحث',
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    setState(() => _query = '');
-                                  },
-                                  icon: const Icon(Icons.clear_rounded),
-                                ),
-                        ),
                       ),
                     ),
                   ),
