@@ -332,7 +332,7 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
   Widget build(BuildContext context) {
     final selectedIsContact = _selected?['kind'] == 'contact';
     return Scaffold(
-      appBar: AppBar(title: const Text('كشف الحساب الموحد')),
+      appBar: AppBar(toolbarHeight: 0),
       body: SafeArea(
         child: NineSoftResponsiveBody(
           child: ListView(
