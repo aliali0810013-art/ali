@@ -56,10 +56,8 @@ void main() {
     final field = find.byType(SearchableChartAccountField);
     expect(field, findsOneWidget);
     await tester.ensureVisible(field);
-    final accountToggle = find.descendant(
-      of: field,
-      matching: find.byType(InkWell),
-    ).first;
+    final accountToggle = find.bySemanticsLabel('حساب التحصيل');
+    expect(accountToggle, findsOneWidget);
     await tester.tap(accountToggle);
     await tester.pumpAndSettle();
 
