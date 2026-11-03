@@ -2535,15 +2535,18 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       number: _invoice.number,
       createdAt: _invoice.createdAt,
     );
+    final phone = MediaQuery.sizeOf(context).width < 700;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         NineSoftEntryHeading(
-          title: 'فاتورة بيع جديدة',
-          subtitle: 'إدخال سريع: اختر الصنف والوحدة والكمية ثم احفظ مرة واحدة',
-          icon: Icons.point_of_sale_rounded,
-          status: 'بيع / نقطة بيع',
-          accent: NizamiColors.teal,
+          title: 'المبيعات',
+          subtitle: phone
+              ? 'تحرير فاتورة بيع'
+              : 'إدخال سريع: اختر الصنف والوحدة والكمية ثم احفظ مرة واحدة',
+          icon: Icons.shopping_cart_checkout_rounded,
+          status: phone ? 'فاتورة بيع' : 'بيع / نقطة بيع',
+          accent: NizamiColors.blue,
           actions: [
             OutlinedButton.icon(
               key: const Key('invoice-history-open-primary'),
@@ -2558,27 +2561,29 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
             ),
           ],
         ),
-        const SizedBox(height: 10),
-        _invoiceShortcutStrip(),
-        const SizedBox(height: 10),
-        const NineSoftEntrySteps(
-          activeIndex: 1,
-          steps: [
-            NineSoftEntryStepData(
-              title: 'بيانات المستند',
-              subtitle: 'العميل والدفع',
-            ),
-            NineSoftEntryStepData(
-              title: 'الأصناف',
-              subtitle: 'بحث وإضافة سريعة',
-            ),
-            NineSoftEntryStepData(
-              title: 'المراجعة',
-              subtitle: 'الإجمالي والتسوية',
-            ),
-            NineSoftEntryStepData(title: 'الحفظ', subtitle: 'ترحيل تلقائي'),
-          ],
-        ),
+        const SizedBox(height: 8),
+        if (!phone) ...[
+          _invoiceShortcutStrip(),
+          const SizedBox(height: 10),
+          const NineSoftEntrySteps(
+            activeIndex: 1,
+            steps: [
+              NineSoftEntryStepData(
+                title: 'بيانات المستند',
+                subtitle: 'العميل والدفع',
+              ),
+              NineSoftEntryStepData(
+                title: 'الأصناف',
+                subtitle: 'بحث وإضافة سريعة',
+              ),
+              NineSoftEntryStepData(
+                title: 'المراجعة',
+                subtitle: 'الإجمالي والتسوية',
+              ),
+              NineSoftEntryStepData(title: 'الحفظ', subtitle: 'ترحيل تلقائي'),
+            ],
+          ),
+        ],
         _deliveryBanner(),
         NineSoftDocumentEditorScaffold(
           main: IgnorePointer(
@@ -2590,31 +2595,36 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
                 children: [
                   NineSoftEntrySection(
                     key: const Key('invoice-section-document'),
-                    title: 'بيانات الفاتورة والعميل',
-                    subtitle: 'حدد العميل وطريقة السداد قبل اعتماد المستند',
-                    step: '01',
-                    icon: Icons.account_balance_wallet_outlined,
-                    accent: NizamiColors.purple,
+                    title: phone ? 'بيانات الفاتورة' : 'بيانات الفاتورة والعميل',
+                    subtitle: phone
+                        ? 'العميل وطريقة السداد'
+                        : 'حدد العميل وطريقة السداد قبل اعتماد المستند',
+                    step: phone ? null : '01',
+                    icon: Icons.receipt_long_outlined,
+                    accent: NizamiColors.blue,
                     child: _paymentSection(),
                   ),
-                  const SizedBox(height: 13),
+                  SizedBox(height: phone ? 8 : 13),
                   NineSoftEntrySection(
                     key: const Key('invoice-section-lines'),
-                    title: 'إدخال الأصناف',
-                    subtitle:
-                        'امسح الباركود أو ابحث عن الصنف، ثم أدخل الكمية والسعر',
-                    step: '02',
+                    title: phone ? 'الأصناف' : 'إدخال الأصناف',
+                    subtitle: phone
+                        ? 'ابحث بالاسم أو الكود أو امسح الباركود'
+                        : 'امسح الباركود أو ابحث عن الصنف، ثم أدخل الكمية والسعر',
+                    step: phone ? null : '02',
                     icon: Icons.inventory_2_outlined,
                     accent: NizamiColors.blue,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const NineSoftEntryHint(
-                          text:
-                              'قارئ الباركود يُدخل الصنف مباشرة. ويمكن استخدام Enter لإضافة البند دون لمس الشاشة.',
-                          icon: Icons.keyboard_rounded,
-                        ),
-                        const SizedBox(height: 11),
+                        if (!phone) ...[
+                          const NineSoftEntryHint(
+                            text:
+                                'قارئ الباركود يُدخل الصنف مباشرة. ويمكن استخدام Enter لإضافة البند دون لمس الشاشة.',
+                            icon: Icons.keyboard_rounded,
+                          ),
+                          const SizedBox(height: 11),
+                        ],
                         NineSoftScannerStrip(
                           input: TextField(
                             key: const Key('invoice-barcode-input'),
@@ -2922,11 +2932,11 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 13),
+                  SizedBox(height: phone ? 8 : 13),
                   NineSoftEntrySection(
                     key: const Key('invoice-section-notes'),
-                    title: 'ملاحظات إضافية',
-                    step: '03',
+                    title: phone ? 'ملاحظات' : 'ملاحظات إضافية',
+                    step: phone ? null : '03',
                     icon: Icons.sticky_note_2_outlined,
                     child: TextField(
                       key: const Key('invoice-notes-input'),
