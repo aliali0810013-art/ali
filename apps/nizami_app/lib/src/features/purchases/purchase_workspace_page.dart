@@ -1269,6 +1269,7 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
     final mobile = MediaQuery.sizeOf(context).width < 600;
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: mobile ? 0 : null,
         title: Text(
           widget.initialInvoice == null
               ? 'فاتورة شراء جديدة'
@@ -1290,20 +1291,21 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
         key: _formKey,
         child: ListView(
           padding: EdgeInsets.symmetric(
-            horizontal: mobile ? 16 : 40,
-            vertical: 18,
+            horizontal: mobile ? 10 : 40,
+            vertical: mobile ? 8 : 18,
           ),
           children: [
-            const NineSoftEntryHeading(
-              title: 'فاتورة مشتريات جديدة',
-              subtitle:
-                  'حدد المورد، أدخل الأصناف والتكلفة، ثم راجع الإجمالي قبل الترحيل',
-              icon: Icons.shopping_cart_checkout_rounded,
-              status: 'توريد / مشتريات',
+            NineSoftEntryHeading(
+              title: 'المشتريات',
+              subtitle: mobile
+                  ? 'فاتورة شراء'
+                  : 'حدد المورد، أدخل الأصناف والتكلفة، ثم راجع الإجمالي قبل الترحيل',
+              icon: Icons.shopping_cart_rounded,
+              status: mobile ? 'فاتورة شراء' : 'توريد / مشتريات',
               accent: NizamiColors.blue,
             ),
-            const SizedBox(height: 14),
-            NineSoftDocumentCommandBar(
+            SizedBox(height: mobile ? 8 : 14),
+            if (!mobile) NineSoftDocumentCommandBar(
               title: 'اختصارات فاتورة الشراء',
               actions: [
                 NineSoftDocumentCommandAction(
@@ -1346,11 +1348,11 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: mobile ? 8 : 14),
             NineSoftEntrySection(
-              title: 'بيانات المورد والتسوية',
-              subtitle: 'بيانات الطرف وطريقة دفع الفاتورة',
-              step: '01',
+              title: mobile ? 'بيانات الفاتورة' : 'بيانات المورد والتسوية',
+              subtitle: mobile ? 'المورد وطريقة الدفع' : 'بيانات الطرف وطريقة دفع الفاتورة',
+              step: mobile ? null : '01',
               icon: Icons.local_shipping_outlined,
               accent: NizamiColors.blue,
               child: Column(
@@ -1450,11 +1452,11 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
                 ],
               ),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: mobile ? 8 : 14),
             NineSoftEntrySection(
-              title: 'بنود وتكاليف المشتريات',
-              subtitle: 'الكمية ووحدات الشراء وسعر التكلفة وسعر البيع',
-              step: '02',
+              title: mobile ? 'الأصناف' : 'بنود وتكاليف المشتريات',
+              subtitle: mobile ? 'الصنف والكمية والتكلفة' : 'الكمية ووحدات الشراء وسعر التكلفة وسعر البيع',
+              step: mobile ? null : '02',
               icon: Icons.inventory_2_outlined,
               accent: NizamiColors.amber,
               child: Column(
@@ -1466,7 +1468,7 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
                         child: Text(
                           'بنود الفاتورة',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: mobile ? 15 : 20,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -1522,22 +1524,22 @@ class _PurchaseEditorState extends State<_PurchaseEditor> {
                 ],
               ),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: mobile ? 8 : 14),
             NineSoftEntrySection(
-              title: 'بيان إضافي',
+              title: mobile ? 'ملاحظات' : 'بيان إضافي',
               icon: Icons.sticky_note_2_outlined,
-              step: '03',
+              step: mobile ? null : '03',
               child: TextFormField(
                 controller: _notes,
-                minLines: 2,
-                maxLines: 4,
+                minLines: mobile ? 1 : 2,
+                maxLines: mobile ? 2 : 4,
                 decoration: const InputDecoration(
                   labelText: 'ملاحظات',
                   prefixIcon: Icon(Icons.notes_outlined),
                 ),
               ),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: mobile ? 8 : 14),
             NineSoftEntryFooter(
               onSave: _save,
               label: 'حفظ وترحيل فاتورة الشراء',
