@@ -587,9 +587,9 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       if (!mounted || _selectedProduct?.id != product.id) return;
       _replaceSaleOptions(values, selectedOptionId: selectedOptionId);
     } catch (_) {
-      if (mounted && cached.isEmpty) {
-        _message('تعذر تحميل خيارات الوزن والوحدة. تحقق من الاتصال.');
-      }
+      // Sale options are an optional enhancement. When offline and no option
+      // snapshot exists, keep the base product price usable without covering
+      // the invoice actions with a transient error surface.
     }
   }
 
@@ -2632,7 +2632,10 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
           key: const Key('invoice-product-input'),
           controller: controller,
           focusNode: focus,
-          onChanged: (value) => _item.text = value,
+          onChanged: (value) {
+            _item.text = value;
+            if (mounted) setState(() {});
+          },
           textInputAction: TextInputAction.next,
           onSubmitted: (_) {
             onSubmit();
