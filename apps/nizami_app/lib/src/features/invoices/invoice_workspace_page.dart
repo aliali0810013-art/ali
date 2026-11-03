@@ -2128,6 +2128,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
     );
   }
 
+  // ignore: unused_element
   Widget _paymentSection() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
@@ -2323,6 +2324,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
     );
   }
 
+  // ignore: unused_element
   Widget _referenceSummary(InvoiceDocument preview) {
     final busy = _saving || _finalizing;
     final controls = _documentLocked
@@ -2492,6 +2494,7 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
     ],
   );
 
+  // ignore: unused_element
   Widget _invoiceShortcutStrip() => NineSoftDocumentCommandBar(
     key: const Key('invoice-shortcut-strip'),
     title: 'اختصارات تحرير الفاتورة',
@@ -2765,6 +2768,27 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
             ),
           ],
         ),
+        if (_selectedProduct != null && _canManageSaleOptions) ...[
+          const SizedBox(height: 8),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton.icon(
+              onPressed: _documentLocked
+                  ? null
+                  : () => _editSaleOption(existing: _selectedSaleOption),
+              icon: Icon(
+                _selectedSaleOption == null
+                    ? Icons.add_circle_outline_rounded
+                    : Icons.edit_outlined,
+              ),
+              label: Text(
+                _selectedSaleOption == null
+                    ? 'إضافة وحدة / وزن بيع'
+                    : 'تعديل وحدة البيع المحددة',
+              ),
+            ),
+          ),
+        ],
         if (_selectedProduct != null &&
             WeightedSaleMath.isMassUnit(_selectedProduct!.unitName)) ...[
           const SizedBox(height: 8),
