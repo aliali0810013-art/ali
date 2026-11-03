@@ -213,19 +213,21 @@ void main() {
       }
     }
 
-    final boundary = tester.renderObject<RenderRepaintBoundary>(
-      find.byKey(captureKey),
-    );
-    final image = await boundary.toImage(pixelRatio: devicePixelRatio);
-    final png = await image.toByteData(format: ui.ImageByteFormat.png);
-    if (png == null) {
-      fail('Failed to encode visual capture $name');
-    }
-    final captures = Directory('test/captures')..createSync(recursive: true);
-    File('${captures.path}/$name.png').writeAsBytesSync(
-      png.buffer.asUint8List(),
-      flush: true,
-    );
+    await tester.runAsync(() async {
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byKey(captureKey),
+      );
+      final image = await boundary.toImage(pixelRatio: devicePixelRatio);
+      final png = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (png == null) {
+        fail('Failed to encode visual capture $name');
+      }
+      final captures = Directory('test/captures')..createSync(recursive: true);
+      File('${captures.path}/$name.png').writeAsBytesSync(
+        png.buffer.asUint8List(),
+        flush: true,
+      );
+    });
   }
 
   testWidgets(
