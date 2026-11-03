@@ -370,11 +370,17 @@ class _NineSoftWorkspaceShellState extends State<NineSoftWorkspaceShell> {
               ? ''
               : _activeModuleKey!.split('.').first;
           if (constraints.maxWidth < _desktopBreakpoint) {
+            const settingsModules = {
+              'settings',
+              'users',
+              'branches',
+              'backup',
+            };
             final mobileIndex = activeRootSection.isEmpty
                 ? 0
                 : activeRootSection == 'reports'
                 ? 2
-                : activeRootSection == 'settings'
+                : settingsModules.contains(activeRootSection)
                 ? 3
                 : 1;
             final activeModule = _activeModuleKey == null
@@ -405,10 +411,18 @@ class _NineSoftWorkspaceShellState extends State<NineSoftWorkspaceShell> {
               ),
               bottomNavigationBar: NineSoftMobileDock(
                 currentIndex: mobileIndex,
+                contextLabel: mobileIndex == 1
+                    ? (activeModule?.title ?? 'العمليات')
+                    : 'العمليات',
+                contextIcon: mobileIndex == 1
+                    ? (activeModule?.icon ?? Icons.layers_outlined)
+                    : Icons.layers_outlined,
                 centerAction: () => _openByKey('sales'),
                 onSelected: (index) {
                   if (index == 0) setState(() => _activeModuleKey = null);
-                  if (index == 1) _showAppLauncher();
+                  if (index == 1) {
+                    if (mobileIndex != 1) _showAppLauncher();
+                  }
                   if (index == 2) _openByKey('reports');
                   if (index == 3) _openByKey('settings');
                 },
