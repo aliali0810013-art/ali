@@ -136,14 +136,17 @@ void main() {
     expect(saved.isDraft, isFalse);
     expect(find.byKey(const Key('invoice-delivery-queued')), findsOneWidget);
     expect(find.textContaining('محفوظة بأمان'), findsOneWidget);
-    expect(find.byKey(const Key('ninesoft-entry-line-card-0')), findsOneWidget);
-    expect(find.byKey(const Key('ninesoft-entry-line-table')), findsNothing);
+    expect(find.byKey(const Key('ninesoft-entry-line-card-0')), findsNothing);
+    expect(find.byKey(const Key('ninesoft-entry-line-table')), findsOneWidget);
 
     final delete = tester.widget<IconButton>(
       find.byKey(const Key('ninesoft-entry-line-delete-0')),
     );
     expect(delete.onPressed, isNull);
-    expect(find.byKey(const Key('ninesoft-entry-line-card-0')), findsOneWidget);
+    expect(find.byKey(const Key('ninesoft-entry-line-table')), findsOneWidget);
+    await tester.ensureVisible(
+      find.byKey(const Key('ninesoft-summary-primary')),
+    );
     await tester.tap(find.byKey(const Key('ninesoft-summary-primary')));
     await tester.pump();
     expect(await outbox.count(), 1);
