@@ -2910,6 +2910,55 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       await _sendInvoiceWhatsapp(_invoice);
     }
 
+    final lockedControls = !_documentLocked
+        ? null
+        : Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OutlinedButton.icon(
+                onPressed: _previewInvoice,
+                icon: const Icon(Icons.visibility_outlined),
+                label: const Text('عرض'),
+              ),
+              OutlinedButton.icon(
+                onPressed: () => _previewThermal(_invoice),
+                icon: const Icon(Icons.receipt_long_outlined),
+                label: const Text('فاتورة مبسطة'),
+              ),
+              OutlinedButton.icon(
+                onPressed: () => unawaited(_share()),
+                icon: const Icon(Icons.picture_as_pdf_outlined),
+                label: const Text('PDF'),
+              ),
+              OutlinedButton.icon(
+                onPressed: _sendingWhatsapp
+                    ? null
+                    : () => unawaited(_sendInvoiceWhatsapp(_invoice)),
+                icon: const Icon(Icons.chat_outlined),
+                label: const Text('إرسال واتساب'),
+              ),
+              if (_canEdit &&
+                  (_invoice.postedToServer ||
+                      _invoice.isDraft ||
+                      _invoice.isQuarantined))
+                OutlinedButton.icon(
+                  onPressed: () => _editSaved(_invoice),
+                  icon: const Icon(Icons.edit_outlined),
+                  label: const Text('تعديل'),
+                ),
+              if (_canDelete &&
+                  (_invoice.postedToServer ||
+                      _invoice.isDraft ||
+                      _invoice.isQuarantined))
+                OutlinedButton.icon(
+                  onPressed: () => _deleteSaved(_invoice),
+                  icon: const Icon(Icons.delete_outline),
+                  label: const Text('حذف'),
+                ),
+            ],
+          );
+
     return SalesInvoiceReferenceView(
       key: const ValueKey('sales-invoice-reference-view'),
       document: document,
@@ -2955,9 +3004,12 @@ class _InvoiceWorkspacePageState extends State<InvoiceWorkspacePage> {
       ),
       settlementField: settlementField,
       deliveryBanner: _deliveryBanner(),
+      lockedControls: lockedControls,
       onAddLine: _handleF2,
       onScanBarcode: _scanProductBarcode,
-      onSave: () => unawaited(_finalizeInvoice()),
+      onSave: _canFinalizeCurrent
+          ? () => unawaited(_finalizeInvoice())
+          : null,
       onPrint: preview.lines.isEmpty ? null : () => unawaited(printCurrent()),
       onPdf: preview.lines.isEmpty ? null : () => unawaited(_share()),
       onWhatsapp:
